@@ -1,0 +1,29 @@
+{
+  "name": "stets",
+  "version": "1.0.0",
+  "description": "",
+  "main" : "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "stets": "./bin/index.js"
+  },
+  "scripts": {
+    "build:watch" : "tsc -w"
+  },
+  "files": [
+    "/dist"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^18.19.50",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "glob": "^11.0.0",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  }
+}
