@@ -2,13 +2,13 @@
   "name": "stets",
   "version": "1.0.0",
   "description": "",
-  "main" : "dist/index.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
     "stets": "./bin/index.js"
   },
   "scripts": {
-    "build:watch" : "tsc -w"
+    "build:watch": "tsc -w"
   },
   "files": [
     "/dist"
