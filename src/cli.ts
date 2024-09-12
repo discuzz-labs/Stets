@@ -5,7 +5,7 @@
  */
 
 import { Command } from 'commander';
-import { defaultCmd } from './commands/default';
+import defaultCmd from './commands/default.cmd';
 
 const program = new Command();
 

@@ -21,7 +21,7 @@
     "chalk": "^4.1.2",
     "commander": "^12.1.0",
     "glob": "^11.0.0",
-    "ts-node": "^10.9.2"
+    "swc-node": "^1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.6.2"
