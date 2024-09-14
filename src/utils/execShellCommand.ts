@@ -6,6 +6,7 @@
 
 
 import { spawn } from 'child_process';
+import process from 'process';
 
 /**
  * Executes a shell command using spawn and returns the result as a Promise.
@@ -14,20 +15,22 @@ import { spawn } from 'child_process';
  */
 export default function execShellCommand(cmd: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    const process = spawn(cmd[0], cmd.slice(1), { stdio: 'pipe' });
+    const cmdProcess = spawn(cmd[0], cmd.slice(1), { stdio: 'pipe', env: {
+      ...process.env, FORCE_COLOR: "1"
+    } });
 
     let stdout = '';
     let stderr = '';
 
-    process.stdout.on('data', (data) => {
+    cmdProcess.stdout.on('data', (data) => {
       stdout += data.toString();
     });
 
-    process.stderr.on('data', (data) => {
+    cmdProcess.stderr.on('data', (data) => {
       stderr += data.toString();
     });
 
-    process.on('close', (code) => {
+    cmdProcess.on('close', (code) => {
       if (code !== 0 || stderr) {
         reject(stderr.trim());  // Handle or suppress stderr as needed
       } else {

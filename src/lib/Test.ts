@@ -5,7 +5,7 @@
  */
 export class Test {
   constructor(
-    public name: string,
+    public path: string,
     public status: 'pending' | 'running' | 'passed' | 'failed' = 'pending',
     public error: Error | null = null,
     public startTime: number | null = null,

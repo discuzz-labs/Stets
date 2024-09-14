@@ -8,6 +8,4 @@ export type TestFunction = () => Promise<void> | void;
 export interface TestConfig {
   description: string;
   fn: TestFunction;
-  dependencies: string[];
-  name: string;
 }

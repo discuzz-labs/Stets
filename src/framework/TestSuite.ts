@@ -5,12 +5,14 @@
  */
 
 import { TestFunction, TestConfig } from "../types"
+import { TestFailedError } from '../lib/TestError'; 
 
 /**
  * Represents a test suite that allows defining and running tests.
  */
 export class TestSuite {
-  private tests: Map<string, TestConfig> = new Map();
+  private tests: TestConfig[] = [];
+  private errors: string[] = [];
   private beforeAllFn: TestFunction = async () => {};
   private afterAllFn: TestFunction = async () => {};
   private beforeEachFn: TestFunction = async () => {};
@@ -64,90 +66,61 @@ export class TestSuite {
 
   /**
    * Adds a test to the suite.
-   * @param name - A unique name for the test, used for dependency management.
    * @param description - A description of the test.
    * @param fn - The function to run as the test.
-   * @param dependencies - An array of test names that this test depends on.
    * @returns The current instance of TestSuite for chaining.
-   * @throws An error if a test with the same name already exists.
    */
-  it(name: string, description: string, fn: TestFunction, dependencies: string[] = []): this {
-    if (this.tests.has(name)) {
-      throw new Error(`Test with name "${name}" already exists.`);
-    }
-    this.tests.set(name, { name, description, fn, dependencies });
-
+  it(description: string, fn: TestFunction): this {
+    this.tests.push({ description, fn });
     return this;
   }
 
   /**
-   * Resolves dependencies and orders tests to run in the correct sequence.
-   * @param tests - An array of test configurations.
-   * @returns A promise that resolves to an array of ordered test configurations.
-   * @throws An error if circular dependencies are detected.
-   */
-  private async resolveDependencies(tests: TestConfig[]): Promise<TestConfig[]> {
-    const testMap = new Map(tests.map(test => [test.name, test]));
-    const resolvedTests: TestConfig[] = [];
-    const unresolved = new Set(tests.map(test => test.name));
-    const resolvedSet = new Set<string>();
-
-    const resolveTest = async (test: TestConfig, path: Set<string>) => {
-      if (resolvedSet.has(test.name)) return;
-
-      if (path.has(test.name)) {
-        throw new Error(`Circular dependency detected for test "${test.name}".`);
-      }
-
-      path.add(test.name);
-
-      // Resolve dependencies first
-      for (const dep of test.dependencies) {
-        const depTest = testMap.get(dep);
-        if (depTest) await resolveTest(depTest, path);
-      }
-
-      path.delete(test.name);
-      resolvedSet.add(test.name);
-      resolvedTests.push(test);
-    };
-
-    for (const test of tests) {
-      await resolveTest(test, new Set());
-    }
-
-    return resolvedTests;
-  }
-
-  /**
-   * Runs the tests in the suite, including handling dependencies and hooks.
+   * Runs the tests in the suite, including handling hooks and errors.
    * @returns A promise that resolves when all tests have completed.
    */
   async run(): Promise<void> {
+  
     try {
       // Run beforeAll hook
-      if (this.beforeAllFn) await this.beforeAllFn();
+      await this.beforeAllFn();
 
-      // Resolve and run tests with dependencies
-      const resolvedTests = await this.resolveDependencies(Array.from(this.tests.values()));
-      const testPromises = resolvedTests.map(async (test) => {
-        try {
-          if (this.beforeEachFn) await this.beforeEachFn();
-          await test.fn();
-          if (this.afterEachFn) await this.afterEachFn();
-          console.log(`✔️ ${test.description}`);
-        } catch (error) {
-          console.error(`❌ ${test.description}`);
-          console.error(error);
-        }
-      });
-
-      await Promise.all(testPromises);
+      // Run all tests in parallel
+      await Promise.all(
+        this.tests.map(async (test) => {
+          try {
+            await this.beforeEachFn(); // Sequential for each test
+            await test.fn(); // Parallel execution of tests
+            await this.afterEachFn(); // Sequential for each test
+          } catch (error: any) {
+            // Catch only TestFailedError
+            if (error instanceof TestFailedError) {
+              this.errors.push(error.logError());
+            } else {
+              this.errors.push(
+                new TestFailedError({
+                  errorName: "TestFailedError",
+                  testDescription: test.description,
+                  message: error.message,
+                  stack: error.stack
+                }).logError()
+              );
+            }
+          }
+        })
+      );
 
       // Run afterAll hook
-      if (this.afterAllFn) await this.afterAllFn();
-    } catch (error) {
-      console.error("Error running suite:", error);
+      await this.afterAllFn();
+
+      // Print all errors if any
+      if (this.errors.length > 0) {
+        console.error(`\nTest Suite: ${this.description}\n\n${this.errors.join('\n\n')}`);
+        process.exit(1);
+      }
+    } catch (error: any) {
+      console.error(`Test Suite: ${this.description} failed to run. Due to: ${error.message}`);
+      process.exit(1);
     }
   }
 }

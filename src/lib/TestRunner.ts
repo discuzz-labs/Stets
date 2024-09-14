@@ -35,10 +35,14 @@ export class TestRunner {
     console.clear();
 
     this.tests.forEach(test => {
-      Log.logTestResult(test.name, test.status, test.duration);
+      Log.logTestResult(test.path, test.status, test.duration);
+      if(test.status === 'failed') {
+        console.log(test.error)
+      }
     });
 
     const failedTests = this.tests.filter(test => test.status === 'failed').length;
+    
     Log.logSummary(this.tests.length, failedTests);
 
     process.exit(failedTests > 0 ? 1 : 0);
@@ -49,12 +53,12 @@ export class TestRunner {
    * @param test {Test} - The test instance to run.
    */
   private async runTest(test: Test) {
-    Log.logTestStart(test.name); // Log test start
+    Log.logTestStart(test.path); // Log test start
     test.start(); // Record the start time
 
     try {
       // Run the test using execShellCommand
-      await execShellCommand(["swc-node", test.name]);
+      await execShellCommand(["tsx", test.path, "--enable-source-maps"]);
       test.pass(); // Mark the test as passed
     } catch (error) {
       test.fail(error as Error); // Mark the test as failed
