@@ -95,10 +95,10 @@ export class TestSuite {
           } catch (error: any) {
             // Catch only TestFailedError
             if (error instanceof TestFailedError) {
-              this.errors.push(error.logError());
+              this.errors.push(await error.logError());
             } else {
               this.errors.push(
-                new TestFailedError({
+                await new TestFailedError({
                   errorName: "TestFailedError",
                   testDescription: test.description,
                   message: error.message,
@@ -115,7 +115,7 @@ export class TestSuite {
 
       // Print all errors if any
       if (this.errors.length > 0) {
-        console.error(`\nTest Suite: ${this.description}\n\n${this.errors.join('\n\n')}`);
+        console.error(`\nTest Suite: ${this.description}\n\n${this.errors.join('\n')}`);
         process.exit(1);
       }
     } catch (error: any) {
