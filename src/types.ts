@@ -4,8 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 export type TestFunction = () => Promise<void> | void;
-
-export interface TestConfig {
+export type TestConfig = {
   description: string;
   fn: TestFunction;
 }
