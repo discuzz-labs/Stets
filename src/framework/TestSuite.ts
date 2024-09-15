@@ -6,6 +6,7 @@
 
 import { TestFunction, TestConfig } from "../types"
 import { TestFailedError } from '../lib/TestError'; 
+import { Log } from "../lib/Log";
 
 /**
  * Represents a test suite that allows defining and running tests.
@@ -115,12 +116,12 @@ export class TestSuite {
 
       // Print all errors if any
       if (this.errors.length > 0) {
-        console.error(`\nTest Suite: ${this.description}\n\n${this.errors.join('\n')}`);
-        process.exit(1);
+        Log.logTestSuiteFailed(this.description, this.errors)
+        process.exitCode = 1
       }
     } catch (error: any) {
-      console.error(`Test Suite: ${this.description} failed to run. Due to: ${error.message}`);
-      process.exit(1);
+      Log.logTestSuiteFailed(this.description)
+      process.exitCode = 1
     }
   }
 }

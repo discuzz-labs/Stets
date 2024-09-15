@@ -4,8 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import chalk from "chalk";
 import { File } from "../utils/File";
+import { Log } from "./Log";
 
 export class TestFailedError extends Error {
   description: string;
@@ -45,14 +45,7 @@ export class TestFailedError extends Error {
         parseInt(line),
       );
 
-      if (affectedLine) {
-        // Create a pointer to mark the specific character in the affected line
-        const pointer = " ".repeat(parseInt(char) - 1) + chalk.red("^");
-
-        return `${chalk.blue(filePath)} ${chalk.yellow(line)}:${chalk.yellow(char)}
-${chalk.gray(affectedLine)}
-${pointer}`;
-      }
+      return Log.logStack(filePath, line, char, affectedLine as string);
     }
 
     return this.stack || "No stack trace available";
@@ -61,11 +54,10 @@ ${pointer}`;
   public async logError(): Promise<string> {
     const parsedStack = await this.parseStack(); // Get the formatted stack trace
 
-    return `
-${chalk.red("•")} Test: ${chalk.gray(this.description)} 
-${chalk.yellow(this.message)}
-
-At: ${parsedStack}
-    `;
+    return Log.logTestFailedError(
+      this.description,
+      this.message,
+      parsedStack
+    )
   }
 }
