@@ -6,8 +6,8 @@
 
 import { Command } from 'commander';
 
-export class TestConfig {
-  private static instance: TestConfig | null = null;
+export class Config {
+  private static instance: Config | null = null;
   private defaultConfig = {
     verbose: false,
     bail: false,
@@ -27,11 +27,11 @@ export class TestConfig {
    * Returns the singleton instance of TestConfig, initializing it if necessary.
    * @param commander - The Commander instance for CLI options.
    */
-  static getInstance(commander: Command): TestConfig {
-    if (!TestConfig.instance) {
-      TestConfig.instance = new TestConfig(commander);
+  static getInstance(commander: Command): Config {
+    if (!Config.instance) {
+      Config.instance = new Config(commander);
     }
-    return TestConfig.instance;
+    return Config.instance;
   }
 
   /**

@@ -4,13 +4,13 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { TestRunner } from "../lib/TestRunner";
+import { SuiteRunner } from "../lib/SuiteRunner";
 
 
 const defaultCmd = async () => {
-  const runner = new TestRunner();
-  await runner.loadTests();
-  return await runner.runTests();
+  const runner = new SuiteRunner();
+  await runner.loadSuites();
+  return await runner.runSuites();
 };
 
 export default defaultCmd;

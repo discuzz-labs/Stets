@@ -4,4 +4,4 @@
  * See the LICENSE file in the project root for license information.
  */
 
-export * from './framework/TestSuite'
+export * from './framework/Suite'

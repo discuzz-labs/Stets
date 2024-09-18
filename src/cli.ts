@@ -6,7 +6,7 @@
 
 import { Command } from "commander";
 import defaultCmd from "./commands/default.cmd";
-import {TestConfig} from "./lib/TestConfig"
+import {Config} from "./lib/Config"
 
 const program = new Command();
 
@@ -23,7 +23,8 @@ program
   .option("-d, --testDirectory <path>", "Set the test directory")
   .option("-p, --filePattern <pattern>", "Set the test file pattern");
 
-const config = TestConfig.getInstance(program).getConfig();
+// Needs more adjustements [Unusable]
+//const config = TestConfig.getInstance(program).getConfig();
 
 program.action(defaultCmd);
 program.parse(process.argv);

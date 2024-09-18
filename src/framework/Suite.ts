@@ -4,20 +4,23 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { TestFunction, TestConfig } from "../types"
-import { TestFailedError } from '../lib/TestError'; 
-import { Log } from "../lib/Log";
+import { TestFunction, Test } from "../types";
+import { TestFailedError } from "../lib/TestError";
+import { Reporter } from "../lib/Reporter";
 
 /**
  * Represents a test suite that allows defining and running tests.
  */
-export class TestSuite {
-  private tests: TestConfig[] = [];
-  private errors: string[] = [];
-  private beforeAllFn: TestFunction = async () => {};
-  private afterAllFn: TestFunction = async () => {};
-  private beforeEachFn: TestFunction = async () => {};
-  private afterEachFn: TestFunction = async () => {};
+export class Suite {
+  public tests: Test[] = [];
+  public errors: string[] = [];
+  public beforeAllFn: TestFunction = async () => {};
+  public afterAllFn: TestFunction = async () => {};
+  public beforeEachFn: TestFunction = async () => {};
+  public afterEachFn: TestFunction = async () => {};
+
+  private startTime: number = 0;
+  private endTime: number = 0;
 
   /**
    * Creates a new test suite instance.
@@ -77,51 +80,85 @@ export class TestSuite {
   }
 
   /**
+   * Starts the timer for measuring the suite duration.
+   */
+  private startTimer(): void {
+    this.startTime = Date.now();
+  }
+
+  /**
+   * Stops the timer and calculates the end time.
+   */
+  private stopTimer(): void {
+    this.endTime = Date.now();
+  }
+
+  /**
+   * Gets the duration of the suite run in milliseconds.
+   * @returns {number} The total duration in milliseconds.
+   */
+  private getDuration(): number {
+    return this.endTime - this.startTime;
+  }
+
+  /**
    * Runs the tests in the suite, including handling hooks and errors.
    * @returns A promise that resolves when all tests have completed.
    */
   async run(): Promise<void> {
-  
+    this.startTimer(); // Start the timer before running the suite
+
     try {
-      // Run beforeAll hook
       await this.beforeAllFn();
 
-      // Run all tests in parallel
       await Promise.all(
         this.tests.map(async (test) => {
           try {
-            await this.beforeEachFn(); // Sequential for each test
-            await test.fn(); // Parallel execution of tests
-            await this.afterEachFn(); // Sequential for each test
+            await this.beforeEachFn();
+            await test.fn();
+            await this.afterEachFn();
           } catch (error: any) {
-            // Catch only TestFailedError
-            if (error instanceof TestFailedError) {
-              this.errors.push(await error.logError());
-            } else {
-              this.errors.push(
-                await new TestFailedError({
-                  errorName: "TestFailedError",
-                  testDescription: test.description,
+            const trace = error instanceof TestFailedError 
+              ? await error.stackTrace()
+              : await new TestFailedError({
+                  description: test.description,
                   message: error.message,
-                  stack: error.stack
-                }).logError()
-              );
-            }
+                  stack: error.stack,
+                }).stackTrace();
+
+            this.errors.push(Reporter.onTestFailed({
+              description: test.description,
+              error: error.message,
+              ...trace
+            }));
           }
         })
       );
 
-      // Run afterAll hook
       await this.afterAllFn();
-
-      // Print all errors if any
-      if (this.errors.length > 0) {
-        Log.logTestSuiteFailed(this.description, this.errors)
-        process.exitCode = 1
-      }
+      this.stopTimer(); // Stop the timer after running the suite
+      this.reportResults();
     } catch (error: any) {
-      Log.logTestSuiteFailed(this.description)
-      process.exitCode = 1
+      this.reportResults(true);
+    }
+  }
+
+  private reportResults(isError: boolean = false) {
+    const duration = this.getDuration();
+    
+    if (isError || this.errors.length > 0) {
+      console.log(Reporter.onSuiteFailed({
+        description: this.description,
+        error: this.errors.join("\n"),
+        duration,
+      }));
+      process.exitCode = 1;
+    } else {
+      console.log(Reporter.onSuiteSuccess({
+        description: this.description,
+        duration,
+      }));
+      process.exitCode = 0;
     }
   }
 }
