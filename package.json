@@ -8,6 +8,7 @@
     "stets": "./bin/index.js"
   },
   "scripts": {
+    "postinstall": "echo 'Thanks for using stets \n https://github.com/discuzz-labs/stets'",
     "build:watch": "tsc -w"
   },
   "files": [
@@ -18,12 +19,11 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^4.1.2",
-    "commander": "^12.1.0",
     "glob": "^11.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.6.2",
     "@types/node": "^18.19.50",
-    "tsx": "^4.19.1"
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
   }
 }

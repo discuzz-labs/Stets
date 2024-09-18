@@ -22,6 +22,7 @@ export class SuiteRunner {
   async loadSuites() {
     // This will be using Config file in the future
     const testFiles = await glob("**/*.test.ts", { ignore: "node_modules/**" });
+    
     this.suites = testFiles.map((file) => {
       return {
         status: "pending",

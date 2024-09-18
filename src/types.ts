@@ -44,3 +44,11 @@ export type Suite = {
   path: string;
   stdout: string;
 };
+
+export type CLIOptions = {
+  verbose?: boolean;
+  bail?: boolean;
+  timeout?: number;
+  testDirectory?: string;
+  filePattern?: string;
+}
