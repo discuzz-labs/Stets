@@ -5,3 +5,4 @@
  */
 
 export * from './framework/Suite'
+export {StetsConfig} from "./types"

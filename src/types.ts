@@ -45,10 +45,11 @@ export type Suite = {
   stdout: string;
 };
 
-export type CLIOptions = {
-  verbose?: boolean;
-  bail?: boolean;
-  timeout?: number;
-  testDirectory?: string;
-  filePattern?: string;
+export type TestConfig = {
+  testDirectory: string | string[];
+  filePattern: string | string[];
+  exclude: string[];
 }
+
+export type StetsConfig = Partial<TestConfig>
+export type CLIOptions = Partial<TestConfig>

@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "allowJs": true,
+    "checkJs" : true,
+    "moduleResolution" : "node",
     "target": "es6",             
     "module": "commonjs",         
     "declaration": true,
@@ -8,7 +11,7 @@
     "strict": true,             
     "esModuleInterop": true,     
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"],       
   "exclude": ["node_modules"]   

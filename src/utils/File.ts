@@ -41,4 +41,5 @@ export class File {
 
     return null; // If line number is greater than total lines in file
   }
+
 }

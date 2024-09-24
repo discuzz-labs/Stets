@@ -4,10 +4,11 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { glob } from "glob";
 import { Reporter } from "../lib/Reporter";
 import execShellCommand from "../utils/execShellCommand";
 import { Suite } from "../types";
+import { Config } from "./Config";
+import { glob } from "glob";
 
 export class SuiteRunner {
   private suites: Suite[] = [];
@@ -20,10 +21,41 @@ export class SuiteRunner {
    * Loads all test files matching the pattern and initializes Test instances.
    */
   async loadSuites() {
-    // This will be using Config file in the future
-    const testFiles = await glob("**/*.test.ts", { ignore: "node_modules/**" });
-    
-    this.suites = testFiles.map((file) => {
+    const config = Config.getInstance();
+
+    // Prepare the test directory path
+    const testDirectory = config.testDirectory
+      ? `${config.testDirectory}/`
+      : ""; // Ensure there's a trailing slash
+
+    // Create an array of patterns to search within the specified directory
+    const patterns = Array.isArray(config.filePattern)
+      ? config.filePattern.map(
+          (pattern) => `${testDirectory}${pattern.replace(/^(\*\*\/)/, "")}`,
+        ) // Remove leading '**/' if present
+      : [`${testDirectory}${config.filePattern.replace(/^(\*\*\/)/, "")}`]; // Handle single string case
+
+    // Use glob to find files based on the modified patterns
+    const testFiles = await Promise.all(
+      patterns.map((pattern) =>
+        glob.sync(pattern, {
+          ignore: config.exclude,
+          nodir: true, // Ensures that only files are returned, not directories
+        }),
+      ),
+    );
+
+    // Flatten the array if multiple patterns were used
+    const allTestFiles = testFiles.flat();
+    if(allTestFiles.length === 0){
+      console.log(Reporter.noSuitesFound(
+        config.filePattern,
+        config.testDirectory
+      ))
+      // Having nothing isnot a crime
+      process.exit(0)
+    }
+    this.suites = allTestFiles.map((file) => {
       return {
         status: "pending",
         path: file,
@@ -49,7 +81,7 @@ export class SuiteRunner {
     console.clear();
 
     this.suites.forEach((suite) => {
-      this.divider(suite.path)
+      this.divider(suite.path);
       console.log(suite.stdout);
     });
 
@@ -105,12 +137,13 @@ export class SuiteRunner {
     const fixedDividerLength = Math.min(maxDividerLength, 80); // You can adjust 80 as needed
 
     // Truncate the suite path if it's too long
-    const truncatedPath = suitePath.length > fixedDividerLength - 4
-      ? suitePath.substring(0, fixedDividerLength - 4) + "..."
-      : suitePath;
+    const truncatedPath =
+      suitePath.length > fixedDividerLength - 4
+        ? suitePath.substring(0, fixedDividerLength - 4) + "..."
+        : suitePath;
 
     // Create the divider
-    const divider = '='.repeat(fixedDividerLength);
+    const divider = "=".repeat(fixedDividerLength);
 
     console.log(`\n${divider}\n${truncatedPath}\n${divider}\n`);
   }

@@ -1,0 +1,16 @@
+{
+  "exclude": [
+    "dist/**",
+    "src",
+    "node_modules",
+    "**/*.config.js",
+    "**/*.test.ts",
+    "**/*.d.ts",
+    "coverage/**",
+    "stets/bin/**",
+    "index.js"
+  ],
+  "extension": [".ts"],
+  "reporter": ["text", "lcov"],
+  "all": true
+}

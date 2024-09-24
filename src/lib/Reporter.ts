@@ -85,4 +85,13 @@ export class Reporter {
       `Summary: ${chalk.green(`${passed} passed`)}, ${chalk.red(`${failed} failed`)} in ${chalk.gray(duration)} ms`
     );
   }
+
+  static noSuitesFound(filePattern: string[] | string, testDirectory: string) {
+    // Normalize filePattern to an array
+    const patterns = Array.isArray(filePattern) ? filePattern : [filePattern];
+    // Format the output message
+    return this.format(
+      `No suites were found applying the following pattern: ${chalk.blue(patterns.join(', '))} in the following directory: ${chalk.blue(testDirectory)}`
+    );
+  }
 }

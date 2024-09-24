@@ -6,7 +6,6 @@
 
 import { SuiteRunner } from "../lib/SuiteRunner";
 
-
 const defaultCmd = async () => {
   const runner = new SuiteRunner();
   await runner.loadSuites();
