@@ -5,11 +5,14 @@
  */
 
 import { SuiteRunner } from "../lib/SuiteRunner";
+import { Log } from "../utils/Log";
 
 const defaultCmd = async () => {
+  Log.info("Running default command")
   const runner = new SuiteRunner();
   await runner.loadSuites();
-  return await runner.runSuites();
+  await runner.runSuites();
+  Log.info("Default Command finished")
 };
 
 export default defaultCmd;

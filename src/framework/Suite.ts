@@ -7,6 +7,7 @@
 import { TestFunction, Test } from "../types";
 import { TestFailedError } from "../lib/TestError";
 import { Reporter } from "../lib/Reporter";
+import { Log } from "../utils/Log";
 
 /**
  * Represents a test suite that allows defining and running tests.
@@ -147,6 +148,7 @@ export class Suite {
     const duration = this.getDuration();
     
     if (isError || this.errors.length > 0) {
+      Log.error(`Suite ${this.description} in ${__filename} failed with ${this.errors.length} error in ${duration}ms`)
       console.log(Reporter.onSuiteFailed({
         description: this.description,
         error: this.errors.join("\n"),
@@ -154,6 +156,7 @@ export class Suite {
       }));
       process.exitCode = 1;
     } else {
+      Log.error(`Suite ${this.description} in ${__filename} succeeded with in ${duration}ms`)
       console.log(Reporter.onSuiteSuccess({
         description: this.description,
         duration,

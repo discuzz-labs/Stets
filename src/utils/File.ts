@@ -7,6 +7,7 @@
 
 import fs from 'fs';
 import readline from 'readline'
+import { Log } from './Log';
 
 export class File {
   filePath: string;
@@ -21,6 +22,7 @@ export class File {
    * @returns {Promise<string | null>} - The content of the specified line, or null if not found.
    */
   public async readLine(lineNumber: number): Promise<string | null> {
+    Log.info(`Reading line from file: ${this.filePath}`)
     const fileStream = fs.createReadStream(this.filePath);
 
     const rl = readline.createInterface({
@@ -38,7 +40,7 @@ export class File {
         return line;
       }
     }
-
+    Log.error(`Line ${lineNumber} not found in file: ${this.filePath}`)
     return null; // If line number is greater than total lines in file
   }
 

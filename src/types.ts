@@ -52,4 +52,7 @@ export type TestConfig = {
 }
 
 export type StetsConfig = Partial<TestConfig>
-export type CLIOptions = Partial<TestConfig>
+export type CLIOptions = {
+  verbose? :boolean;
+  logLevel?: "error" | "warning" | "info" | "success"
+}

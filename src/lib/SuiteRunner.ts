@@ -9,6 +9,7 @@ import execShellCommand from "../utils/execShellCommand";
 import { Suite } from "../types";
 import { Config } from "./Config";
 import { glob } from "glob";
+import { Log } from "../utils/Log";
 
 export class SuiteRunner {
   private suites: Suite[] = [];
@@ -48,6 +49,7 @@ export class SuiteRunner {
     // Flatten the array if multiple patterns were used
     const allTestFiles = testFiles.flat();
     if(allTestFiles.length === 0){
+      Log.error(`No test files were found`)
       console.log(Reporter.noSuitesFound(
         config.filePattern,
         config.testDirectory
@@ -55,6 +57,8 @@ export class SuiteRunner {
       // Having nothing isnot a crime
       process.exit(0)
     }
+
+    Log.info(`Running Tests: ${allTestFiles}`)
     this.suites = allTestFiles.map((file) => {
       return {
         status: "pending",
@@ -113,6 +117,7 @@ export class SuiteRunner {
       const stdout = await execShellCommand(["tsx", suite.path]);
       suite.stdout = stdout;
     } catch (error: any) {
+      Log.error(`Error running suite file: ${suite.path} due to ${error}`)
       suite.stdout = error;
     }
   }

@@ -4,12 +4,13 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import  defaultCmd  from "./commands/default.cmd"
+import defaultCmd from "./commands/default.cmd";
 import { CLIOptions } from "./types";
-import { version } from '../package.json'
+import { version } from "../package.json";
+import { Log } from "./utils/Log";
 
 class CLI {
-  private options: CLIOptions  = {};
+  private options: CLIOptions = {};
 
   constructor() {
     this.parseArgs();
@@ -20,13 +21,21 @@ class CLI {
     const args = process.argv.slice(2);
     args.forEach((arg, index) => {
       switch (arg) {
-        case '-d':
-        case '--testDirectory':
-          this.options.testDirectory = args[index + 1];
+        case "-v":
+        case "--verbose":
+          this.options.verbose = true;
           break;
-        case '-p':
-        case '--filePattern':
-          this.options.filePattern = args[index + 1];
+        case "--error":
+          this.options.logLevel = "error";
+          break;
+        case "--warning":
+          this.options.logLevel = "warning";
+          break;
+        case "--success":
+          this.options.logLevel = "success";
+          break;
+        case "--info":
+          this.options.logLevel = "info";
           break;
       }
     });
@@ -37,25 +46,36 @@ class CLI {
 Usage: <command> [options]
 
 Options:
-  -d, --testDirectory <path> Set the test directory
-  -p, --filePattern <pattern> Set the test file pattern
+  -v, --verbose         Enable verbose mode
   -h, --help            Display this help message
   -v, -version          Print the version number
     `);
   }
 
   private run() {
-    if (process.argv.includes('--help') || process.argv.includes('-h')) {
+    Log.info("CLI Running")
+    if (process.argv.includes("--help") || process.argv.includes("-h")) {
       this.printHelp();
       return;
     }
 
-    if (process.argv.includes('--version') || process.argv.includes('-v')) {
+    if (process.argv.includes("--version") || process.argv.includes("-v")) {
       console.log(`Version: ${version}`);
       return;
     }
 
-    defaultCmd()
+    // Cli Options
+    if (this.options.verbose == true) {
+      Log.info("Setting STETS_VERBOSE=true (user)")
+      process.env.STETS_VERBOSE = "true";
+    }
+
+    if (this.options.logLevel) {
+      Log.info(`Setting STETS_LOGLEVEl=${this.options.logLevel} (user)`)
+      process.env.STETS_LOGLEVEL = this.options.logLevel
+    } 
+
+    defaultCmd();
   }
 }
 

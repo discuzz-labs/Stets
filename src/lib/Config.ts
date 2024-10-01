@@ -8,6 +8,7 @@ import * as path from "path";
 import * as fs from "fs";
 import config from "../stets.config";
 import { StetsConfig, TestConfig } from "../types";
+import { Log } from "../utils/Log";
 
 export class Config {
   private static instance: Config;
@@ -39,10 +40,13 @@ export class Config {
         try {
           const loadedConfig: StetsConfig = require(filePath).default;
           this.config = { ...this.config, ...loadedConfig }; // Merge with defaults
+          Log.info(`Using these config values: ${this.config}`)
           return;
-        } catch (error) {
-          console.error(`Failed to load config from ${filePath}:`)
+        } catch (error: any) {
+          Log.error(`Failed to load config from ${filePath}: ${error}`)
         }
+      } else {
+        Log.warning(`Config file ${filePath} not found.`)
       }
     }
   }
