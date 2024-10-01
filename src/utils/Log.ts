@@ -7,34 +7,50 @@ import chalk from "chalk";
 import { Options } from "./Options";
 
 export class Log {
-  static isVerbose() {
-    return Options.hasOption("verbose") && Options.getOption("verbose")?.toLowerCase() === "true";
+  // Define log levels in descending order of priority
+  static logLevelPriority: Record<string, number> = {
+    "error": 1,
+    "warning": 2,
+    "success": 3,
+    "info": 4
+  };
+
+  // Get current log level from options or default to "info"
+  static getCurrentLogLevel(): string {
+    return Options.getOption("logLevel")?.toLowerCase() || "info";
   }
-  
-  static schouldBe(logLevel: string) {
-    return Options.hasOption("logLevel") && Options.getOption("logLevel") === logLevel.toLowerCase();
+
+  // Check if the message should be logged based on the current log level
+  static schouldBe(logLevel: string): boolean {
+    const currentLogLevel = this.getCurrentLogLevel();
+    return this.logLevelPriority[logLevel.toLowerCase()] <= this.logLevelPriority[currentLogLevel];
+  }
+
+  // Check if verbose mode is enabled
+  static isVerbose(): boolean {
+    return Options.hasOption("verbose") && Options.getOption("verbose")?.toLowerCase() === "true";
   }
 
   static error(message: string) {
-    if (this.schouldBe("error") || this.isVerbose() ) {
-      console.log(`[${chalk.green("ERROR")}]`, message);
+    if (this.schouldBe("error") || this.isVerbose()) {
+      console.log(`[${chalk.red("ERROR")}]`, message);
     }
   }
 
   static warning(message: string) {
-    if (this.schouldBe("warning") || this.isVerbose() ) {
-      console.log(`[${chalk.green("WARNING")}]`, message);
+    if (this.schouldBe("warning") || this.isVerbose()) {
+      console.log(`[${chalk.yellow("WARNING")}]`, message);
     }
   }
 
   static info(message: string) {
-    if (this.schouldBe("info") || this.isVerbose() ) {
-      console.log(`[${chalk.green("INFO")}]`, message);
+    if (this.schouldBe("info") || this.isVerbose()) {
+      console.log(`[${chalk.blue("INFO")}]`, message);
     }
   }
 
   static success(message: string) {
-    if (this.schouldBe("success") || this.isVerbose() ) {
+    if (this.schouldBe("success") || this.isVerbose()) {
       console.log(`[${chalk.green("SUCCESS")}]`, message);
     }
   }
