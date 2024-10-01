@@ -49,10 +49,11 @@ export type TestConfig = {
   testDirectory: string | string[];
   filePattern: string | string[];
   exclude: string[];
-}
+};
 
-export type StetsConfig = Partial<TestConfig>
-export type CLIOptions = {
-  verbose? :boolean;
-  logLevel?: "error" | "warning" | "info" | "success"
-}
+export type StetsConfig = Partial<TestConfig>;
+
+export type CLIOptions = Partial<TestConfig> & {
+  verbose?: boolean;
+  logLevel?: string;
+};

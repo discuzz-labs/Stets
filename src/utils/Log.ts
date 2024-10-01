@@ -4,37 +4,38 @@
  * See the LICENSE file in the project root for license information.
  */
 import chalk from "chalk";
+import { Options } from "./Options";
 
 export class Log {
   static isVerbose() {
-    return process.env.STETS_VERBOSE === "true";
+    return Options.hasOption("verbose") && Options.getOption("verbose")?.toLowerCase() === "true";
   }
-
+  
   static schouldBe(logLevel: string) {
-    return process.env.STETS_LOGLEVEL === logLevel;
+    return Options.hasOption("logLevel") && Options.getOption("logLevel") === logLevel.toLowerCase();
   }
 
   static error(message: string) {
-    if (this.isVerbose() || this.schouldBe("error")) {
-      console.log("[", chalk.red("ERROR"), "] ", message);
+    if (this.schouldBe("error") || this.isVerbose() ) {
+      console.log(`[${chalk.green("ERROR")}]`, message);
     }
   }
 
   static warning(message: string) {
-    if (this.isVerbose() || this.schouldBe("warning")) {
-      console.log("[", chalk.yellow("WARNING"), "] ", message);
+    if (this.schouldBe("warning") || this.isVerbose() ) {
+      console.log(`[${chalk.green("WARNING")}]`, message);
     }
   }
 
   static info(message: string) {
-    if (this.isVerbose() || this.schouldBe("info")) {
-      console.log("[", chalk.blue("INFO"), "] ", message);
+    if (this.schouldBe("info") || this.isVerbose() ) {
+      console.log(`[${chalk.green("INFO")}]`, message);
     }
   }
 
   static success(message: string) {
-    if (this.isVerbose() || this.schouldBe("success")) {
-      console.log("[", chalk.green("SUCCESS"), "] ", message);
+    if (this.schouldBe("success") || this.isVerbose() ) {
+      console.log(`[${chalk.green("SUCCESS")}]`, message);
     }
   }
 }
