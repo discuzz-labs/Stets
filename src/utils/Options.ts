@@ -4,16 +4,25 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { log } from "console";
+import { Log } from "../utils/Log";
 import { CLIOptions } from "../types";
-import { Env } from "../utils/Env";
 
 export class Options {
-  private options: CLIOptions = {};
-
+  options: CLIOptions = {};
+  static envPrefix: string = "STETS_"
+  
   constructor(args: string[]) {
     this.parseArgs(args);
-    Env.setFromOptions(this.options);
+    this.setToEnv()
+  }
+
+  private setToEnv(): void {
+    Object.keys(this.options).forEach((key) => {
+      const envKey = `${Options.envPrefix}${key.toUpperCase()}`;
+      const value = (this.options as any)[key];
+      process.env[envKey] = String(value);
+      Log.info(`Setting ${Options.envPrefix}${key.toUpperCase()}=${value}`);
+    });
   }
 
   private parseArgs(args: string[]) {
@@ -61,12 +70,12 @@ export class Options {
   // Static method to check if an option exists in process.env
   static hasOption(option: string): boolean {
     return process.env.hasOwnProperty(
-      `${Env.envPrefix}${option.toUpperCase()}`,
+      `${Options.envPrefix}${option.toUpperCase()}`,
     );
   }
 
   // Static method to get an option from process.env
   static getOption(option: keyof CLIOptions): string | undefined {
-    return process.env[`${Env.envPrefix}${option.toUpperCase()}`];
+    return process.env[`${Options.envPrefix}${option.toUpperCase()}`];
   }
 }
