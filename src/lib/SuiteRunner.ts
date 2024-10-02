@@ -24,48 +24,52 @@ export class SuiteRunner {
   async loadSuites() {
     const config = Config.getInstance();
 
-    // Prepare the test directory path
-    const testDirectory = config.testDirectory
-      ? `${config.testDirectory}/`
-      : ""; // Ensure there's a trailing slash
+    // Get test directory, file pattern, and exclude pattern from config
+    const testDirectory = config.getConfig("testDirectory")
+      ? `${config.getConfig("testDirectory")}/`
+      : "";
+    const filePattern = Array.isArray(config.getConfig("filePattern"))
+      ? config
+          .getConfig("filePattern")
+          .map(
+            (pattern: string) =>
+              `${testDirectory}${pattern.replace(/^(\*\*\/)/, "")}`,
+          )
+      : [
+          `${testDirectory}${config.getConfig("filePattern").replace(/^(\*\*\/)/, "")}`,
+        ];
+    Log.info(`Tests directory: ${testDirectory}`)
+    Log.info(`Using these filepatterns: ${filePattern}`)
 
-    // Create an array of patterns to search within the specified directory
-    const patterns = Array.isArray(config.filePattern)
-      ? config.filePattern.map(
-          (pattern) => `${testDirectory}${pattern.replace(/^(\*\*\/)/, "")}`,
-        ) // Remove leading '**/' if present
-      : [`${testDirectory}${config.filePattern.replace(/^(\*\*\/)/, "")}`]; // Handle single string case
+    // Use glob to find test files and flatten results
+    const allTestFiles = (
+      await Promise.all(
+        filePattern.map((pattern: string) =>
+          glob.sync(pattern, {
+            ignore: config.getConfig("exclude"),
+            nodir: true,
+          }),
+        ),
+      )
+    ).flat();
 
-    // Use glob to find files based on the modified patterns
-    const testFiles = await Promise.all(
-      patterns.map((pattern) =>
-        glob.sync(pattern, {
-          ignore: config.exclude,
-          nodir: true, // Ensures that only files are returned, not directories
-        }),
-      ),
-    );
-
-    // Flatten the array if multiple patterns were used
-    const allTestFiles = testFiles.flat();
-    if(allTestFiles.length === 0){
-      Log.error(`No test files were found`)
-      console.log(Reporter.noSuitesFound(
-        config.filePattern,
-        config.testDirectory
-      ))
-      // Having nothing isnot a crime
-      process.exit(0)
+    if (allTestFiles.length === 0) {
+      Log.error("No test files were found");
+      console.log(
+        Reporter.noSuitesFound(
+          config.getConfig("filePattern"),
+          config.getConfig("testDirectory"),
+        ),
+      );
+      process.exit(0);
     }
 
-    Log.info(`Running Tests: ${allTestFiles}`)
-    this.suites = allTestFiles.map((file) => {
-      return {
-        status: "pending",
-        path: file,
-        stdout: "",
-      };
-    });
+    Log.info(`Running Tests: ${allTestFiles}`);
+    this.suites = allTestFiles.map((file) => ({
+      status: "pending",
+      path: file,
+      stdout: "",
+    }));
   }
 
   /**
@@ -117,7 +121,7 @@ export class SuiteRunner {
       const stdout = await execShellCommand(["tsx", suite.path]);
       suite.stdout = stdout;
     } catch (error: any) {
-      Log.error(`Error running suite file: ${suite.path} due to ${error}`)
+      Log.error(`Error running suite file: ${suite.path} due to ${error}`);
       suite.stdout = error;
     }
   }
