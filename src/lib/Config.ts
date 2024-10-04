@@ -65,7 +65,7 @@ export class Config {
         // If loaded config has the property, override the default config
         (this.config as any)[key] = this.loadedConfig[key as keyof StetsConfig];
         Log.info(`Overwritten config ${key} with value from file: ${(this.loadedConfig as any)[key]}`);
-      } else if (Options.hasOption(key)) {
+      } else if (Options.hasOption(key as keyof TestConfig)) {
         // If CLI options or environment has the property, override with that
         (this.config as any)[key] = Options.getOption(key as keyof TestConfig);
         Log.info(`Overwritten config ${key} with value from CLI/ENV: ${Options.getOption(key as keyof TestConfig)}`);
