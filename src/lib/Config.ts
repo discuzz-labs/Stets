@@ -9,7 +9,8 @@ import * as fs from "fs";
 import config from "../stets.config";
 import { StetsConfig, TestConfig } from "../types";
 import { Log } from "../utils/Log";
-import { Options } from "../utils/Options";
+import { Options } from "../lib/Options";
+import { ConfigValidator } from "../utils/ConfigValidator";
 
 export class Config {
   private static instance: Config;
@@ -28,6 +29,7 @@ export class Config {
     this.loadConfigFromFile();
     this.setConfig();
     this.mapConfigValues();
+    new ConfigValidator(this.config).validate() ? Log.info("Config validation passed") : process.exit(1)
     
     Log.info(`Final merged configuration: ${JSON.stringify(this.config, null, 2)}`);
   }
@@ -78,6 +80,10 @@ export class Config {
     Object.keys(this.config).forEach((key) => {
       this[key] = (this.config as any)[key];
     });
+  }
+
+  public all(): TestConfig {
+    return this.config;
   }
 
   // Method to get a specific config value

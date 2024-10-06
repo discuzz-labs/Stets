@@ -46,7 +46,7 @@ export type Suite = {
 };
 
 export type TestConfig = {
-  testDirectory: string | string[];
+  testDirectory: string;
   filePattern: string | string[];
   exclude: string[];
 };

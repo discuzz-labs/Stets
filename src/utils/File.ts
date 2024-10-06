@@ -44,4 +44,8 @@ export class File {
     return null; // If line number is greater than total lines in file
   }
 
+  public isExsiting(): boolean {
+    Log.info(`Checking if file exists: ${this.filePath}`)
+    return fs.existsSync(this.filePath)
+  }
 }
