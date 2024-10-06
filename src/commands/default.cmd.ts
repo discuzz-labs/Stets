@@ -10,7 +10,6 @@ import { Log } from "../utils/Log";
 const defaultCmd = async () => {
   Log.info("Running default command")
   const runner = new SuiteRunner();
-  await runner.loadSuites();
   await runner.runSuites();
   Log.info("Default Command finished")
 };

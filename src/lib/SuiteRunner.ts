@@ -7,70 +7,14 @@
 import { Reporter } from "../lib/Reporter";
 import execShellCommand from "../utils/execShellCommand";
 import { Suite } from "../types";
-import { Config } from "./Config";
-import { glob } from "glob";
 import { Log } from "../utils/Log";
+import { SuiteLoader } from "./SuiteLoader";
 
 export class SuiteRunner {
-  private suites: Suite[] = [];
   private startTime: number = 0;
   private endTime: number = 0;
 
   constructor() {}
-
-  /**
-   * Loads all test files matching the pattern and initializes Test instances.
-   */
-  async loadSuites() {
-    const config = Config.getInstance();
-
-    // Get test directory, file pattern, and exclude pattern from config
-    const testDirectory = config.getConfig("testDirectory")
-      ? `${config.getConfig("testDirectory")}/`
-      : "";
-    const filePattern = Array.isArray(config.getConfig("filePattern"))
-      ? config
-          .getConfig("filePattern")
-          .map(
-            (pattern: string) =>
-              `${testDirectory}${pattern.replace(/^(\*\*\/)/, "")}`,
-          )
-      : [
-          `${testDirectory}${config.getConfig("filePattern").replace(/^(\*\*\/)/, "")}`,
-        ];
-    Log.info(`Tests directory: ${testDirectory}`)
-    Log.info(`Using these filepatterns: ${filePattern}`)
-
-    // Use glob to find test files and flatten results
-    const allTestFiles = (
-      await Promise.all(
-        filePattern.map((pattern: string) =>
-          glob.sync(pattern, {
-            ignore: config.getConfig("exclude"),
-            nodir: true,
-          }),
-        ),
-      )
-    ).flat();
-
-    if (allTestFiles.length === 0) {
-      Log.error("No test files were found");
-      console.log(
-        Reporter.noSuitesFound(
-          config.getConfig("filePattern"),
-          config.getConfig("testDirectory"),
-        ),
-      );
-      process.exit(0);
-    }
-
-    Log.info(`Running Tests: ${allTestFiles}`);
-    this.suites = allTestFiles.map((file) => ({
-      status: "pending",
-      path: file,
-      stdout: "",
-    }));
-  }
 
   /**
    * Runs all loaded suites in parallel and logs the results.
@@ -79,21 +23,25 @@ export class SuiteRunner {
    * Runs all loaded suites in parallel and logs the results.
    */
   async runSuites() {
+    let suiteLoader = new SuiteLoader()
+    await suiteLoader.loadSuites()
+    let suites = suiteLoader.getSuites()
+    
     this.startTimer(); // Start the timer
 
     await Promise.all(
-      this.suites.map(async (suite) => await this.runSuite(suite)),
+      suites.map(async (suite) => await this.runSuite(suite)),
     );
 
     // Clear console for feedback
     console.clear();
-
-    this.suites.forEach((suite) => {
+    
+    suites.forEach((suite) => {
       this.divider(suite.path);
       console.log(suite.stdout);
     });
 
-    const failed = this.suites.filter(
+    const failed = suites.filter(
       (suite) => suite.status === "failed",
     ).length;
 
@@ -102,7 +50,7 @@ export class SuiteRunner {
 
     console.log(
       Reporter.onSummary({
-        total: this.suites.length,
+        total: suites.length,
         failed,
         duration, // Pass the duration here
       }),
