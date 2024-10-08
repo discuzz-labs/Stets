@@ -7,114 +7,138 @@
 import { Config } from "./Config";
 import { glob } from "glob";
 import { Log } from "../utils/Log";
-import { Reporter } from "../lib/Reporter";
-import { Suite } from "../types";
+import { SuiteCase } from "../types";
+import path from "path";
 
 export class SuiteLoader {
-  private suites: Suite[] = [];
+  private suiteCases: SuiteCase[] = [];
 
   /**
-   * Loads all test files matching the pattern and initializes Test instances.
+   * Loads all test files by dynamically importing them and initializes Suite instances.
    */
-  async loadSuites() {
+  async loadSuites(): Promise<void> {
     const config = Config.getInstance();
 
     const testDirectory = this.getTestDirectory(config);
-    const filePattern = this.getFilePatterns(config, testDirectory);
-    const excludePattern = config.getConfig("exclude");
+    const filePatterns = this.getFilePatterns(config, testDirectory);
+    const excludePatterns = config.getConfig("exclude");
 
     Log.info(`Tests directory: ${testDirectory}`);
-    Log.info(`Using these file patterns: ${filePattern}`);
-    Log.info(`Excluding these patterns: ${excludePattern}`);
+    Log.info(`Using file patterns: ${filePatterns}`);
+    Log.info(`Excluding patterns: ${excludePatterns}`);
 
-    const allTestFiles = await this.findTestFiles(filePattern, excludePattern);
+    const testFiles = await this.findTestFiles(filePatterns, excludePatterns);
 
-    if (allTestFiles.length === 0) {
-      this.handleNoTestFiles(config);
-      return; // Exit if no test files were found
+    if (testFiles.length === 0) {
+      this.noSuitesFound(filePatterns, testDirectory);
+      return;
     }
 
-    Log.info(`Running Tests: ${allTestFiles}`);
-    this.suites = this.initializeSuites(allTestFiles);
+    Log.info(`Found test files: ${testFiles}`);
+
+    await this.importAndInitializeSuites(testFiles);
   }
 
   /**
    * Get the test directory from configuration.
    */
   private getTestDirectory(config: Config): string {
-    return config.getConfig("testDirectory")
-      ? `${config.getConfig("testDirectory")}/`
-      : "";
+    const testDirectory = config.getConfig("testDirectory");
+    return testDirectory ? `${testDirectory}/` : "";
   }
 
   /**
-   * Get file patterns from configuration.
+   * Get file patterns from configuration and prepend the test directory.
    */
   private getFilePatterns(config: Config, testDirectory: string): string[] {
     const filePatternConfig = config.getConfig("filePattern");
 
-    // Apply '**/' for recursive searches if needed
     return Array.isArray(filePatternConfig)
       ? filePatternConfig.map((pattern: string) =>
-          pattern.startsWith("**/")
-            ? `${testDirectory}${pattern}`
-            : `${testDirectory}**/${pattern}`,
+          this.prependDirectory(pattern, testDirectory),
         )
-      : [`${testDirectory}**/${filePatternConfig}`];
+      : [this.prependDirectory(filePatternConfig, testDirectory)];
   }
 
   /**
-   * Find test files matching the provided patterns.
+   * Prepends the directory to the file pattern, ensuring
+   * **/
+
+  private prependDirectory(pattern: string, testDirectory: string): string {
+    return pattern.startsWith("**/")
+      ? `${testDirectory}${pattern}`
+      : `${testDirectory}**/${pattern}`;
+  }
+
+  /**
+   * Find test files matching the provided patterns and apply exclusions.
    */
   private async findTestFiles(
-    filePattern: string[],
-    excludePattern: string | string[] | undefined,
+    filePatterns: string[],
+    excludePatterns: string | string[] | undefined,
   ): Promise<string[]> {
-    // Ensure excludePattern is always an array
-    const excludeArray = Array.isArray(excludePattern)
-      ? excludePattern
-      : excludePattern
-        ? [excludePattern]
+    const excludeArray = Array.isArray(excludePatterns)
+      ? excludePatterns
+      : excludePatterns
+        ? [excludePatterns]
         : ["**/node_modules/**"]; // Default exclusion
 
-    const allTestFiles = glob.sync(filePattern, {
-      ignore: excludeArray, // Apply exclusions
+    const testFiles = glob.sync(filePatterns, {
+      ignore: excludeArray,
       nodir: true,
     });
 
-    // Flatten the results and return
-    return allTestFiles.flat();
+    return testFiles.flat();
   }
 
   /**
-   * Handle the case when no test files were found.
+   * Dynamically imports each test file and initializes Suite instances.
    */
-  private handleNoTestFiles(config: Config) {
-    Log.error("No test files were found");
-    console.log(
-      Reporter.noSuitesFound(
-        config.getConfig("filePattern"),
-        config.getConfig("testDirectory"),
-      ),
-    );
-    process.exit(0);
-  }
+  private async importAndInitializeSuites(testFiles: string[]): Promise<void> {
+    for (const file of testFiles) {
+      try {
+        require("esbuild-register"); // Allow TypeScript support
+        const suiteModule = require(path.join(process.cwd(), file)); // Import suite
 
-  /**
-   * Initialize suites from the found test files.
-   */
-  private initializeSuites(allTestFiles: string[]): Suite[] {
-    return allTestFiles.map((file) => ({
-      status: "pending",
-      path: file,
-      stdout: "",
-    }));
+        // Check if the default export exists and is an instance of Suite
+        const suite = suiteModule.default || suiteModule; // Handle CommonJS default export scenario
+        if (suite && suite.constructor.name === "Suite") {
+          this.suiteCases.push({
+            status: "pending",
+            path: file,
+            suite,
+            duration: -1,
+            reports: []
+          });
+          Log.info(`Loaded suite: ${file}`);
+        } else {
+          Log.warning(`Test file ${file} does not export a valid Suite.`);
+        }
+      } catch (error: any) {
+        Log.error(`Failed to load suite from ${file}: ${error.message}`);
+      }
+    }
   }
 
   /**
    * Get the loaded test suites.
    */
-  getSuites(): Suite[] {
-    return this.suites;
+  getSuites(): SuiteCase[] {
+    return this.suiteCases;
+  }
+
+  /**
+   * Handle the case where no suites are found.
+   */
+  private noSuitesFound(
+    filePattern: string[] | string,
+    testDirectory: string,
+  ): void {
+    const patterns = Array.isArray(filePattern) ? filePattern : [filePattern];
+    Log.error("No test files were found.");
+    console.log(
+      `No suites were found applying the following pattern(s): ${patterns.join(", ")} in the directory: ${testDirectory}`,
+    );
+    process.exit(0);
   }
 }

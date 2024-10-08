@@ -1,3 +1,6 @@
+import { Suite } from "./framework/Suite";
+import { SpecReporter } from "./lib/SpecReporter";
+import { TestError } from "./lib/TestError"
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
  * Licensed under the MIT License.
@@ -11,20 +14,20 @@ export type Test = {
 
 export type TestFailedParams = {
   description: string;
+  duration: number;
   error: string;
-  file: string;
-  line: string;
-  char: string;
-  affectedLine: string;
+  file?: string;
+  line?: string;
+  char?: string;
 };
 
 export type TestSuccessParams = {
   description: string;
+  duration: number;
 };
 
 export type SuiteFailedParams = {
   description: string;
-  error: string;
   duration: number;
 };
 
@@ -39,18 +42,23 @@ export type SummaryParams = {
   duration: number;
 };
 
-export type Suite = {
+export type SuiteCase = {
   status: "pending" | "success" | "failed";
+  reports: { id: number, description: string, duration: number, error?: TestError}[]
   path: string;
-  stdout: string;
+  suite: Suite;
+  duration: number;
 };
 
 export type TestConfig = {
   testDirectory: string;
   filePattern: string | string[];
   exclude: string[];
+  reporters: ("html" | "json" | "spec")[];
+  outputDir: string;
+  silent: boolean;
 };
-
+export type Reporters = SpecReporter
 export type ConfigOptions = keyof TestConfig;
 export type StetsConfig = Partial<TestConfig>;
 export type CLIOptions = Partial<TestConfig> & {

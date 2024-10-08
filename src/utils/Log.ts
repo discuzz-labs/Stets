@@ -17,7 +17,7 @@ export class Log {
 
   // Get current log level from options or default to "info"
   static getCurrentLogLevel(): string {
-    return Options.getOption("logLevel")?.toLowerCase() || "info";
+    return Options.getOption("logLevel")?.toLowerCase() || "";
   }
 
   // Check if the message should be logged based on the current log level
