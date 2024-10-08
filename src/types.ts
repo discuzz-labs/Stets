@@ -51,8 +51,8 @@ export type TestConfig = {
   exclude: string[];
 };
 
+export type ConfigOptions = keyof TestConfig;
 export type StetsConfig = Partial<TestConfig>;
-
 export type CLIOptions = Partial<TestConfig> & {
   verbose?: boolean;
   logLevel?: string;

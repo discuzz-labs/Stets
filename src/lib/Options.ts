@@ -5,13 +5,29 @@
  */
 
 import { Log } from "../utils/Log";
-import { CLIOptions } from "../types";
+import { CLIOptions, ConfigOptions } from "../types";
 import config from "../stets.config";
 
 export class Options {
-  options: CLIOptions = {}; // Initialize as an empty object to store parsed options.
+  options: Partial<CLIOptions> = {}; // Initialize as a partial type to avoid unassigned keys
   static envPrefix: string = "STETS_";
-  static acceptedOptions: Array<keyof CLIOptions> = ["config", "logLevel", "verbose", ...Object.keys(config) as (keyof CLIOptions)[]]; // Dynamically append keys from config.
+
+  // Centralized configuration for all options with details
+  static optionConfig: Record<
+    keyof CLIOptions | ConfigOptions,
+    { requiresValue: boolean }
+  > = {
+    config: { requiresValue: true },
+    logLevel: { requiresValue: true },
+    verbose: { requiresValue: false },
+    // Dynamically add config keys and set requiresValue as true
+    ...(Object.fromEntries(
+      Object.keys(config).map((key) => [
+        key as ConfigOptions,
+        { requiresValue: true },
+      ]),
+    ) as Record<ConfigOptions, { requiresValue: boolean }>),
+  };
 
   constructor(args: string[]) {
     this.parseArgs(args);
@@ -21,7 +37,7 @@ export class Options {
   private setToEnv(): void {
     Object.keys(this.options).forEach((key) => {
       const envKey = `${Options.envPrefix}${key.toUpperCase()}`;
-      const value = (this.options as any)[key];
+      const value = this.options[key as keyof CLIOptions];
       process.env[envKey] = String(value);
       Log.info(`Setting ${envKey}=${value}`);
     });
@@ -34,32 +50,38 @@ export class Options {
         const flagKey = this.normalizeFlag(key);
 
         // Ensure the key is valid and accepted in `CLIOptions`
-        if (flagKey && value && Options.acceptedOptions.includes(flagKey)) {
+        if (flagKey && value && flagKey in Options.optionConfig) {
           this.options[flagKey] = value as any; // Safely assign string value to the options.
         } else {
           console.warn(`Unknown or unsupported option: ${key}`);
+          process.exit(1);
         }
       } else {
         const flagKey = this.normalizeFlag(arg);
 
-        if (flagKey && Options.acceptedOptions.includes(flagKey)) {
-          this.options[flagKey] = true as any; // Assign boolean `true` for flags without values.
+        if (flagKey && flagKey in Options.optionConfig) {
+          // Check if this option requires a value or can be a flag
+          if (Options.optionConfig[flagKey].requiresValue) {
+            console.error(`Option ${arg} requires a value. Use ${arg}=value.`);
+            process.exit(1);
+          }
+          this.options[flagKey] = true as any; // Assign boolean `true` for flags.
         } else {
           console.warn(`Unknown flag: ${arg}`);
+          process.exit(1);
         }
       }
     });
   }
 
-  private normalizeFlag(flag: string): keyof CLIOptions | null {
+  private normalizeFlag(flag: string): keyof CLIOptions | ConfigOptions | null {
     const normalizedFlag = flag.startsWith("--")
       ? flag.slice(2)
       : flag.startsWith("-")
-      ? flag.slice(1)
-      : flag;
+        ? flag.slice(1)
+        : flag;
 
-    // Ensure that the normalized flag is one of the accepted options.
-    return normalizedFlag as keyof CLIOptions;
+    return normalizedFlag as keyof CLIOptions | ConfigOptions;
   }
 
   getOptions() {
@@ -67,12 +89,16 @@ export class Options {
   }
 
   // Static method to check if an option exists in process.env
-  static hasOption(option: keyof CLIOptions): boolean {
-    return process.env.hasOwnProperty(`${Options.envPrefix}${option.toUpperCase()}`);
+  static hasOption(option: keyof CLIOptions | ConfigOptions): boolean {
+    return process.env.hasOwnProperty(
+      `${Options.envPrefix}${option.toUpperCase()}`,
+    );
   }
 
   // Static method to get an option from process.env
-  static getOption(option: keyof CLIOptions): string | undefined {
+  static getOption(
+    option: keyof CLIOptions | ConfigOptions,
+  ): string | undefined {
     return process.env[`${Options.envPrefix}${option.toUpperCase()}`];
   }
 }
