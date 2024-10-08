@@ -1,6 +1,7 @@
 import { Suite } from "./framework/Suite";
 import { SpecReporter } from "./reporters/SpecReporter";
 import { TestError } from "./lib/TestError"
+import { JsonReporter } from "./reporters/JsonReporter";
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
  * Licensed under the MIT License.
@@ -56,11 +57,11 @@ export type TestConfig = {
   testDirectory: string;
   filePattern: string | string[];
   exclude: string[];
-  reporters: ("html" | "json" | "spec")[];
+  reporters: ("html" | "json" | "spec")[]
   outputDir: string;
   silent: boolean;
 };
-export type Reporters = SpecReporter
+export type Reporters = SpecReporter | JsonReporter
 export type ConfigOptions = keyof TestConfig;
 export type StetsConfig = Partial<TestConfig>;
 export type CLIOptions = Partial<TestConfig> & {

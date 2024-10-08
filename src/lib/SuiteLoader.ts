@@ -8,12 +8,12 @@ import { Config } from "./Config";
 import { glob } from "glob";
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
-import { register } from '@swc-node/register/register'
+import "esbuild-register"
 import path from "path";
 
 export class SuiteLoader {
   private suiteCases: SuiteCase[] = [];
-
+  
   /**
    * Loads all test files by dynamically importing them and initializes Suite instances.
    */
@@ -98,7 +98,6 @@ export class SuiteLoader {
   private async importAndInitializeSuites(testFiles: string[]): Promise<void> {
     for (const file of testFiles) {
       try {
-        register(); // Allow TypeScript support
         const suiteModule = require(path.join(process.cwd(), file)); // Import suite
 
         // Check if the default export exists and is an instance of Suite
@@ -113,7 +112,8 @@ export class SuiteLoader {
           });
           Log.info(`Loaded suite: ${file}`);
         } else {
-          Log.warning(`Test file ${file} does not export a valid Suite.`);
+          Log.error(`Test file ${file} does not export a valid Suite.`);
+          
         }
       } catch (error: any) {
         Log.error(`Failed to load suite from ${file}: ${error.message}`);

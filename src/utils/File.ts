@@ -6,46 +6,40 @@
 
 
 import fs from 'fs';
-import readline from 'readline'
+import path from 'path';
 import { Log } from './Log';
 
 export class File {
   filePath: string;
-  
-  constructor(filePath: string){
+
+  constructor(filePath: string) {
     this.filePath = filePath;
   }
 
-  /**
-   * Reads a specific line from a file using streams
-   * @param {number} lineNumber - The line number to read (1-based).
-   * @returns {Promise<string | null>} - The content of the specified line, or null if not found.
-   */
-  public async readLine(lineNumber: number): Promise<string | null> {
-    Log.info(`Reading line from file: ${this.filePath}`)
-    const fileStream = fs.createReadStream(this.filePath);
-
-    const rl = readline.createInterface({
-      input: fileStream,
-      crlfDelay: Infinity
-    });
-
-    let currentLine = 0;
-
-    for await (const line of rl) {
-      currentLine += 1;
-
-      if (currentLine === lineNumber) {
-        rl.close(); // Stop reading further lines
-        return line;
-      }
-    }
-    Log.error(`Line ${lineNumber} not found in file: ${this.filePath}`)
-    return null; // If line number is greater than total lines in file
+  public isExisting(): boolean {
+    Log.info(`Checking if file exists: ${this.filePath}`);
+    return fs.existsSync(this.filePath);
   }
 
-  public isExsiting(): boolean {
-    Log.info(`Checking if file exists: ${this.filePath}`)
-    return fs.existsSync(this.filePath)
+  public writeJson(data: object): void {
+    try {
+      // Get the directory name from the file path
+      const dirName = path.dirname(this.filePath);
+
+      // Check if the directory exists; if not, create it
+      if (!fs.existsSync(dirName)) {
+        fs.mkdirSync(dirName, { recursive: true });
+        Log.info(`Created directory: ${dirName}`);
+      }
+
+      // Convert the data to JSON format
+      const jsonData = JSON.stringify(data, null, 2); // Pretty print with 2 spaces
+
+      // Write the JSON data to the file
+      fs.writeFileSync(this.filePath, jsonData);
+      Log.info(`Successfully written JSON to file: ${this.filePath}`);
+    } catch (error) {
+      Log.error(`Failed to write JSON to file: ${this.filePath}. Error: ${error}`);
+    }
   }
 }

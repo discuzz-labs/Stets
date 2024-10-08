@@ -2,10 +2,48 @@ import { Reporters } from "../types";
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
 import { SpecReporter } from "../reporters/SpecReporter";
+import { Config } from "./Config";
+import { JsonReporter } from "../reporters/JsonReporter";
 
 export class SuiteReporter {
-  private reporters: Reporters[] = [new SpecReporter()];
+  private reporters: Reporters[] = []
 
+  constructor() {
+    const config = Config.getInstance();
+    const reporters = config.getConfig("reporters");
+
+    // Check if reporters is defined
+    if (reporters) {
+      // Handle the case when reporters is a string (single reporter)
+      if (typeof reporters === "string") {
+        this.reporters.push(this.createReporter(reporters));
+      } else if(Array.isArray(reporters)) {
+        reporters.forEach((reporter) => {
+          this.reporters.push(this.createReporter(reporter));
+        });
+      }
+    } else {
+      Log.info("Using default reporter: spec")
+      this.reporters.push(this.createReporter("spec"))
+    }
+  }
+
+  /**
+   * Helper method to create a reporter instance based on the name.
+   * @param {string} reporterName - The name of the reporter to create.
+   * @returns {any} - The reporter instance.
+   */
+  createReporter(reporterName: string): any {
+    switch (reporterName.toLowerCase()) {
+      case "spec":
+        return new SpecReporter();
+      case "json":
+        return new JsonReporter();
+      default:
+        console.error(`Unknown reporter: ${reporterName}. Expected: spec, html, json`);
+        process.exit(1);
+    }
+  }
   /**
    * Reports all the test suites and their results.
    * @param suites - The array of test suites with their results.
@@ -42,20 +80,22 @@ export class SuiteReporter {
    * @param suite - The suite to report.
    */
   private reportSuite(suiteCase: SuiteCase): void {
-    Log.info(`Reporting results for suite: ${suiteCase.suite.description} , status: ${suiteCase.status}`);
+    Log.info(
+      `Reporting results for suite: ${suiteCase.suite.description} , status: ${suiteCase.status}`,
+    );
 
     this.reporters.forEach((reporter) => {
       if (suiteCase.status === "success") {
         reporter.onSuiteSuccess({
           description: suiteCase.suite.description,
           duration: suiteCase.duration,
-          path: suiteCase.path
+          path: suiteCase.path,
         });
       } else {
         reporter.onSuiteFailed({
           description: suiteCase.suite.description,
           duration: suiteCase.duration,
-          path: suiteCase.path
+          path: suiteCase.path,
         });
       }
     });

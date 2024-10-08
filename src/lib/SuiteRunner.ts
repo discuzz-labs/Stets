@@ -38,7 +38,7 @@ export class SuiteRunner {
       }),
     );
 
-    console.clear();
+    
   }
 
   /**

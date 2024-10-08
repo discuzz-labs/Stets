@@ -28,7 +28,7 @@ export class ConfigValidator {
     this.checkLogicalConsistency();
     this.checkValidFilePatterns();
     this.checkValidExcludePatterns();
-    this.checkTestDirectoryExsisting();
+    this.checkTestDirectoryExisting();
     Log.info("Config validation completed. Looks good.");
 
     if (this.errors.length > 0) {
@@ -38,11 +38,11 @@ export class ConfigValidator {
     return true; // Validation passed
   }
 
-  private checkTestDirectoryExsisting() {
+  private checkTestDirectoryExisting() {
     if (
       new File(
         path.join(process.cwd(), this.config.testDirectory),
-      ).isExsiting() === false
+      ).isExisting() === false
     ) {
       this.errors.push(
         `Test directory ${this.config.testDirectory} does not exsit`,

@@ -11,6 +11,7 @@ import { Options } from "./lib/Options"
 
 class CLI {
   constructor() {
+    
     new Options(process.argv.slice(2));
     this.run();
   }
