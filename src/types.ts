@@ -56,4 +56,5 @@ export type StetsConfig = Partial<TestConfig>;
 export type CLIOptions = Partial<TestConfig> & {
   verbose?: boolean;
   logLevel?: string;
+  config?: string;
 };

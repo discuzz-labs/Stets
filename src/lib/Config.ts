@@ -18,6 +18,7 @@ export class Config {
   private loadedConfig: StetsConfig = {};  // Store loaded config from file
 
   private configFileName: string[] = [
+    Options.hasOption("config") ? path.join(process.cwd(), Options.getOption("config") as string) : "",
     path.join(process.cwd(), "stets.config.ts"),
     path.join(process.cwd(), "stets.config.js"),
   ];
@@ -55,6 +56,7 @@ export class Config {
           Log.error(`Failed to load config from ${filePath}: ${error.message}`);
         }
       } else {
+        console.info("No configuration files were found.")
         Log.warning(`Config file ${filePath} not found.`);
       }
     }

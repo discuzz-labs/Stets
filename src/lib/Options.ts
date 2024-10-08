@@ -11,7 +11,7 @@ import config from "../stets.config";
 export class Options {
   options: CLIOptions = {}; // Initialize as an empty object to store parsed options.
   static envPrefix: string = "STETS_";
-  static acceptedOptions: Array<keyof CLIOptions> = ["logLevel", "verbose", ...Object.keys(config) as (keyof CLIOptions)[]]; // Dynamically append keys from config.
+  static acceptedOptions: Array<keyof CLIOptions> = ["config", "logLevel", "verbose", ...Object.keys(config) as (keyof CLIOptions)[]]; // Dynamically append keys from config.
 
   constructor(args: string[]) {
     this.parseArgs(args);
