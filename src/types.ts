@@ -1,5 +1,5 @@
 import { Suite } from "./framework/Suite";
-import { SpecReporter } from "./lib/SpecReporter";
+import { SpecReporter } from "./reporters/SpecReporter";
 import { TestError } from "./lib/TestError"
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
@@ -27,11 +27,13 @@ export type TestSuccessParams = {
 };
 
 export type SuiteFailedParams = {
+  path: string;
   description: string;
   duration: number;
 };
 
 export type SuiteSuccessParams = {
+  path: string;
   description: string;
   duration: number;
 };

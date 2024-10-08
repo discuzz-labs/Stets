@@ -38,7 +38,7 @@ export class SpecReporter {
   onSuiteFailed(params: SuiteFailedParams): void {
     console.log(
       this.format(
-        `${chalk.red("✗")} ${params.description} - ${chalk.red("FAILED")} in ${params.duration}ms`
+        `${chalk.red("✗")} Suite: ${params.description} at ${chalk.gray(params.path)} - ${chalk.red("FAILED")} in ${params.duration}ms`
       )
     );
   }
@@ -50,7 +50,7 @@ export class SpecReporter {
   onSuiteSuccess(params: SuiteSuccessParams): void {
     console.log(
       this.format(
-        `${chalk.green("✓")} ${params.description} - ${chalk.green("PASSED")} in ${params.duration}ms`
+        `${chalk.green("✓")} Suite: ${params.description} at ${chalk.gray(params.path)} - ${chalk.green("PASSED")} in ${params.duration}ms`
       )
     );
   }
@@ -60,10 +60,10 @@ export class SpecReporter {
    * @param {TestFailedParams} params - The parameters containing information about the failed test.
    */
   onTestFailed(params: TestFailedParams): void {
-    const { description, error, file, line, char } = params;
+    const { description, error, file, line, char, duration } = params;
     console.log(
       this.format(
-        `${chalk.red("•")} Test: ${chalk.gray(description)}`,
+        `${chalk.red("•")} Test: ${chalk.gray(description)} failed in ${duration} ms`,
         error,
         `At: ${chalk.blue(file)} ${chalk.yellow(line)}:${chalk.yellow(char)}`
       )
@@ -75,9 +75,9 @@ export class SpecReporter {
    * @param {TestSuccessParams} params - The parameters containing information about the successful test.
    */
   onTestSuccess(params: TestSuccessParams): void {
-    const { description } = params;
+    const { description, duration } = params;
     console.log(
-      this.format(`${chalk.green("•")} Test: ${chalk.gray(description)}`)
+      this.format(`${chalk.green("•")} Test: ${chalk.gray(description)} passed in ${duration}ms`)
     );
   }
 

@@ -19,9 +19,6 @@ export class SuiteRunner {
     this.suiteCases = suiteLoader.getSuites();
   }
 
-  /**
-   * Loads and runs all test suites.
-   */
   async runSuites() {
     Log.info("Loading test suites...");
     Log.info(`${this.suiteCases.length} test suites loaded.`);
@@ -31,7 +28,13 @@ export class SuiteRunner {
       this.suiteCases.map(async (suiteCase) => {
         Log.info(`Running suite: ${suiteCase.suite.description}`);
         SpecReporter.onSuiteStart(suiteCase.suite.description);
+
+        const suiteStartTime = Date.now(); // Start tracking suite duration
         await this.runSuite(suiteCase);
+        const suiteEndTime = Date.now(); // End tracking suite duration
+
+        // Calculate and set the duration for the whole suite
+        suiteCase.duration = suiteEndTime - suiteStartTime;
       }),
     );
 
@@ -54,14 +57,20 @@ export class SuiteRunner {
         suite.tests.map(async (test, id) => {
           try {
             Log.info(`Running test: ${test.description}`);
+
+            const testStartTime = Date.now(); // Start tracking test duration
             await suite.beforeEachFn();
             await test.fn();
             await suite.afterEachFn();
+            const testEndTime = Date.now(); // End tracking test duration
+
+            // Calculate and store the duration of the individual test
+            const testDuration = testEndTime - testStartTime;
 
             suiteCase.reports.push({
               id,
               description: test.description,
-              duration: -1,
+              duration: testDuration, // Log test duration
             });
           } catch (error: any) {
             const testError = new TestError({
@@ -75,7 +84,7 @@ export class SuiteRunner {
               id,
               description: test.description,
               error: testError,
-              duration: -1,
+              duration: -1, // Duration will not be set if it fails
             });
 
             hasFailure = true; // Flag that a failure occurred

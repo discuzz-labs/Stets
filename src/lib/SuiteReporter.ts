@@ -49,11 +49,13 @@ export class SuiteReporter {
         reporter.onSuiteSuccess({
           description: suiteCase.suite.description,
           duration: suiteCase.duration,
+          path: suiteCase.path
         });
       } else {
         reporter.onSuiteFailed({
           description: suiteCase.suite.description,
           duration: suiteCase.duration,
+          path: suiteCase.path
         });
       }
     });

@@ -8,6 +8,7 @@ import { Config } from "./Config";
 import { glob } from "glob";
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
+import { register } from '@swc-node/register/register'
 import path from "path";
 
 export class SuiteLoader {
@@ -97,7 +98,7 @@ export class SuiteLoader {
   private async importAndInitializeSuites(testFiles: string[]): Promise<void> {
     for (const file of testFiles) {
       try {
-        require("esbuild-register"); // Allow TypeScript support
+        register(); // Allow TypeScript support
         const suiteModule = require(path.join(process.cwd(), file)); // Import suite
 
         // Check if the default export exists and is an instance of Suite
