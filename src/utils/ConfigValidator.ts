@@ -20,6 +20,10 @@ export class ConfigValidator {
    * Run all validation checks on the config.
    */
   validate(): boolean {
+    if(this.config.suppressValidations) {
+      console.warn("Suppressing config validation! Can cause unexpected behaviour.")
+      return true
+    }
     Log.info("Validating Config...");
     this.checkRequiredFields();
     this.checkTestDirectory();
@@ -29,13 +33,59 @@ export class ConfigValidator {
     this.checkValidFilePatterns();
     this.checkValidExcludePatterns();
     this.checkTestDirectoryExisting();
-    Log.info("Config validation completed. Looks good.");
+    this.checkValidReporters()
+    this.checkOutputDirectory()
+    Log.info("Config validation completed.");
 
     if (this.errors.length > 0) {
       this.logErrors();
       return false; // Validation failed
     }
     return true; // Validation passed
+  }
+
+  /**
+   * Check if reporters contain duplicate values and are valid.
+   */
+  private checkValidReporters() {
+    const validReporters = new Set(["spec", "xml", "json", "csv", "html"]);
+
+    if (this.config.reporters) {
+      const reporters = Array.isArray(this.config.reporters)
+        ? this.config.reporters
+        : [this.config.reporters];
+
+      // Check for duplicates
+      const duplicates = reporters.filter(
+        (reporter, index) => reporters.indexOf(reporter) !== index,
+      );
+      if (duplicates.length > 0) {
+        this.errors.push(`Duplicate reporters found: ${duplicates.join(", ")}`);
+      }
+
+      // Check for valid reporters
+      reporters.forEach((reporter) => {
+        if (!validReporters.has(reporter)) {
+          this.errors.push(
+            `Invalid reporter: ${reporter}. Valid options are: ${Array.from(validReporters).join(", ")}`,
+          );
+        }
+      });
+    }
+  }
+
+  /**
+   * Check if output directory exists if it was set.
+   */
+  private checkOutputDirectory() {
+    if (this.config.outputDir) {
+      const outputDirPath = path.join(process.cwd(), this.config.outputDir);
+      if (!new File(outputDirPath).isExisting()) {
+        this.errors.push(
+          `Output directory ${this.config.outputDir} does not exist.`,
+        );
+      }
+    }
   }
 
   private checkTestDirectoryExisting() {
@@ -53,9 +103,7 @@ export class ConfigValidator {
    * Check if required fields are present.
    */
   private checkRequiredFields() {
-    const requiredFields: (keyof TestConfig)[] = [
-      "filePattern",
-    ];
+    const requiredFields: (keyof TestConfig)[] = ["filePattern"];
     requiredFields.forEach((field: keyof TestConfig) => {
       if (!this.config[field]) {
         this.errors.push(`Missing required field: ${field}`);

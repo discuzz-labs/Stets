@@ -66,9 +66,12 @@ export type TestConfig = {
   testDirectory: string;
   filePattern: string | string[];
   exclude: string[];
+  suppressValidations: boolean;
+  //reporters
   reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
   outputDir: string;
   silent: boolean;
+  
 };
 
 export type Reporters =
