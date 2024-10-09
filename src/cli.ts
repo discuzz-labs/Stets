@@ -5,31 +5,50 @@
  */
 
 import defaultCmd from "./commands/default.cmd";
-import { version, name, description} from "../package.json";
-import { Log } from "./utils/Log"
-import { Options } from "./lib/Options"
+import { version, name, description } from "../package.json";
+import { Log } from "./utils/Log";
+import { Options } from "./lib/Options";
+import { OptionsConfig } from "./lib/OptionsConfig";
 
 class CLI {
   constructor() {
-    
-    new Options(process.argv.slice(2));
+    OptionsConfig.generateShortOptions();
     this.run();
   }
 
-  private printVersion(){
-    console.log(`Version: ${version}`)
+  private printVersion() {
+    console.log(`Version: ${version}`);
   }
-  private printHelp() {
-    console.log(`
-${name}  ${description}
-Usage: <command> [options]
 
-Options:
-  --version             Print the version number
-  -v, --verbose         Enable verbose mode
-  -h, --help            Display this help message
-  -l, logLevel=<level>  Set log level (error, warning, success, info)
-  -t, --testDirectory=<directory>  Set the test directory`);
+  private printHelp() {
+    const options = OptionsConfig.get(); // Get the options configuration
+
+    // Constructing the help message
+    const optionsHelp = Object.entries(options)
+      .map(([key, { requiresValue, shortValue }]) => {
+        const optionNames = [
+          shortValue ? "-" + shortValue + "," : "",
+          "--" + key,
+        ]
+          .filter(Boolean)
+          .join(" "); // Construct the option name string
+        const valueDescription = requiresValue ? "=<value>" : ""; // Determine if a value is required
+        return "\t" + optionNames + "\t" + valueDescription; // Use \t for indentation
+      })
+      .join("\n"); // Join all options for display
+
+    console.log(
+      name +
+        "  " +
+        description +
+        "\n" +
+        "Usage: <command> [options]\n\n" +
+        "Options:\n" +
+        "\t--version\n" +
+        "\t-v, --verbose\n" +
+        "\t-h, --help\n" +
+        optionsHelp,
+    );
   }
 
   private run() {
@@ -45,6 +64,8 @@ Options:
       this.printVersion();
       return;
     }
+
+    new Options(process.argv.slice(2));
 
     defaultCmd();
   }

@@ -14,7 +14,6 @@ export class Options {
   static envPrefix: string = "STETS_";
 
   constructor(args: string[]) {
-    OptionsConfig.generateShortOptions()
     this.parseArgs(args);
     this.setToEnv();
   }
