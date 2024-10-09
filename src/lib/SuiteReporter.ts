@@ -4,6 +4,7 @@ import { SuiteCase } from "../types";
 import { SpecReporter } from "../reporters/SpecReporter";
 import { Config } from "./Config";
 import { JsonReporter } from "../reporters/JsonReporter";
+import { HtmlReporter } from "../reporters/HtmlReporter";
 
 export class SuiteReporter {
   private reporters: Reporters[] = []
@@ -39,6 +40,8 @@ export class SuiteReporter {
         return new SpecReporter();
       case "json":
         return new JsonReporter();
+      case "html": 
+         return new HtmlReporter()
       default:
         console.error(`Unknown reporter: ${reporterName}. Expected: spec, html, json`);
         process.exit(1);

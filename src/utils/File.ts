@@ -21,7 +21,7 @@ export class File {
     return fs.existsSync(this.filePath);
   }
 
-  public writeJson(data: object): void {
+  public writeFile(data: string): void {
     try {
       // Get the directory name from the file path
       const dirName = path.dirname(this.filePath);
@@ -32,14 +32,10 @@ export class File {
         Log.info(`Created directory: ${dirName}`);
       }
 
-      // Convert the data to JSON format
-      const jsonData = JSON.stringify(data, null, 2); // Pretty print with 2 spaces
-
-      // Write the JSON data to the file
-      fs.writeFileSync(this.filePath, jsonData);
-      Log.info(`Successfully written JSON to file: ${this.filePath}`);
+      fs.writeFileSync(this.filePath, data);
+      Log.info(`Successfully written report to file: ${this.filePath}`);
     } catch (error) {
-      Log.error(`Failed to write JSON to file: ${this.filePath}. Error: ${error}`);
+      Log.error(`Failed to write report to file: ${this.filePath}. Error: ${error}`);
     }
   }
 }

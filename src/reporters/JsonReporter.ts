@@ -12,7 +12,9 @@ import { Log } from "../utils/Log";
 import { SpecReporter } from "./SpecReporter";
 
 export class JsonReporter extends SpecReporter{
-  private results: any = {
+  reportType: string = "json"
+  
+  results: any = {
     suites: [],
     total: 0,
     passed: 0,
@@ -103,17 +105,28 @@ export class JsonReporter extends SpecReporter{
 
     console.log(
       this.format(
-        `=====💥 Json report=====`, 
-        JSON.stringify(this.results, null, 4)
+        `=====💥 ${this.reportType} report=====`, 
+        this.formatReportFile()
       )
     );
-    
+
+    this.writeReport()
+  }
+
+  public writeReport(): void {
     const config = Config.getInstance();
     const outputDir = config.getConfig("outputDir") ? config.getConfig("outputDir") : "test-results";
     Log.info(`Output directory: ${outputDir}`)
+    
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filePath = `report-${timestamp}.json`; // Example file naming
-    new File(path.join(process.cwd(), "json", outputDir, filePath)).writeJson(this.results)
-    console.log(`Json Report written to ${filePath}`);
+    const filePath = `report-${timestamp}.${this.reportType}`; // Example file naming
+    
+    new File(path.join(process.cwd(), outputDir, this.reportType, filePath)).writeFile(this.formatReportFile())
+    
+    console.log(`${this.reportType} Report written to ${filePath}`);
+  }
+
+  formatReportFile() : string {
+    return JSON.stringify(this.results, null, 4)
   }
 }
