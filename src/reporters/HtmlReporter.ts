@@ -1,6 +1,4 @@
 import { JsonReporter } from "./JsonReporter";
-import fs from "fs";
-import { Log } from "./Log"; // Assuming you have a Log utility
 
 export class HtmlReporter extends JsonReporter {
   reportType: string = "html";
@@ -100,11 +98,5 @@ export class HtmlReporter extends JsonReporter {
     `;
 
     return html;
-  }
-
-  /**
-   * Writes the HTML report to a file.
-   */
-  
   }
 }

@@ -8,7 +8,7 @@ const config : TestConfig = {
     "**/dist/**",
   ],
 
-  reporters: ["spec", "json"], // Different formats for test results (e.g., 'spec', 'json', 'html')
+  reporters: ["spec", "csv" , "xml"], // Different formats for test results (e.g., 'spec', 'json', 'html')
   outputDir: "test-results", // Directory for storing test result files
   silent: false, // Suppress output unless there's an error
 

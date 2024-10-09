@@ -1,7 +1,11 @@
 import { Suite } from "./framework/Suite";
 import { SpecReporter } from "./reporters/SpecReporter";
-import { TestError } from "./lib/TestError"
+import { TestError } from "./lib/TestError";
 import { JsonReporter } from "./reporters/JsonReporter";
+import { HtmlReporter } from "./reporters/HtmlReporter";
+import { MdReporter } from "./reporters/MdReporter";
+import { XMLReporter } from "./reporters/XMLReporter";
+import { CSVReporter } from "./reporters/CSVReporter";
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
  * Licensed under the MIT License.
@@ -47,7 +51,12 @@ export type SummaryParams = {
 
 export type SuiteCase = {
   status: "pending" | "success" | "failed";
-  reports: { id: number, description: string, duration: number, error?: TestError}[]
+  reports: {
+    id: number;
+    description: string;
+    duration: number;
+    error?: TestError;
+  }[];
   path: string;
   suite: Suite;
   duration: number;
@@ -57,11 +66,45 @@ export type TestConfig = {
   testDirectory: string;
   filePattern: string | string[];
   exclude: string[];
-  reporters: ("html" | "json" | "spec")[]
+  reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
   outputDir: string;
   silent: boolean;
 };
-export type Reporters = SpecReporter | JsonReporter
+
+export type Reporters =
+  | SpecReporter
+  | JsonReporter
+  | HtmlReporter
+  | MdReporter
+  | XMLReporter
+  | CSVReporter;
+
+export type Report = {
+  suites: {
+    description: string;
+    status: string;
+    duration: number;
+    path: string;
+    tests: {
+      description: string;
+      status: string;
+      duration: number;
+      error?: {
+        message: string;
+        location: {
+          file?: string;
+          line?: string;
+          char?: string;
+        };
+      };
+    }[];
+  }[];
+  total: number;
+  passed: number;
+  failed: number;
+  duration: number;
+};
+
 export type ConfigOptions = keyof TestConfig;
 export type StetsConfig = Partial<TestConfig>;
 export type CLIOptions = Partial<TestConfig> & {

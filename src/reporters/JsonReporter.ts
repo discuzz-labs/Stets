@@ -5,6 +5,7 @@ import {
   SummaryParams,
   TestFailedParams,
   TestSuccessParams,
+  Report
 } from "../types";
 import { File } from "../utils/File"
 import { Config } from "../lib/Config";
@@ -14,7 +15,7 @@ import { SpecReporter } from "./SpecReporter";
 export class JsonReporter extends SpecReporter{
   reportType: string = "json"
   
-  results: any = {
+  results: Report = {
     suites: [],
     total: 0,
     passed: 0,

@@ -5,9 +5,12 @@ import { SpecReporter } from "../reporters/SpecReporter";
 import { Config } from "./Config";
 import { JsonReporter } from "../reporters/JsonReporter";
 import { HtmlReporter } from "../reporters/HtmlReporter";
+import { MdReporter } from "../reporters/MdReporter";
+import { CSVReporter } from "../reporters/CSVReporter";
+import { XMLReporter } from "../reporters/XMLReporter";
 
 export class SuiteReporter {
-  private reporters: Reporters[] = []
+  private reporters: Reporters[] = [];
 
   constructor() {
     const config = Config.getInstance();
@@ -18,14 +21,14 @@ export class SuiteReporter {
       // Handle the case when reporters is a string (single reporter)
       if (typeof reporters === "string") {
         this.reporters.push(this.createReporter(reporters));
-      } else if(Array.isArray(reporters)) {
+      } else if (Array.isArray(reporters)) {
         reporters.forEach((reporter) => {
           this.reporters.push(this.createReporter(reporter));
         });
       }
     } else {
-      Log.info("Using default reporter: spec")
-      this.reporters.push(this.createReporter("spec"))
+      Log.info("Using default reporter: spec");
+      this.reporters.push(this.createReporter("spec"));
     }
   }
 
@@ -40,10 +43,18 @@ export class SuiteReporter {
         return new SpecReporter();
       case "json":
         return new JsonReporter();
-      case "html": 
-         return new HtmlReporter()
+      case "html":
+        return new HtmlReporter();
+      case "md":
+        return new MdReporter();
+      case "csv":
+        return new CSVReporter();
+      case "xml":
+        return new XMLReporter()
       default:
-        console.error(`Unknown reporter: ${reporterName}. Expected: spec, html, json`);
+        console.error(
+          `Unknown reporter: ${reporterName}. Expected: spec, html, json, xml, csv or md`,
+        );
         process.exit(1);
     }
   }
