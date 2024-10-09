@@ -4,14 +4,14 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { SuiteReporter } from "../lib/SuiteReporter";
-import { SuiteRunner } from "../lib/SuiteRunner";
+import { Reporter } from "../lib/Reporter";
+import { SuitesRunner } from "../lib/SuitesRunner";
 import { Log } from "../utils/Log";
 
 const defaultCmd = async () => {
   Log.info("Running default command")
-  const runner = new SuiteRunner();
-  const reporter = new SuiteReporter();
+  const runner = new SuitesRunner();
+  const reporter = new Reporter();
   
   await runner.init()
   await runner.runSuites()

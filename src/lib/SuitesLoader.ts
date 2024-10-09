@@ -11,7 +11,7 @@ import { SuiteCase } from "../types";
 import "esbuild-register"
 import path from "path";
 
-export class SuiteLoader {
+export class SuitesLoader {
   private suiteCases: SuiteCase[] = [];
   
   /**

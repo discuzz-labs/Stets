@@ -9,7 +9,7 @@ import { MdReporter } from "../reporters/MdReporter";
 import { CSVReporter } from "../reporters/CSVReporter";
 import { XMLReporter } from "../reporters/XMLReporter";
 
-export class SuiteReporter {
+export class Reporter {
   private reporters: Reporters[] = [];
 
   constructor() {

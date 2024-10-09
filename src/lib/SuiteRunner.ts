@@ -6,47 +6,17 @@
 
 import { SuiteCase } from "../types";
 import { Log } from "../utils/Log";
-import { SpecReporter } from "../reporters/SpecReporter";
-import { SuiteLoader } from "./SuiteLoader";
 import { TestError } from "./TestError";
 
 export class SuiteRunner {
-  suiteCases: SuiteCase[] = [];
+  private suiteCase: SuiteCase;
 
-  async init() {
-    let suiteLoader = new SuiteLoader();
-    await suiteLoader.loadSuites();
-    this.suiteCases = suiteLoader.getSuites();
+  constructor(suiteCase: SuiteCase) {
+    this.suiteCase = suiteCase;
   }
 
-  async runSuites() {
-    Log.info("Loading test suites...");
-    Log.info(`${this.suiteCases.length} test suites loaded.`);
-
-    // Execute all suites
-    await Promise.all(
-      this.suiteCases.map(async (suiteCase) => {
-        Log.info(`Running suite: ${suiteCase.suite.description}`);
-        SpecReporter.onSuiteStart(suiteCase.suite.description);
-
-        const suiteStartTime = Date.now(); // Start tracking suite duration
-        await this.runSuite(suiteCase);
-        const suiteEndTime = Date.now(); // End tracking suite duration
-
-        // Calculate and set the duration for the whole suite
-        suiteCase.duration = suiteEndTime - suiteStartTime;
-      }),
-    );
-
-    
-  }
-
-  /**
-   * Runs a single suite, including handling hooks and errors.
-   * @param suite The test suite to run.
-   */
-  private async runSuite(suiteCase: SuiteCase): Promise<void> {
-    let suite = suiteCase.suite;
+  async runSuite(): Promise<void> {
+    let suite = this.suiteCase.suite;
     let hasFailure = false; // Track if any test fails
 
     try {
@@ -55,23 +25,14 @@ export class SuiteRunner {
 
       await Promise.all(
         suite.tests.map(async (test, id) => {
+          const testStartTime = Date.now(); // Start tracking test duration
+
           try {
             Log.info(`Running test: ${test.description}`);
 
-            const testStartTime = Date.now(); // Start tracking test duration
             await suite.beforeEachFn();
             await test.fn();
             await suite.afterEachFn();
-            const testEndTime = Date.now(); // End tracking test duration
-
-            // Calculate and store the duration of the individual test
-            const testDuration = testEndTime - testStartTime;
-
-            suiteCase.reports.push({
-              id,
-              description: test.description,
-              duration: testDuration, // Log test duration
-            });
           } catch (error: any) {
             const testError = new TestError({
               description: test.description,
@@ -80,14 +41,33 @@ export class SuiteRunner {
             });
             Log.error(`Test failed: ${test.description}, ${error}`);
 
-            suiteCase.reports.push({
+            // Push failed test details
+            this.suiteCase.reports.push({
               id,
               description: test.description,
               error: testError,
-              duration: -1, // Duration will not be set if it fails
+              duration: -1, // Mark as -1 if failure occurs, but this will be overwritten below
             });
 
             hasFailure = true; // Flag that a failure occurred
+          } finally {
+            // Calculate the test duration regardless of success or failure
+            const testEndTime = Date.now();
+            const testDuration = testEndTime - testStartTime;
+
+            // Update the report entry with the actual duration
+            const report = this.suiteCase.reports.find(
+              (report) => report.id === id,
+            );
+            if (report) {
+              report.duration = testDuration;
+            } else {
+              this.suiteCase.reports.push({
+                id,
+                description: test.description,
+                duration: testDuration, // Set duration if it succeeds
+              });
+            }
           }
         }),
       );
@@ -96,10 +76,10 @@ export class SuiteRunner {
       await suite.afterAllFn();
 
       // Set the final suite status based on whether there were any failures
-      suiteCase.status = hasFailure ? "failed" : "success";
+      this.suiteCase.status = hasFailure ? "failed" : "success";
     } catch (error: any) {
       Log.error(`Error during suite execution: ${suite.description}, ${error}`);
-      suiteCase.status = "failed"; // If any exception occurs during the suite run
+      this.suiteCase.status = "failed"; // If any exception occurs during the suite run
     }
   }
 }
