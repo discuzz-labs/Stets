@@ -10,6 +10,8 @@ import config from "../stets.config";
 
 export class Options {
   options: Partial<CLIOptions> = {}; // Initialize as a partial type to avoid unassigned keys
+  // Map to store short options corresponding to each long option
+  private shortOptionMap: Record<string, string> = {};
   static envPrefix: string = "STETS_";
 
   // Centralized configuration for all options with details
@@ -24,12 +26,13 @@ export class Options {
     ...(Object.fromEntries(
       Object.keys(config).map((key) => [
         key as ConfigOptions,
-        { requiresValue: true },
+        { requiresValue: typeof config[key as ConfigOptions] !== "boolean" },
       ]),
     ) as Record<ConfigOptions, { requiresValue: boolean }>),
   };
 
   constructor(args: string[]) {
+    this.generateShortOptions();
     this.parseArgs(args);
     this.setToEnv();
   }
@@ -73,6 +76,28 @@ export class Options {
       }
     });
   }
+  /**
+   * Generates unique short options for all CLIOptions and ConfigOptions.
+   * The short options are based on the first letter, and disambiguated using subsequent letters.
+   */
+  private generateShortOptions(): void {
+    const optionKeys = Object.keys(Options.optionConfig);
+    const takenShortOptions = new Set<string>();
+
+    optionKeys.forEach((option) => {
+      let shortOption = option[0]; // Start with the first letter
+      let index = 1;
+
+      // If the first letter is taken, continue to use the next available unique letter
+      while (takenShortOptions.has(shortOption)) {
+        shortOption = option.slice(0, index + 1); // Incrementally take more letters
+        index++;
+      }
+
+      this.shortOptionMap[shortOption] = option; // Map the short option to the long option
+      takenShortOptions.add(shortOption); // Mark this short option as taken
+    });
+  }
 
   private normalizeFlag(flag: string): keyof CLIOptions | ConfigOptions | null {
     const normalizedFlag = flag.startsWith("--")
@@ -81,11 +106,15 @@ export class Options {
         ? flag.slice(1)
         : flag;
 
-    return normalizedFlag as keyof CLIOptions | ConfigOptions;
-  }
+    // Check if the normalized flag is a short option first
+    if (this.shortOptionMap[normalizedFlag]) {
+      return this.shortOptionMap[normalizedFlag] as
+        | keyof CLIOptions
+        | ConfigOptions;
+    }
 
-  getOptions() {
-    return this.options;
+    // Otherwise, treat it as a long option
+    return normalizedFlag as keyof CLIOptions | ConfigOptions;
   }
 
   // Static method to check if an option exists in process.env
