@@ -112,8 +112,8 @@ export class SuitesLoader {
           });
           Log.info(`Loaded suite: ${file}`);
         } else {
-          Log.error(`Test file ${file} does not export a valid Suite.`);
-          
+          console.error(`Test file ${file} does not export a valid Suite.`);
+          process.exit(1)
         }
       } catch (error: any) {
         Log.error(`Failed to load suite from ${file}: ${error.message}`);

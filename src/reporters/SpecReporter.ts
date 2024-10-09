@@ -12,7 +12,6 @@ import {
   TestFailedParams,
   TestSuccessParams,
 } from "../types";
-import { config } from "process";
 import { Config } from "../lib/Config";
 
 export class SpecReporter {

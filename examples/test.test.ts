@@ -6,7 +6,7 @@ suite.it("schould pass", () => {
   
 })
 
-suite.it("should fail" , () => {
+suite.afterAll(() => {
   throw new Error("failed")
 })
 
