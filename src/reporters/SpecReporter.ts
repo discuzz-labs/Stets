@@ -12,8 +12,16 @@ import {
   TestFailedParams,
   TestSuccessParams,
 } from "../types";
+import { config } from "process";
+import { Config } from "../lib/Config";
 
 export class SpecReporter {
+  private silent: boolean = false;
+  
+  constructor() {
+    const config = Config.getInstance()
+    if(config.getConfig("silent")) this.silent = true
+  }
   /**
    * Formats the arguments into a single string, joining them with a newline.
    * @param {...string[]} args - The strings to format.
@@ -48,6 +56,7 @@ export class SpecReporter {
    * @param {SuiteSuccessParams} params - The parameters containing information about the successful suite.
    */
   onSuiteSuccess(params: SuiteSuccessParams): void {
+    if(this.silent) return
     console.log(
       this.format(
         `${chalk.green("✓")} Suite: ${params.description} at ${chalk.gray(params.path)} - ${chalk.green("PASSED")} in ${params.duration}ms`
@@ -75,6 +84,7 @@ export class SpecReporter {
    * @param {TestSuccessParams} params - The parameters containing information about the successful test.
    */
   onTestSuccess(params: TestSuccessParams): void {
+    if(this.silent) return
     const { description, duration } = params;
     console.log(
       this.format(`${chalk.green("•")} Test: ${chalk.gray(description)} passed in ${duration}ms`)
