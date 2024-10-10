@@ -4,97 +4,39 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Config } from "./Config";
-import { glob } from "glob";
+import { SuitePathLoader } from "./SuitePathLoader";
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
-import {register} from "esbuild-register/dist/node"
-import path from "path";
+import { register } from "esbuild-register/dist/node";
 import { TsConfig } from "../utils/TsConfig";
+import chalk from "chalk";
+import path from "path";
 
 export class SuitesLoader {
   private suiteCases: SuiteCase[] = [];
-  
+  private errors: string[] = [];
+
   /**
    * Loads all test files by dynamically importing them and initializes Suite instances.
    */
   async loadSuites(): Promise<void> {
-    const config = Config.getInstance();
+    const suitePathLoader = new SuitePathLoader();
 
-    const testDirectory = this.getTestDirectory(config);
-    const filePatterns = this.getFilePatterns(config, testDirectory);
-    const excludePatterns = config.getConfig("exclude");
-
-    Log.info(`Tests directory: ${testDirectory}`);
-    Log.info(`Using file patterns: ${filePatterns}`);
-    Log.info(`Excluding patterns: ${excludePatterns}`);
-
-    const testFiles = await this.findTestFiles(filePatterns, excludePatterns);
+    const testFiles = await suitePathLoader.getTestFiles();
 
     if (testFiles.length === 0) {
-      this.noSuitesFound(filePatterns, testDirectory);
+      suitePathLoader.noSuitesFound();
       return;
     }
 
     Log.info(`Found test files: ${testFiles}`);
 
     register({
-      tsconfigRaw: TsConfig.get()
-    })
-    
-    await this.importAndInitializeSuites(testFiles);
-  }
-
-  /**
-   * Get the test directory from configuration.
-   */
-  private getTestDirectory(config: Config): string {
-    const testDirectory = config.getConfig("testDirectory");
-    return testDirectory ? `${testDirectory}/` : "";
-  }
-
-  /**
-   * Get file patterns from configuration and prepend the test directory.
-   */
-  private getFilePatterns(config: Config, testDirectory: string): string[] {
-    const filePatternConfig = config.getConfig("filePattern");
-
-    return Array.isArray(filePatternConfig)
-      ? filePatternConfig.map((pattern: string) =>
-          this.prependDirectory(pattern, testDirectory),
-        )
-      : [this.prependDirectory(filePatternConfig, testDirectory)];
-  }
-
-  /**
-   * Prepends the directory to the file pattern, ensuring
-   * **/
-
-  private prependDirectory(pattern: string, testDirectory: string): string {
-    return pattern.startsWith("**/")
-      ? `${testDirectory}${pattern}`
-      : `${testDirectory}**/${pattern}`;
-  }
-
-  /**
-   * Find test files matching the provided patterns and apply exclusions.
-   */
-  private async findTestFiles(
-    filePatterns: string[],
-    excludePatterns: string | string[] | undefined,
-  ): Promise<string[]> {
-    const excludeArray = Array.isArray(excludePatterns)
-      ? excludePatterns
-      : excludePatterns
-        ? [excludePatterns]
-        : ["**/node_modules/**"]; // Default exclusion
-
-    const testFiles = glob.sync(filePatterns, {
-      ignore: excludeArray,
-      nodir: true,
+      tsconfigRaw: TsConfig.get(),
     });
 
-    return testFiles.flat();
+    await this.importAndInitializeSuites(testFiles);
+    this.displayErrors();
   }
 
   /**
@@ -113,16 +55,30 @@ export class SuitesLoader {
             path: file,
             suite,
             duration: -1,
-            reports: []
+            reports: [],
           });
           Log.info(`Loaded suite: ${file}`);
         } else {
-          console.error(`Test file ${file} does not export a valid Suite.`);
-          process.exit(1)
+          this.errors.push(
+            `Test file ${file} does not export a valid Suite.`
+          );
         }
       } catch (error: any) {
-        Log.error(`Failed to load suite from ${file}: ${error.message}`);
+        this.errors.push(
+          `Failed to load suite from ${file}: ${error.message}`
+        );
       }
+    }
+  }
+
+  /**
+   * Display all collected errors at once.
+   */
+  private displayErrors(): void {
+    if (this.errors.length > 0) {
+      console.log(chalk.bgRed("Errors occurred during suite loading:"));
+      this.errors.forEach((error) => console.log(chalk.red("#"), error, "\n"));
+      process.exit(1);
     }
   }
 
@@ -131,20 +87,5 @@ export class SuitesLoader {
    */
   getSuites(): SuiteCase[] {
     return this.suiteCases;
-  }
-
-  /**
-   * Handle the case where no suites are found.
-   */
-  private noSuitesFound(
-    filePattern: string[] | string,
-    testDirectory: string,
-  ): void {
-    const patterns = Array.isArray(filePattern) ? filePattern : [filePattern];
-    Log.error("No test files were found.");
-    console.log(
-      `No suites were found applying the following pattern(s): ${patterns.join(", ")} in the directory: ${testDirectory}`,
-    );
-    process.exit(0);
   }
 }
