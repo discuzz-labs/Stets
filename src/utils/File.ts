@@ -38,4 +38,20 @@ export class File {
       Log.error(`Failed to write report to file: ${this.filePath}. Error: ${error}`);
     }
   }
+
+  public readFile(): string | null {
+    try {
+      if (this.isExisting()) {
+        const data = fs.readFileSync(this.filePath, 'utf8');
+        Log.info(`Successfully read file: ${this.filePath}`);
+        return data;
+      } else {
+        Log.warning(`File does not exist: ${this.filePath}`);
+        return null;
+      }
+    } catch (error) {
+      Log.error(`Failed to read file: ${this.filePath}. Error: ${error}`);
+      return null;
+    }
+  }
 }

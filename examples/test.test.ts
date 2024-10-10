@@ -1,13 +1,9 @@
-import { Suite } from "../src/index"
+require("jsdom-global")()
+import { render } from "@testing-library/react"
+import MyApp from "./c"
+import { Suite } from "../dist/index"
 
-const suite = new Suite("Test example")
+var c = render(MyApp())
 
-suite.it("schould pass", () => {
-  
-})
 
-suite.afterAll(() => {
-  throw new Error("failed")
-})
-
-export default suite; // super important; Will impelment later a way to see if it is provided or not;
+export default new Suite("Test example 1")

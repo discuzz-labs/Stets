@@ -1,3 +1,4 @@
+import path from "path"
 import { TestConfig } from "./types"
 
 const config : TestConfig = {
@@ -13,6 +14,7 @@ const config : TestConfig = {
   outputDir: "", // Directory for storing test result files
   silent: false, // Suppress output unless there's an error
 
+  tsconfig: path.join(__dirname, "..", "tsconfig.json")
 }
 
 export default config

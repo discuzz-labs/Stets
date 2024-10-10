@@ -8,8 +8,9 @@ import { Config } from "./Config";
 import { glob } from "glob";
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
-import "esbuild-register"
+import {register} from "esbuild-register/dist/node"
 import path from "path";
+import { TsConfig } from "../utils/TsConfig";
 
 export class SuitesLoader {
   private suiteCases: SuiteCase[] = [];
@@ -37,6 +38,10 @@ export class SuitesLoader {
 
     Log.info(`Found test files: ${testFiles}`);
 
+    register({
+      tsconfigRaw: TsConfig.get()
+    })
+    
     await this.importAndInitializeSuites(testFiles);
   }
 

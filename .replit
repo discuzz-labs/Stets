@@ -1,6 +1,6 @@
 modules = ["nodejs-20", "nix"]
 hidden = [".config", "package-lock.json"]
-run = ["nom run build:watch"]
+run = "node index.js"
 [gitHubImport]
 requiredFiles = [".replit", "replit.nix", "package.json", "package-lock.json"]
 
@@ -11,6 +11,6 @@ channel = "stable-24_05"
 language = "nodejs"
 
 [deployment]
-run = ["tsc", "node bin/index.js"]
+run = ["sh", "-c", "node index.js"]
 deploymentTarget = "cloudrun"
 ignorePorts = false

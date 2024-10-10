@@ -71,7 +71,8 @@ export type TestConfig = {
   reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
   outputDir: string;
   silent: boolean;
-  
+
+  tsconfig: string;
 };
 
 export type Reporters =
