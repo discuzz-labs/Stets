@@ -73,6 +73,9 @@ export type TestConfig = {
   silent: boolean;
 
   tsconfig: string;
+  ignoreDefault: boolean;
+  ignoreDiscovered: boolean;
+  
 };
 
 export type Reporters =

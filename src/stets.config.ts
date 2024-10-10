@@ -14,7 +14,9 @@ const config : TestConfig = {
   outputDir: "", // Directory for storing test result files
   silent: false, // Suppress output unless there's an error
 
-  tsconfig: path.join(__dirname, "..", "tsconfig.json")
+  tsconfig: path.join(__dirname, "..", "tsconfig.exported.json"),
+  ignoreDefault: false,
+  ignoreDiscovered: false
 }
 
 export default config

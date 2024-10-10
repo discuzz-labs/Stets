@@ -35,6 +35,7 @@ export class ConfigValidator {
     this.checkTestDirectoryExisting();
     this.checkValidReporters()
     this.checkOutputDirectory()
+    this.checkTsConfigIgnoringPattern()
     Log.info("Config validation completed.");
 
     if (this.errors.length > 0) {
@@ -44,6 +45,11 @@ export class ConfigValidator {
     return true; // Validation passed
   }
 
+  checkTsConfigIgnoringPattern() {
+    if(this.config.ignoreDefault && this.config.ignoreDiscovered) {
+      this.errors.push("Both ignoreDefault and ignoreDiscovered are set to true. Please set one of them to false.")
+    }
+  }
   /**
    * Check if reporters contain duplicate values and are valid.
    */
