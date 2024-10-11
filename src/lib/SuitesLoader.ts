@@ -11,6 +11,7 @@ import { register } from "esbuild-register/dist/node";
 import { TsConfig } from "../utils/TsConfig";
 import chalk from "chalk";
 import path from "path";
+import { Suite } from "../framework/Suite";
 
 export class SuitesLoader {
   private suiteCases: SuiteCase[] = [];
@@ -49,7 +50,7 @@ export class SuitesLoader {
 
         // Check if the default export exists and is an instance of Suite
         const suite = suiteModule.default || suiteModule; // Handle CommonJS default export scenario
-        if (suite && suite.constructor.name === "Suite") {
+        if (suite instanceof Suite) {
           this.suiteCases.push({
             status: "pending",
             path: file,

@@ -6,10 +6,29 @@
 
 import { TestFunction, Test } from "../types";
 
-/**
- * Represents a test suite that allows defining and running tests.
- */
-export class Suite {
+export interface Suite {
+  description: string;
+  tests: Test[];
+
+  beforeAllFn: TestFunction;
+  afterAllFn: TestFunction;
+  beforeEachFn: TestFunction;
+  afterEachFn: TestFunction;
+
+  beforeAll(fn: TestFunction): this;
+
+  afterAll(fn: TestFunction): this;
+
+  beforeEach(fn: TestFunction): this;
+
+
+  afterEach(fn: TestFunction): this;
+
+
+  it(description: string, fn: TestFunction): this;
+}
+
+export class Suite implements Suite {
   public description: string = ""
   public tests: Test[] = [];
   
