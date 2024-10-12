@@ -28,7 +28,6 @@ export class SuitesRunner {
       this.suiteCases.map(async (suiteCase) => {
         Log.info(`Running suite: ${suiteCase.suite.description}`);
         SpecReporter.onSuiteStart(suiteCase.suite.description);
-
         const suiteStartTime = Date.now(); // Start tracking suite duration
         const executor = new SuiteRunner(suiteCase);
         await executor.runSuite(); // Use the new SuiteExecutor class

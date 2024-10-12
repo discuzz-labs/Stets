@@ -16,7 +16,9 @@ const config : TestConfig = {
 
   tsconfig: path.join(__dirname, "..", "tsconfig.exported.json"),
   ignoreDefault: false,
-  ignoreDiscovered: false
+  ignoreDiscovered: false,
+
+  
 }
 
 export default config

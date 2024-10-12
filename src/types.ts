@@ -12,11 +12,26 @@ import { CSVReporter } from "./reporters/CSVReporter";
  * See the LICENSE file in the project root for license information.
  */
 
-export type TestFunction = () => Promise<void> | void;
-export type Test = {
+export interface TestMetadata {
+  index: number;
+  tag?: string;  // Unique tag to identify the test
+  preRun?: TestFunction;
+  postRun?: TestFunction;
+  dependencies?: string[];  // Dependency tests identified by tag
+  ignore?: boolean;  // Flag to ignore the test
+  dependsOn?: string;  // Optional: tag of the test this test depends on
+}
+
+export interface Test {
   description: string;
   fn: TestFunction;
-};
+  ignore?: boolean;  // Field to ignore the test if set to true
+  metadata?: TestMetadata;  // Metadata related to the test
+}
+
+export type LifeCycleFunction = (suite: Suite, metadata: TestMetadata) => Promise<void>;
+export type AfterBeforeLifeCycleFunction = (suite: Suite) => Promise<void>; 
+export type TestFunction = (suite: Suite, metadata: Partial<TestMetadata>) => Promise<void>;
 
 export type TestFailedParams = {
   description: string;
@@ -76,7 +91,7 @@ export type TestConfig = {
   tsconfig: string;
   ignoreDefault: boolean;
   ignoreDiscovered: boolean;
-  
+
 };
 
 export type Reporters =
