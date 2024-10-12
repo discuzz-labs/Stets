@@ -34,7 +34,7 @@ export class SuitesLoader {
 
     register({
       tsconfigRaw: TsConfig.get(),
-    });
+    })
 
     await this.importAndInitializeSuites(testFiles);
     this.displayErrors();

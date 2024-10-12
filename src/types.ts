@@ -17,8 +17,8 @@ export interface TestMetadata {
   name?: string;
   ignore?: boolean;
   dependsOn?: string;
-  preRun?: (suite: Suite, metadata: TestMetadata) => Promise<void>;
-  postRun?: (suite: Suite, metadata: TestMetadata) => Promise<void>;
+  preRun?: (suite: Suite, metadata: TestMetadata, update: (updates: Partial<TestMetadata>) => void) => Promise<void>;
+  postRun?: (suite: Suite, metadata: TestMetadata, update: (updates: Partial<TestMetadata>) => void) => Promise<void>;
   retry? : number;
   retryDelay?: number;
   timeout?: number;

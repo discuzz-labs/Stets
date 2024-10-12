@@ -29,8 +29,8 @@ export class SuitesRunner {
         Log.info(`Running suite: ${suiteCase.suite.description}`);
         SpecReporter.onSuiteStart(suiteCase.suite.description);
         const suiteStartTime = Date.now(); // Start tracking suite duration
-        const executor = new SuiteRunner(suiteCase);
-        await executor.runSuite(); // Use the new SuiteExecutor class
+        const executor = new SuiteRunner();
+        await executor.runSuite(suiteCase); // Use the new SuiteExecutor class
         const suiteEndTime = Date.now(); // End tracking suite duration
         // Calculate and set the duration for the whole suite
         suiteCase.duration = suiteEndTime - suiteStartTime;

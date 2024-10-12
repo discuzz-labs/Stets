@@ -18,7 +18,7 @@ const defaultCmd = async () => {
   
   await runner.init()
   await runner.runSuites()
-  if(config.getConfig("clearConsole")) console.clear()
+  if(config.getConfig("clearConsole").toString() === "true") console.clear()
   reporter.reportSuites(runner.suiteCases)
   
   Log.info("Default Command finished")
