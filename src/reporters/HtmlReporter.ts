@@ -26,8 +26,9 @@ export class HtmlReporter extends JsonReporter {
           h1 { color: #333; }
           .summary { margin-bottom: 20px; }
           .suite { margin-bottom: 40px; }
-          .passed { color: green; }
+          .success { color: green; }
           .failed { color: red; }
+          .ignored { color: yellow; }
           table { width: 100%; border-collapse: collapse; }
           th, td { padding: 8px 12px; border: 1px solid #ddd; }
           .error-details { font-size: 0.9em; color: #a00; }
@@ -65,7 +66,7 @@ export class HtmlReporter extends JsonReporter {
 
       // Iterate over each test in the suite
       suite.tests.forEach((test: any) => {
-        const testStatusClass = test.status === "success" ? "passed" : "failed";
+        const testStatusClass = test.status
 
         // Handle error structure when the test fails
         let errorDetails = "N/A";

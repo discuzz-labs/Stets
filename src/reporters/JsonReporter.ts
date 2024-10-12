@@ -11,7 +11,8 @@ import {
   SummaryParams,
   TestFailedParams,
   TestSuccessParams,
-  Report
+  Report,
+  TestIgnoredParams
 } from "../types";
 import { File } from "../utils/File"
 import { Config } from "../lib/Config";
@@ -94,6 +95,21 @@ export class JsonReporter extends SpecReporter{
       description,
       status: "success",
       duration,
+    };
+
+    this.results.suites[this.results.suites.length - 1].tests.push(testResult);
+  }
+
+  /**
+   * Reports an ingored test.
+   * @param {TestIgnoredParams} params - The parameters containing information about the ignored test.
+   */
+  onTestIgnored(params: TestIgnoredParams): void {
+    const { description } = params;
+    const testResult = {
+      description,
+      status: "ignored",
+      duration: 0
     };
 
     this.results.suites[this.results.suites.length - 1].tests.push(testResult);
