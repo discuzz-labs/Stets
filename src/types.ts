@@ -14,12 +14,11 @@ import { CSVReporter } from "./reporters/CSVReporter";
 
 export interface TestMetadata {
   index: number;
-  tag?: string;  // Unique tag to identify the test
-  preRun?: TestFunction;
-  postRun?: TestFunction;
-  dependencies?: string[];  // Dependency tests identified by tag
-  ignore?: boolean;  // Flag to ignore the test
-  dependsOn?: string;  // Optional: tag of the test this test depends on
+  tag?: string;
+  ignore?: boolean;
+  dependsOn?: string;
+  preRun?: (suite: Suite, metadata: TestMetadata) => Promise<void>;
+  postRun?: (suite: Suite, metadata: TestMetadata) => Promise<void>;
 }
 
 export interface Test {
@@ -31,7 +30,7 @@ export interface Test {
 
 export type LifeCycleFunction = (suite: Suite, metadata: TestMetadata) => Promise<void>;
 export type AfterBeforeLifeCycleFunction = (suite: Suite) => Promise<void>; 
-export type TestFunction = (suite: Suite, metadata: Partial<TestMetadata>) => Promise<void>;
+export type TestFunction = (suite: Suite, metadata: Partial<TestMetadata>, update: (updates: Partial<TestMetadata>) => void) => Promise<void>;
 
 export type TestFailedParams = {
   description: string;
@@ -47,6 +46,10 @@ export type TestSuccessParams = {
   duration: number;
 };
 
+export type TestIgnoredParams = {
+  description: string;
+};
+
 export type SuiteFailedParams = {
   path: string;
   description: string;
@@ -59,6 +62,11 @@ export type SuiteSuccessParams = {
   duration: number;
 };
 
+export type SuiteIgnoredParams = {
+  path: string;
+  description: string;
+};
+
 export type SummaryParams = {
   total: number;
   failed: number;
@@ -66,13 +74,23 @@ export type SummaryParams = {
 };
 
 export type SuiteCase = {
-  status: "pending" | "success" | "failed";
-  reports: {
-    id: number;
-    description: string;
-    duration: number;
-    error?: TestError;
-  }[];
+  status: "pending" | "success" | "failed" | "ignored"
+  reports: Array<
+    | {
+        status: "success" | "ignored";
+        id: number;
+        description: string;
+        duration: number;
+        error?: undefined; // No error when success or ignored
+      }
+    | {
+        status: "failed";
+        id: number;
+        description: string;
+        duration: number;
+        error: TestError; // Error is required when status is failed
+      }
+  >;
   path: string;
   suite: Suite;
   duration: number;

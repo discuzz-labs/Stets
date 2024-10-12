@@ -71,6 +71,7 @@ export class SuiteRunner {
         message: error.message,
         stack: error.stack,
       }),
+      status: "failed", // Mark the status as failed
       duration: 0,
     });
   }
@@ -85,6 +86,15 @@ export class SuiteRunner {
       // Skip ignored tests
       if (metadata.ignore) {
         Log.info(`Test ignored: ${test.description}`);
+
+        // Add a report with the status "ignored"
+        this.suiteCase.reports.push({
+          id,
+          description: test.description,
+          status: "ignored",
+          duration: 0, // Ignored tests don't have a duration
+        });
+
         continue;
       }
 
@@ -101,7 +111,7 @@ export class SuiteRunner {
         if (this.failedTestIndexes.has(dependentTestIndex)) {
           const message = `Skipping test "${test.description}" because dependency "${metadata.dependsOn}" (Test #${dependentTestIndex}) failed.`;
           Log.warning(message);
-          this.handleTestFailure(test, id, new Error(message)); // Fail the dependent test
+          this.handleTestFailure(test, metadata, new Error(message)); // Fail the dependent test
           continue;
         }
 
@@ -130,31 +140,57 @@ export class SuiteRunner {
     try {
       Log.info(`Running test: ${test.description}`);
 
-      // Update current test index
-      suite.currentTestIndex = metadata.index;
+      // Fetch the latest metadata before executing the test
+      let updatedMetadata = suite.testMetadata.get(metadata.index) || metadata;
 
-      // Run beforeEach hook
-      Log.info(`Executing 'beforeEach' for test: ${test.description}`);
-      await suite.beforeEachFn(suite, metadata);
+      suite.currentTestIndex = updatedMetadata.index;
 
-      // Execute the actual test
-      Log.info(`Executing test: ${test.description}`);
-      await test.fn(this.suiteCase.suite, metadata);
+      // Run the beforeEach hook with the updated metadata
+      await suite.beforeEachFn(suite, updatedMetadata);
 
-      // Run afterEach hook
-      Log.info(`Executing 'afterEach' for test: ${test.description}`);
-      await suite.afterEachFn(suite, metadata);
+      // Run the preRun function if it exists in the metadata
+      if (updatedMetadata.preRun) {
+        await updatedMetadata.preRun(suite, updatedMetadata);
+      }
+
+      // Run the actual test function
+      await test.fn(suite, updatedMetadata, (updates: Partial<TestMetadata>) => {
+        // Update the metadata dynamically during the test execution
+        Object.assign(updatedMetadata, updates);
+        suite.testMetadata.set(metadata.index, updatedMetadata);
+      });
+
+      // Run the postRun function if it exists in the metadata
+      if (updatedMetadata.postRun) {
+        await updatedMetadata.postRun(suite, updatedMetadata);
+      }
+
+      // Run the afterEach hook with the updated metadata
+      await suite.afterEachFn(suite, updatedMetadata);
+      
+      // Report success
+      this.suiteCase.reports.push({
+        id: updatedMetadata.index,
+        description: test.description,
+        status: metadata.ignore ? "ignored" : "success",
+        duration: Date.now() - testStartTime,
+      });
+
     } catch (error: any) {
-      this.handleTestFailure(test, metadata.index, error);
+      // Handle test failure
+      this.handleTestFailure(test, metadata, error);
     } finally {
+      // Ensure test duration is set regardless of success or failure
       this.setTestDuration(metadata.index, test.description, testStartTime);
     }
   }
 
+
+
   /**
    * Handle the failure of a test case.
    */
-  private handleTestFailure(test: Test, id: number, error: any): void {
+  private handleTestFailure(test: Test, metadata: TestMetadata, error: any): void {
     const testError = new TestError({
       description: test.description,
       message: error.message,
@@ -164,14 +200,15 @@ export class SuiteRunner {
     Log.error(`Test failed: ${test.description}, ${error}`);
 
     this.suiteCase.reports.push({
-      id,
+      id: metadata.index,
+      status: "failed",
       description: test.description,
       error: testError,
       duration: -1, // Mark as -1 on failure, but it will be overwritten by the final duration
     });
 
     // Mark this test as failed by index
-    this.failedTestIndexes.add(id);
+    this.failedTestIndexes.add(metadata.index);
   }
 
   /**
@@ -188,13 +225,7 @@ export class SuiteRunner {
     const report = this.suiteCase.reports.find((report) => report.id === id);
     if (report) {
       report.duration = testDuration;
-    } else {
-      this.suiteCase.reports.push({
-        id,
-        description,
-        duration: testDuration,
-      });
-    }
+    } 
 
     Log.info(`Test completed: ${description}, Duration: ${testDuration}ms`);
   }

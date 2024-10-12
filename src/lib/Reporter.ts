@@ -118,7 +118,7 @@ export class Reporter {
   private reportSuiteCaseTests(suiteCase: SuiteCase) {
     this.reporters.forEach((reporter) => {
       suiteCase.reports.forEach((report) => {
-        if (report.error) {
+        if (report.status === "failed") {
           let stackTrace = report.error.stackTrace();
           reporter.onTestFailed({
             description: report.description,
@@ -128,6 +128,10 @@ export class Reporter {
             char: stackTrace.char,
             file: stackTrace.file,
           });
+        } else if(report.status === "ignored"){
+          reporter.onTestIgnored({
+            description: report.description
+          })
         } else {
           reporter.onTestSuccess({
             description: report.description,

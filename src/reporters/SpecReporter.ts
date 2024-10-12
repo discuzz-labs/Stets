@@ -11,6 +11,8 @@ import {
   SummaryParams,
   TestFailedParams,
   TestSuccessParams,
+  TestIgnoredParams,
+  SuiteIgnoredParams
 } from "../types";
 import { Config } from "../lib/Config";
 
@@ -63,6 +65,7 @@ export class SpecReporter {
     );
   }
 
+
   /**
    * Reports a failed test.
    * @param {TestFailedParams} params - The parameters containing information about the failed test.
@@ -77,7 +80,7 @@ export class SpecReporter {
       )
     );
   }
-
+  
   /**
    * Reports a successful test.
    * @param {TestSuccessParams} params - The parameters containing information about the successful test.
@@ -90,6 +93,18 @@ export class SpecReporter {
     );
   }
 
+  /**
+   * Reports an ingored test.
+   * @param {TestIgnoredParams} params - The parameters containing information about the ignored test.
+   */
+  onTestIgnored(params: TestIgnoredParams): void {
+    if(this.silent) return
+    const { description } = params;
+    console.log(
+      this.format(`${chalk.yellow("•")} Test: ${chalk.gray(description)} ignored`)
+    );
+  }
+  
   /**
    * Reports a summary of the test results.
    * @param {SummaryParams} params - The parameters containing the total and failed test counts.
