@@ -14,11 +14,14 @@ import { CSVReporter } from "./reporters/CSVReporter";
 
 export interface TestMetadata {
   index: number;
-  tag?: string;
+  name?: string;
   ignore?: boolean;
   dependsOn?: string;
   preRun?: (suite: Suite, metadata: TestMetadata) => Promise<void>;
   postRun?: (suite: Suite, metadata: TestMetadata) => Promise<void>;
+  retry? : number;
+  retryDelay?: number;
+  timeout?: number;
 }
 
 export interface Test {
@@ -109,7 +112,6 @@ export type TestConfig = {
   tsconfig: string;
   ignoreDefault: boolean;
   ignoreDiscovered: boolean;
-
 };
 
 export type Reporters =

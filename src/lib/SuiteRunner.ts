@@ -36,7 +36,8 @@ export class SuiteRunner {
     await this.runAfterAll(suite);
 
     // Set the final suite status
-    this.suiteCase.status = this.failedTestIndexes.size > 0 ? "failed" : "success";
+    this.suiteCase.status =
+      this.failedTestIndexes.size > 0 ? "failed" : "success";
   }
 
   private async runBeforeAll(suite: Suite): Promise<void> {
@@ -81,10 +82,12 @@ export class SuiteRunner {
 
     for (let id = 0; id < suite.tests.length; id++) {
       const test = suite.tests[id];
-      const metadata = suite.testMetadata.get(id) || { index: id };
+      const metadata =
+        suite.testMetadata.get(id) ||
+        ({ index: id, retry: 1, timeout: 5000 } as TestMetadata);
 
       // Skip ignored tests
-      if (metadata.ignore) {
+      if (metadata?.ignore) {
         Log.info(`Test ignored: ${test.description}`);
 
         // Add a report with the status "ignored"
@@ -98,12 +101,17 @@ export class SuiteRunner {
         continue;
       }
 
-      // Resolve test dependencies by tag
-      if (metadata.dependsOn) {
-        const dependentTestIndex = this.getTestIndexByTag(suite, metadata.dependsOn);
+      // Resolve test dependencies by name
+      if (metadata?.dependsOn) {
+        const dependentTestIndex = this.getTestIndexByname(
+          suite,
+          metadata.dependsOn,
+        );
 
         if (dependentTestIndex === -1) {
-          Log.warning(`Test "${test.description}" skipped because dependency tag "${metadata.dependsOn}" was not found.`);
+          Log.warning(
+            `Test "${test.description}" skipped because dependency name "${metadata.dependsOn}" was not found.`,
+          );
           continue;
         }
 
@@ -117,7 +125,9 @@ export class SuiteRunner {
 
         // Check if the dependent test has not yet been executed
         if (!executedTests.has(dependentTestIndex)) {
-          Log.warning(`Test "${test.description}" skipped because dependency "${metadata.dependsOn}" (Test #${dependentTestIndex}) has not been executed.`);
+          Log.warning(
+            `Test "${test.description}" skipped because dependency "${metadata.dependsOn}" (Test #${dependentTestIndex}) has not been executed.`,
+          );
           continue;
         }
       }
@@ -127,70 +137,121 @@ export class SuiteRunner {
     }
   }
 
-  /**
-   * Run an individual test case.
-   */
   private async runTest(
     suite: Suite,
     test: Test,
     metadata: TestMetadata,
   ): Promise<void> {
     const testStartTime = Date.now();
+    const maxRetries = metadata.retry || 0; // Set max retries from metadata or default to 0 (no retries)
+    let attempt = 0;
+    let lastError: any;
 
-    try {
-      Log.info(`Running test: ${test.description}`);
+    while (attempt <= maxRetries) {
+      try {
+        attempt++;
+        Log.info(`Running test: ${test.description} (Attempt ${attempt})`);
 
-      // Fetch the latest metadata before executing the test
-      let updatedMetadata = suite.testMetadata.get(metadata.index) || metadata;
+        // Fetch the latest metadata before executing the test
+        let updatedMetadata = suite.testMetadata.get(metadata.index) || metadata;
 
-      suite.currentTestIndex = updatedMetadata.index;
+        suite.currentTestIndex = updatedMetadata.index;
 
-      // Run the beforeEach hook with the updated metadata
-      await suite.beforeEachFn(suite, updatedMetadata);
+        // Run the beforeEach hook with the updated metadata
+        await suite.beforeEachFn(suite, updatedMetadata);
 
-      // Run the preRun function if it exists in the metadata
-      if (updatedMetadata.preRun) {
-        await updatedMetadata.preRun(suite, updatedMetadata);
+        // Run the preRun function if it exists in the metadata
+        if (updatedMetadata.preRun) {
+          await updatedMetadata.preRun(suite, updatedMetadata);
+        }
+
+        // Run the actual test function with timeout
+        await this.runWithTimeout(
+          test.fn(suite, updatedMetadata, (updates: Partial<TestMetadata>) => {
+            // Update the metadata dynamically during the test execution
+            Object.assign(updatedMetadata, updates);
+            suite.testMetadata.set(metadata.index, updatedMetadata);
+          }),
+          updatedMetadata.timeout || 10000,
+        );
+
+        // Run the postRun function if it exists in the metadata
+        if (updatedMetadata.postRun) {
+          await updatedMetadata.postRun(suite, updatedMetadata);
+        }
+
+        // Run the afterEach hook with the updated metadata
+        await suite.afterEachFn(suite, updatedMetadata);
+
+        // Report success
+        this.suiteCase.reports.push({
+          id: updatedMetadata.index,
+          description: test.description,
+          status: metadata.ignore ? "ignored" : "success",
+          duration: Date.now() - testStartTime,
+        });
+
+        // If test passes, break the retry loop
+        break;
+      } catch (error: any) {
+        lastError = error;
+        if (attempt > maxRetries) {
+          // If retries are exhausted, handle failure
+          this.handleTestFailure(test, metadata, error);
+          break;
+        } else {
+          // If retry is needed, log it and wait before the next attempt
+          Log.warning(`Test failed on attempt ${attempt}. Retrying...`);
+          await this.handleRetryDelay(metadata.retryDelay || 1000); // Optional delay between retries (defaults to 1000ms)
+        }
+      } finally {
+        // Ensure test duration is set regardless of success or failure
+        this.setTestDuration(metadata.index, test.description, testStartTime);
       }
-
-      // Run the actual test function
-      await test.fn(suite, updatedMetadata, (updates: Partial<TestMetadata>) => {
-        // Update the metadata dynamically during the test execution
-        Object.assign(updatedMetadata, updates);
-        suite.testMetadata.set(metadata.index, updatedMetadata);
-      });
-
-      // Run the postRun function if it exists in the metadata
-      if (updatedMetadata.postRun) {
-        await updatedMetadata.postRun(suite, updatedMetadata);
-      }
-
-      // Run the afterEach hook with the updated metadata
-      await suite.afterEachFn(suite, updatedMetadata);
-      
-      // Report success
-      this.suiteCase.reports.push({
-        id: updatedMetadata.index,
-        description: test.description,
-        status: metadata.ignore ? "ignored" : "success",
-        duration: Date.now() - testStartTime,
-      });
-
-    } catch (error: any) {
-      // Handle test failure
-      this.handleTestFailure(test, metadata, error);
-    } finally {
-      // Ensure test duration is set regardless of success or failure
-      this.setTestDuration(metadata.index, test.description, testStartTime);
     }
   }
 
+  /**
+   * Handles a delay between retries.
+   * @param delay The delay in milliseconds.
+   */
+  private async handleRetryDelay(delay: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, delay));
+  }
+
+  /**
+   * Runs a promise with a timeout.
+   */
+  private async runWithTimeout(
+    promise: Promise<any>,
+    timeout: number,
+  ): Promise<any> {
+    if (timeout <= 0) {
+      return promise;
+    }
+
+    let timer: any;
+
+    return Promise.race([
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("Test timed out")), timeout);
+      }),
+      promise.then((value) => {
+        clearTimeout(timer);
+        return value;
+      }),
+    ]);
+  }
 
 
   /**
    * Handle the failure of a test case.
    */
-  private handleTestFailure(test: Test, metadata: TestMetadata, error: any): void {
+  private handleTestFailure(
+    test: Test,
+    metadata: TestMetadata,
+    error: any,
+  ): void {
     const testError = new TestError({
       description: test.description,
       message: error.message,
@@ -225,22 +286,22 @@ export class SuiteRunner {
     const report = this.suiteCase.reports.find((report) => report.id === id);
     if (report) {
       report.duration = testDuration;
-    } 
+    }
 
     Log.info(`Test completed: ${description}, Duration: ${testDuration}ms`);
   }
 
   /**
-   * Get the index of a test by its tag.
-   * Returns -1 if the tag is not found.
+   * Get the index of a test by its name.
+   * Returns -1 if the name is not found.
    */
-  private getTestIndexByTag(suite: Suite, tag: string): number {
+  private getTestIndexByname(suite: Suite, name: string): number {
     for (let i = 0; i < suite.tests.length; i++) {
       const metadata = suite.testMetadata.get(i);
-      if (metadata?.tag === tag) {
+      if (metadata?.name === name) {
         return i;
       }
     }
-    return -1; // Tag not found
+    return -1; // name not found
   }
 }

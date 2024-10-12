@@ -11,7 +11,10 @@ import { XMLReporter } from "../reporters/XMLReporter";
 
 export class Reporter {
   private reporters: Reporters[] = [];
-
+  private ignored: number = 0;
+  private failed: number = 0;
+  private succeeded: number = 0;
+  
   constructor() {
     const config = Config.getInstance();
     const reporters = config.getConfig("reporters");
@@ -119,6 +122,7 @@ export class Reporter {
     this.reporters.forEach((reporter) => {
       suiteCase.reports.forEach((report) => {
         if (report.status === "failed") {
+          this.failed += 1
           let stackTrace = report.error.stackTrace();
           reporter.onTestFailed({
             description: report.description,
@@ -129,10 +133,12 @@ export class Reporter {
             file: stackTrace.file,
           });
         } else if(report.status === "ignored"){
+          this.ignored += 1
           reporter.onTestIgnored({
             description: report.description
           })
         } else {
+          this.succeeded += 1
           reporter.onTestSuccess({
             description: report.description,
             duration: report.duration,
