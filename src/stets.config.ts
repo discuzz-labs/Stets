@@ -18,7 +18,7 @@ const config : TestConfig = {
   ignoreDefault: false,
   ignoreDiscovered: false,
 
-  
+  clearConsole: true
 }
 
 export default config

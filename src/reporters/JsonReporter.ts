@@ -24,9 +24,15 @@ export class JsonReporter extends SpecReporter{
   
   results: Report = {
     suites: [],
-    total: 0,
-    passed: 0,
-    failed: 0,
+    totalSuites: 0,
+    failedSuites: 0,
+    succededSuites: 0,
+
+    totalTests: 0,
+    failedTests: 0,
+    succededTests: 0,
+    ignoredTests: 0,
+    
     duration: 0,
   };
 
@@ -43,7 +49,7 @@ export class JsonReporter extends SpecReporter{
       tests: [], // Initialize an empty array for tests
     };
     this.results.suites.push(suiteResult);
-    this.results.failed++;
+    this.results.failedSuites++;
   }
 
   /**
@@ -59,7 +65,7 @@ export class JsonReporter extends SpecReporter{
       tests: [], // Initialize an empty array for tests
     };
     this.results.suites.push(suiteResult);
-    this.results.passed++;
+    this.results.succededSuites++;
   }
 
   /**
@@ -83,6 +89,7 @@ export class JsonReporter extends SpecReporter{
     };
 
     this.results.suites[this.results.suites.length - 1].tests.push(testResult);
+    this.results.failedTests++
   }
 
   /**
@@ -98,6 +105,7 @@ export class JsonReporter extends SpecReporter{
     };
 
     this.results.suites[this.results.suites.length - 1].tests.push(testResult);
+    this.results.succededTests++
   }
 
   /**
@@ -113,6 +121,7 @@ export class JsonReporter extends SpecReporter{
     };
 
     this.results.suites[this.results.suites.length - 1].tests.push(testResult);
+    this.results.ignoredTests++
   }
 
   /**
@@ -120,10 +129,15 @@ export class JsonReporter extends SpecReporter{
    * @param {SummaryParams} params - The parameters containing the total and failed test counts.
    */
   onSummary(params: SummaryParams): void {
-    const { total, failed, duration } = params;
-    this.results.total = total;
-    this.results.failed = failed;
-    this.results.passed = total - failed;
+    const { totalSuites, totalTests, failedSuites, succededSuites, failedTests, succededTests, ignoredTests, duration } = params;
+    this.results.totalSuites = totalSuites;
+    this.results.failedSuites = failedSuites;
+    this.results.succededSuites = succededSuites;
+
+    this.results.totalTests = totalTests;
+    this.results.failedTests = failedTests;
+    this.results.succededTests = succededTests;
+    this.results.ignoredTests = ignoredTests;
     this.results.duration = duration;
 
     console.log(

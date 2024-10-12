@@ -13,12 +13,16 @@ export class MdReporter extends JsonReporter {
    * Generates the Markdown report by manually creating the structure from the results.
    */
   formatReportFile(): string {
-    const { suites, total, passed, failed, duration } = this.results;
+    const { suites, totalSuites, totalTests, failedSuites, succededSuites, failedTests, succededTests, ignoredTests, duration } = this.results;
 
     let markdown = `# Test Report\n\n`;
-    markdown += `**Total Tests:** ${total}\n\n`;
-    markdown += `**Passed:** ${passed}\n\n`;
-    markdown += `**Failed:** ${failed}\n\n`;
+    markdown += `**Total Suites:** ${totalSuites}\n`;
+    markdown += `**Passed Suites:** ${succededSuites}\n\n`;
+    markdown += `**Failed Suites:** ${failedSuites}\n\n`;
+    markdown += `**Total Tests:** ${totalTests}\n\n`;
+    markdown += `**Passed Tests:** ${succededTests}\n`;
+    markdown += `**Failed Tests:** ${failedTests}\n`;
+    markdown += `**Ignored Tests:** ${ignoredTests}\n\n`;
     markdown += `**Duration:** ${duration} ms\n\n`;
     markdown += `---\n\n`;
 
@@ -29,7 +33,7 @@ export class MdReporter extends JsonReporter {
       markdown += `- **Duration:** ${suite.duration} ms\n\n`;
 
       suite.tests.forEach((test: any) => {
-        const testStatus = test.status === "success" ? "✅" : "❌";
+        const testStatus = test.status === "success" ? "✅" : test.status === "failed" ? "❌" : "🔶"; // Assuming "ignored" uses 🔶
         markdown += `### ${testStatus} Test: ${test.description}\n`;
         markdown += `- **Status:** ${test.status}\n`;
         markdown += `- **Duration:** ${test.duration} ms\n`;
@@ -48,4 +52,5 @@ export class MdReporter extends JsonReporter {
 
     return markdown;
   }
+
 }

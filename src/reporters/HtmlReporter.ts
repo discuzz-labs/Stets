@@ -13,7 +13,7 @@ export class HtmlReporter extends JsonReporter {
    * Generates the HTML report by manually creating the HTML structure from the results.
    */
   formatReportFile(): string {
-    const { suites, total, passed, failed, duration } = this.results;
+    const { suites, totalSuites, totalTests, failedSuites, succededSuites, failedTests, succededTests, ignoredTests, duration } = this.results;
 
     // Build the HTML structure
     let html = `
@@ -38,9 +38,15 @@ export class HtmlReporter extends JsonReporter {
       <body>
         <h1>Test Report</h1>
         <div class="summary">
-          <p><strong>Total Tests:</strong> ${total}</p>
-          <p><strong>Passed:</strong> <span class="passed">${passed}</span></p>
-          <p><strong>Failed:</strong> <span class="failed">${failed}</span></p>
+          <p><strong>Total Suites:</strong> ${totalSuites}</p>
+          <p><strong>Passed Suites:</strong> <span class="passed">${succededSuites}</span></p>
+          <p><strong>Failed Suites:</strong> <span class="failed">${failedSuites}</span></p>
+
+          <p><strong>Total Tests:</strong> ${totalTests}</p>
+            <p><strong>Passed Tests:</strong> <span class="passed">${succededTests}</span></p>
+            <p><strong>Failed Tests:</strong> <span class="failed">${failedTests}</span></p>
+            <p><strong>Ignored Tests:</strong> <span class="failed">${ignoredTests}</span></p>
+            
           <p><strong>Duration:</strong> ${duration} ms</p>
         </div>
     `;

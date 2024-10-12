@@ -71,8 +71,15 @@ export type SuiteIgnoredParams = {
 };
 
 export type SummaryParams = {
-  total: number;
-  failed: number;
+  totalSuites: number;
+  failedSuites: number;
+  succededSuites: number;
+
+  totalTests: number;
+  failedTests: number;
+  succededTests: number;
+  ignoredTests: number;
+  
   duration: number;
 };
 
@@ -112,6 +119,8 @@ export type TestConfig = {
   tsconfig: string;
   ignoreDefault: boolean;
   ignoreDiscovered: boolean;
+
+  clearConsole: boolean;
 };
 
 export type Reporters =
@@ -142,9 +151,15 @@ export type Report = {
       };
     }[];
   }[];
-  total: number;
-  passed: number;
-  failed: number;
+  totalSuites: number;
+  failedSuites: number;
+  succededSuites: number;
+
+  totalTests: number;
+  failedTests: number;
+  succededTests: number;
+  ignoredTests: number;
+  
   duration: number;
 };
 

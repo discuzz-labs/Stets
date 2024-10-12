@@ -13,14 +13,18 @@ export class XMLReporter extends JsonReporter {
    * Generates the XML report by creating the structure from the results.
    */
   formatReportFile(): string {
-    const { suites, total, passed, failed, duration } = this.results;
+    const { suites, totalSuites, totalTests, failedSuites, succededSuites, failedTests, succededTests, ignoredTests, duration } = this.results;
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
     xml += `<testReport>\n`;
     xml += `  <summary>\n`;
-    xml += `    <totalTests>${total}</totalTests>\n`;
-    xml += `    <passedTests>${passed}</passedTests>\n`;
-    xml += `    <failedTests>${failed}</failedTests>\n`;
+    xml += `    <totalSuites>${totalSuites}</totalSuites>\n`;
+    xml += `    <passedSuites>${succededSuites}</passedSuits>\n`;
+    xml += `    <failedSuites>${failedSuites}</failedSuites>\n`;
+    xml += `    <totalTests>${totalTests}</totalTests>\n`;
+    xml += `    <passedTests>${succededTests}</passedTests>\n`;
+    xml += `    <failedTests>${failedTests}</failedTests>\n`;
+    xml += `    <ignoredTests>${ignoredTests}</ignoredTests>\n`;
     xml += `    <duration>${duration}</duration>\n`;
     xml += `  </summary>\n`;
 

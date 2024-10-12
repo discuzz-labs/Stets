@@ -110,14 +110,18 @@ export class SpecReporter {
    * @param {SummaryParams} params - The parameters containing the total and failed test counts.
    */
   onSummary(params: SummaryParams): void {
-    const { total, failed, duration } = params;
-    const passed = total - failed;
+    const { totalSuites, totalTests, failedSuites, succededSuites, failedTests, succededTests, ignoredTests, duration } = params;
     console.log(
       this.format(
         `=====💥 Finished in ${chalk.gray(duration)} ms=====`, 
-        `Total: ${chalk.gray(total)}`,
-        `Passed: ${chalk.green(`${passed} passed`)}`,
-        `Failed: ${chalk.red(`${failed} failed`)}`,
+        `Total Suites: ${chalk.gray(totalSuites)}`,
+        `Passed Suites: ${chalk.green(`${succededSuites} passed`)}`,
+        `Failed Suites: ${chalk.red(`${failedSuites} failed`)}`,
+        "",
+        `Total Tests: ${chalk.gray(totalTests)}`,
+        `Passed Tests: ${chalk.green(`${succededTests} passed`)}`,
+        `Failed Tests: ${chalk.red(`${failedTests} failed`)}`,
+        `Ignored Tests: ${chalk.yellow(`${ignoredTests} ignored`)}`,
       )
     );
   }

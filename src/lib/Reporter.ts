@@ -80,8 +80,13 @@ export class Reporter {
 
     this.reporters.forEach((reporter) => {
       reporter.onSummary({
-        total: suiteCases.length,
-        failed,
+        totalSuites: suiteCases.length,
+        failedSuites: failed,
+        succededSuites: suiteCases.length - failed,
+        totalTests: this.ignored + this.failed + this.succeeded,
+        failedTests: this.failed,
+        succededTests: this.succeeded,
+        ignoredTests: this.ignored,
         duration: suiteCases.reduce(
           (acc, suiteCase) => acc + suiteCase.duration,
           0,
