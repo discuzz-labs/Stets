@@ -18,7 +18,7 @@ export class Reporter {
   constructor() {
     const config = Config.getInstance();
     const reporters = config.getConfig("reporters");
-
+    
     // Check if reporters is defined
     if (reporters) {
       // Handle the case when reporters is a string (single reporter)
@@ -128,14 +128,10 @@ export class Reporter {
       suiteCase.reports.forEach((report) => {
         if (report.status === "failed") {
           this.failed += 1
-          let stackTrace = report.error.stackTrace();
           reporter.onTestFailed({
             description: report.description,
             duration: report.duration,
-            error: report.error.toString(),
-            line: stackTrace.line,
-            char: stackTrace.char,
-            file: stackTrace.file,
+            error: report.error.toString()
           });
         } else if(report.status === "ignored"){
           this.ignored += 1

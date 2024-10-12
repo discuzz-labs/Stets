@@ -32,7 +32,6 @@ export class SuitesRunner {
         const executor = new SuiteRunner(suiteCase);
         await executor.runSuite(); // Use the new SuiteExecutor class
         const suiteEndTime = Date.now(); // End tracking suite duration
-
         // Calculate and set the duration for the whole suite
         suiteCase.duration = suiteEndTime - suiteStartTime;
       }),

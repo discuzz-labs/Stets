@@ -41,9 +41,7 @@ export class MdReporter extends JsonReporter {
         // Handle error details for failed tests
         if (test.status === "failed" && test.error) {
           markdown += `\n#### Error Details:\n`;
-          markdown += `- **Message:** ${test.error.message}\n`;
-          markdown += `- **Location:** \`${test.error.location.file}:${test.error.location.line}:${test.error.location.char}\`\n\n`;
-          markdown += `\`\`\`plaintext\n${test.error.message}\n\`\`\`\n\n`;
+          markdown += `${test.error}\n`;
         }
 
         markdown += `---\n\n`; // Add a divider between tests

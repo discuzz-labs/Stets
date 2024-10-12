@@ -73,18 +73,13 @@ export class JsonReporter extends SpecReporter{
    * @param {TestFailedParams} params - The parameters containing information about the failed test.
    */
   onTestFailed(params: TestFailedParams): void {
-    const { description, error, file, line, char, duration } = params;
+    const { description, error,  duration } = params;
     const testResult = {
       description,
       status: "failed",
       duration,
       error: {
-        message: error,
-        location: {
-          file,
-          line,
-          char,
-        },
+        message: error
       },
     };
 

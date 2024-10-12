@@ -79,11 +79,7 @@ export class HtmlReporter extends JsonReporter {
         if (test.error) {
           errorDetails = `
             <div class="error-details">
-              <strong>Error Message:</strong> ${test.error.message} <br />
-              <span class="error-location">
-                <strong>Location:</strong> ${test.error.location.file} 
-                at line ${test.error.location.line}, char ${test.error.location.char}
-              </span>
+              <strong>Error :</strong> ${test.error} <br />
             </div>
           `;
         }

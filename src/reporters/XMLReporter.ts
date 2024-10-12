@@ -38,8 +38,7 @@ export class XMLReporter extends JsonReporter {
 
         if (test.status === "failed" && test.error) {
           xml += `      <error>\n`;
-          xml += `        <message><![CDATA[${test.error.message}]]></message>\n`;
-          xml += `        <location file="${test.error.location.file}" line="${test.error.location.line}" char="${test.error.location.char}" />\n`;
+          xml += `        ${test.error}\n`;
           xml += `      </error>\n`;
         }
 

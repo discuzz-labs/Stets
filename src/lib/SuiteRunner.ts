@@ -7,7 +7,7 @@
 import { Suite } from "../framework/Suite";
 import { SuiteCase, Test, TestMetadata } from "../types";
 import { Log } from "../utils/Log";
-import { TestError } from "./TestError";
+import { RuntimeError } from "./RuntimeError";
 
 export class SuiteRunner {
   private suiteCase: SuiteCase;
@@ -67,7 +67,7 @@ export class SuiteRunner {
     this.suiteCase.reports.push({
       id: -1, // No specific test associated with hook failures
       description: `Suite ${hookName}`,
-      error: new TestError({
+      error: new RuntimeError({
         description: `Suite ${hookName}`,
         message: error.message,
         stack: error.stack,
@@ -252,7 +252,7 @@ export class SuiteRunner {
     metadata: TestMetadata,
     error: any,
   ): void {
-    const testError = new TestError({
+    const runtimeError = new RuntimeError({
       description: test.description,
       message: error.message,
       stack: error.stack,
@@ -264,7 +264,7 @@ export class SuiteRunner {
       id: metadata.index,
       status: "failed",
       description: test.description,
-      error: testError,
+      error: runtimeError,
       duration: -1, // Mark as -1 on failure, but it will be overwritten by the final duration
     });
 

@@ -71,12 +71,11 @@ export class SpecReporter {
    * @param {TestFailedParams} params - The parameters containing information about the failed test.
    */
   onTestFailed(params: TestFailedParams): void {
-    const { description, error, file, line, char, duration } = params;
+    const { description, error, duration } = params;
     console.log(
       this.format(
         `${chalk.red("•")} Test: ${chalk.gray(description)} failed in ${duration} ms`,
-        error,
-        `At: ${chalk.blue(file)} ${chalk.yellow(line)}:${chalk.yellow(char)}`
+        error
       )
     );
   }

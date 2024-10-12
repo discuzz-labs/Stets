@@ -17,13 +17,11 @@ export class CSVReporter extends JsonReporter {
     const { suites } = this.results;
     
     // CSV headers
-    let csvData = "Suite, Test, Status, Duration (ms), Error Message, File, Line, Char\n";
+    let csvData = "Suite, Test, Status, Duration (ms), Error Message\n";
 
     suites.forEach((suite) => {
       suite.tests.forEach((test) => {
-        const errorDetails = test.error
-          ? `${test.error.message},${test.error.location.file},${test.error.location.line},${test.error.location.char}`
-          : ",,,";
+        const errorDetails = test.error ? test.error : ",,,";
 
         csvData += `${suite.description}, ${test.description}, ${test.status}, ${test.duration}, ${errorDetails}\n`;
       });

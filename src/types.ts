@@ -1,6 +1,6 @@
 import { Suite } from "./framework/Suite";
 import { SpecReporter } from "./reporters/SpecReporter";
-import { TestError } from "./lib/TestError";
+import { RuntimeError } from "./lib/RuntimeError";
 import { JsonReporter } from "./reporters/JsonReporter";
 import { HtmlReporter } from "./reporters/HtmlReporter";
 import { MdReporter } from "./reporters/MdReporter";
@@ -39,9 +39,6 @@ export type TestFailedParams = {
   description: string;
   duration: number;
   error: string;
-  file?: string;
-  line?: string;
-  char?: string;
 };
 
 export type TestSuccessParams = {
@@ -98,7 +95,7 @@ export type SuiteCase = {
         id: number;
         description: string;
         duration: number;
-        error: TestError; // Error is required when status is failed
+        error: RuntimeError; // Error is required when status is failed
       }
   >;
   path: string;
@@ -143,11 +140,6 @@ export type Report = {
       duration: number;
       error?: {
         message: string;
-        location: {
-          file?: string;
-          line?: string;
-          char?: string;
-        };
       };
     }[];
   }[];
