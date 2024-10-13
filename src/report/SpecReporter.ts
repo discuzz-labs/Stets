@@ -46,7 +46,7 @@ export class SpecReporter {
   onSuiteFailed(params: SuiteFailedParams): void {
     console.log(
       this.format(
-        `${chalk.red("✗")} Suite: ${params.description} at ${chalk.gray(params.path)} - ${chalk.red("FAILED")} in ${params.duration}ms`
+        `${chalk.bgRed(" FAIL ")} Suite: ${params.description} at ${chalk.gray(params.path)} in ${params.duration}ms`
       )
     );
   }
@@ -56,10 +56,9 @@ export class SpecReporter {
    * @param {SuiteSuccessParams} params - The parameters containing information about the successful suite.
    */
   onSuiteSuccess(params: SuiteSuccessParams): void {
-    if(this.silent) return
     console.log(
       this.format(
-        `${chalk.green("✓")} Suite: ${params.description} at ${chalk.gray(params.path)} - ${chalk.green("PASSED")} in ${params.duration}ms`
+        `${chalk.bgGreen(" PASSED ")} Suite: ${params.description} at ${chalk.gray(params.path)} in ${params.duration}ms`
       )
     );
   }
@@ -107,20 +106,31 @@ export class SpecReporter {
    * Reports a summary of the test results.
    * @param {SummaryParams} params - The parameters containing the total and failed test counts.
    */
+
   onSummary(params: SummaryParams): void {
-    const { totalSuites, totalTests, failedSuites, succededSuites, failedTests, succededTests, ignoredTests, duration } = params;
-    console.log(
-      this.format(
-        `=====💥 Finished in ${chalk.gray(duration)} ms=====`, 
-        `Total Suites: ${chalk.gray(totalSuites)}`,
-        `Passed Suites: ${chalk.green(`${succededSuites} passed`)}`,
-        `Failed Suites: ${chalk.red(`${failedSuites} failed`)}`,
-        "",
-        `Total Tests: ${chalk.gray(totalTests)}`,
-        `Passed Tests: ${chalk.green(`${succededTests} passed`)}`,
-        `Failed Tests: ${chalk.red(`${failedTests} failed`)}`,
-        `Ignored Tests: ${chalk.yellow(`${ignoredTests} ignored`)}`,
-      )
-    );
+    const { 
+      totalSuites, 
+      succededSuites, 
+      totalTests,
+      failedTests, 
+      succededTests, 
+      ignoredTests, 
+      duration 
+    } = params;
+
+    const passedSuitesText = `${succededSuites} passed`;
+    const passedTests = `${succededTests} passed`;
+    const failedTestsText = `${failedTests} failed`;
+    const ignoredTestsText = `${ignoredTests} ignored`;
+
+    const summary = [
+      `Suites:  ${chalk.green(passedSuitesText)} out of ${chalk.gray(totalSuites)} total`,
+      `Tests:   ${chalk.green(passedTests)} ${chalk.red(failedTestsText)} ${chalk.yellow(ignoredTestsText)} out of ${chalk.gray(totalTests)} total`,
+      `Time:    ${chalk.gray(duration)} ms`
+    ];
+
+    console.log(this.format(summary.join("\n")));
+
+    console.log(chalk.grey("Ran all test suites."))
   }
 }

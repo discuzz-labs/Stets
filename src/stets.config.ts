@@ -12,7 +12,7 @@ const config : TestConfig = {
 
   reporters: ["spec"], // Different formats for test results (e.g., 'spec', 'json', 'html')
   outputDir: "", // Directory for storing test result files
-  silent: false, // Suppress output unless there's an error
+  silent: true, // Suppress output unless there's an error
 
   tsconfig: path.join(__dirname, "..", "tsconfig.exported.json"),
   ignoreDefault: false,
