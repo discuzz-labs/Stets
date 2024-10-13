@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Config } from "../lib/Config";
-import { Reporter } from "../lib/Reporter";
-import { SuitesRunner } from "../lib/SuitesRunner";
+import { Config } from "../config/Config";
+import { Reporter } from "../report/Reporter";
+import { SuitesRunner } from "../suites/SuitesRunner";
 import { Log } from "../utils/Log";
 
 const defaultCmd = async () => {

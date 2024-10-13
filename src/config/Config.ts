@@ -9,7 +9,7 @@ import * as fs from "fs";
 import config from "../stets.config";
 import { StetsConfig, TestConfig } from "../types";
 import { Log } from "../utils/Log";
-import { Options } from "../lib/Options";
+import { Options } from "./Options";
 import { ConfigValidator } from "../utils/ConfigValidator";
 
 export class Config {

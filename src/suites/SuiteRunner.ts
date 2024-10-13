@@ -5,7 +5,7 @@
  */
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
-import { RuntimeError } from "./RuntimeError";
+import { RuntimeError } from "../runtime/RuntimeError";
 import { Suite } from "../framework/Suite";
 import { TestRunner } from "./TestRunner";
 import { SuiteRuntime } from "../runtime/SuiteRuntime"

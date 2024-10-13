@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Config } from "../lib/Config";
+import { Config } from "../config/Config";
 import { File } from "./File";
 import fs from "fs";
 import path from "path";

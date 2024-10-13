@@ -13,7 +13,7 @@ import {
   TestSuccessParams,
   TestIgnoredParams
 } from "../types";
-import { Config } from "../lib/Config";
+import { Config } from "../config/Config";
 
 export class SpecReporter {
   private silent: boolean = false;

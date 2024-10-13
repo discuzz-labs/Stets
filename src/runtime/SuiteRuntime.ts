@@ -1,7 +1,6 @@
 import { SuiteCase } from "../types";
 import { Script, createContext } from "vm";
-import { SuiteRunner } from "../lib/SuiteRunner";
-import { Console } from "console";
+import { SuiteRunner } from "../suites/SuiteRunner";
 
 export class SuiteRuntime {
   constructor() {}

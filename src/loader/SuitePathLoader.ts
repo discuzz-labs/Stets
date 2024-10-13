@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Config } from "./Config";
+import { Config } from "../config/Config";
 import { glob } from "glob";
 import { Log } from "../utils/Log";
 

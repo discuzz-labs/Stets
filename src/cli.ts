@@ -7,8 +7,8 @@
 import defaultCmd from "./commands/default.cmd";
 import { version, name, description } from "../package.json";
 import { Log } from "./utils/Log";
-import { Options } from "./lib/Options";
-import { OptionsConfig } from "./lib/OptionsConfig";
+import { Options } from "./config/Options";
+import { OptionsConfig } from "./config/OptionsConfig";
 
 class CLI {
   constructor() {

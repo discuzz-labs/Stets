@@ -1,11 +1,11 @@
 import { Suite } from "./framework/Suite";
-import { SpecReporter } from "./reporters/SpecReporter";
-import { RuntimeError } from "./lib/RuntimeError";
-import { JsonReporter } from "./reporters/JsonReporter";
-import { HtmlReporter } from "./reporters/HtmlReporter";
-import { MdReporter } from "./reporters/MdReporter";
-import { XMLReporter } from "./reporters/XMLReporter";
-import { CSVReporter } from "./reporters/CSVReporter";
+import { SpecReporter } from "./report/SpecReporter";
+import { RuntimeError } from "./runtime/RuntimeError";
+import { JsonReporter } from "./report/JsonReporter";
+import { HtmlReporter } from "./report/HtmlReporter";
+import { MdReporter } from "./report/MdReporter";
+import { XMLReporter } from "./report/XMLReporter";
+import { CSVReporter } from "./report/CSVReporter";
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
  * Licensed under the MIT License.

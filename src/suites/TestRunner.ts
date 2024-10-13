@@ -1,7 +1,7 @@
 import { Suite } from "../framework/Suite";
 import { SuiteCase, Test, TestMetadata } from "../types";
 import { Log } from "../utils/Log";
-import { RuntimeError } from "./RuntimeError";
+import { RuntimeError } from "../runtime/RuntimeError";
 
 export class TestRunner {
   private executedTests: Set<number> = new Set();

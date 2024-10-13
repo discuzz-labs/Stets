@@ -1,13 +1,13 @@
 import { Reporters } from "../types";
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
-import { SpecReporter } from "../reporters/SpecReporter";
-import { Config } from "./Config";
-import { JsonReporter } from "../reporters/JsonReporter";
-import { HtmlReporter } from "../reporters/HtmlReporter";
-import { MdReporter } from "../reporters/MdReporter";
-import { CSVReporter } from "../reporters/CSVReporter";
-import { XMLReporter } from "../reporters/XMLReporter";
+import { SpecReporter } from "./SpecReporter";
+import { Config } from "../config/Config";
+import { JsonReporter } from "./JsonReporter";
+import { HtmlReporter } from "./HtmlReporter";
+import { MdReporter } from "./MdReporter";
+import { CSVReporter } from "./CSVReporter";
+import { XMLReporter } from "./XMLReporter";
 
 export class Reporter {
   private reporters: Reporters[] = [];

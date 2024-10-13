@@ -15,7 +15,7 @@ import {
   TestIgnoredParams
 } from "../types";
 import { File } from "../utils/File"
-import { Config } from "../lib/Config";
+import { Config } from "../config/Config";
 import { Log } from "../utils/Log";
 import { SpecReporter } from "./SpecReporter";
 

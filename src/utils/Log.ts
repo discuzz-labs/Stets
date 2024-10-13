@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 import chalk from "chalk";
-import { Options } from "../lib/Options";
+import { Options } from "../config/Options";
 
 export class Log {
   // Define log levels in descending order of priority

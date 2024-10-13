@@ -6,8 +6,8 @@
 
 import { SuiteCase } from "../types";
 import { Log } from "../utils/Log";
-import { SpecReporter } from "../reporters/SpecReporter";
-import { SuitesLoader } from "./SuitesLoader";
+import { SpecReporter } from "../report/SpecReporter";
+import { SuitesLoader } from "../loader/SuitesLoader";
 import { SuiteRunner } from "./SuiteRunner";
 
 export class SuitesRunner {
