@@ -8,16 +8,11 @@ import { SuiteCase } from "../types";
 import { RuntimeError } from "../runtime/RuntimeError";
 import { Suite } from "../framework/Suite";
 import { TestRunner } from "./TestRunner";
-import { SuiteRuntime } from "../runtime/SuiteRuntime"
 
 export class SuiteRunner {
   private suiteCase: SuiteCase = {} as SuiteCase;
   private failedTestIndexes: Set<number> = new Set(); // Track failed tests by their index
-
-  async runSuiteInProcess(suiteCase: SuiteCase): Promise<void> {
-    const processManager = new SuiteRuntime();
-    this.suiteCase = await processManager.runInProcess(suiteCase);
-  }
+  private hasHookFailure: boolean = false;
   
   /**
    * Public method to run the entire suite inside a VirtualRuntime.
@@ -40,6 +35,7 @@ export class SuiteRunner {
 
     // Set the final suite status
     this.suiteCase.status =
+      this.hasHookFailure ? "failed" :
       this.failedTestIndexes.size > 0 ? "failed" : "success";
   }
 
@@ -78,5 +74,6 @@ export class SuiteRunner {
       status: "failed", // Mark the status as failed
       duration: 0,
     });
+    this.hasHookFailure = true;
   }
 }

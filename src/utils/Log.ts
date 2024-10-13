@@ -10,7 +10,7 @@ export class Log {
   // Define log levels in descending order of priority
   static logLevelPriority: Record<string, number> = {
     "error": 1,
-    "warning": 2,
+    "warn": 2,
     "success": 3,
     "info": 4
   };
@@ -37,7 +37,7 @@ export class Log {
     }
   }
 
-  static warning(message: string) {
+  static warn(message: string) {
     if (this.schouldBe("warning") || this.isVerbose()) {
       console.log(`[${chalk.yellow("WARNING")}]`, message);
     }

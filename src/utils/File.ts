@@ -46,7 +46,7 @@ export class File {
         Log.info(`Successfully read file: ${this.filePath}`);
         return data;
       } else {
-        Log.warning(`File does not exist: ${this.filePath}`);
+        Log.warn(`File does not exist: ${this.filePath}`);
         return null;
       }
     } catch (error) {

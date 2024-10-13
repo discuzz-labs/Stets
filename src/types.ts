@@ -62,7 +62,7 @@ export type SuiteSuccessParams = {
   duration: number;
 };
 
-export type SuiteIgnoredParams = {
+export type SuiteRunParams = {
   path: string;
   description: string;
 };

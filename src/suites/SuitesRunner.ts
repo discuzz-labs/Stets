@@ -27,10 +27,13 @@ export class SuitesRunner {
     await Promise.all(
       this.suiteCases.map(async (suiteCase) => {
         Log.info(`Running suite: ${suiteCase.suite.description}`);
-        SpecReporter.onSuiteStart(suiteCase.suite.description);
+        SpecReporter.onSuiteStart({
+          path: suiteCase.path,
+          description: suiteCase.suite.description
+        });
         const suiteStartTime = Date.now(); // Start tracking suite duration
         const executor = new SuiteRunner();
-        await executor.runSuiteInProcess(suiteCase); // Use the new SuiteExecutor class
+        await executor.runSuite(suiteCase); // Use the new SuiteExecutor class
         const suiteEndTime = Date.now(); // End tracking suite duration
         // Calculate and set the duration for the whole suite
         suiteCase.duration = suiteEndTime - suiteStartTime;

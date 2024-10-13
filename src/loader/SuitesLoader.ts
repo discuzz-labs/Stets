@@ -8,7 +8,7 @@ import { SuitePathLoader } from "./SuitePathLoader";
 import { Log } from "../utils/Log";
 import { SuiteCase } from "../types";
 import { register } from "esbuild-register/dist/node";
-import { TsConfig } from "../utils/TsConfig";
+import { TsConfig } from "../config/TsConfig";
 import chalk from "chalk";
 import path from "path";
 import { Suite } from "../framework/Suite";

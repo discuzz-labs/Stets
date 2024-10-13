@@ -57,7 +57,7 @@ export class Config {
         }
       } else {
         Log.info("No configuration files were found.")
-        Log.warning(`Config file ${filePath} not found.`);
+        Log.warn(`Config file ${filePath} not found.`);
       }
     }
   }

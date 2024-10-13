@@ -5,10 +5,10 @@
  */
 
 import { Config } from "../config/Config";
-import { File } from "./File";
+import { File } from "../utils/File";
 import fs from "fs";
 import path from "path";
-import { Log } from "./Log";
+import { Log } from "../utils/Log";
 
 export class TsConfig {
   static get(): string {
@@ -71,7 +71,7 @@ export class TsConfig {
     while (currentDir) {
       const tsconfigPath = path.join(currentDir, "tsconfig.json");
       if (fs.existsSync(tsconfigPath)) {
-        console.log(`Discovered tsconfig.json at: ${tsconfigPath}`);
+        Log.info(`Discovered tsconfig.json at: ${tsconfigPath}`);
         return tsconfigPath;
       }
 

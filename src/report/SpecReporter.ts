@@ -11,9 +11,11 @@ import {
   SummaryParams,
   TestFailedParams,
   TestSuccessParams,
-  TestIgnoredParams
+  TestIgnoredParams,
+  SuiteRunParams
 } from "../types";
 import { Config } from "../config/Config";
+import path from "path";
 
 export class SpecReporter {
   private silent: boolean = false;
@@ -33,10 +35,20 @@ export class SpecReporter {
 
   /**
    * Reports the start of a test suite.
-   * @param {string} suiteName - The name of the test suite being started.
+   * @param {SuiteRunParams} params - The name of the test suite being started.
    */
-  static onSuiteStart(suiteName: string): void {
-    console.log(`${chalk.bgYellow("RUN")} ${suiteName}`);
+
+  static onSuiteStart(params: SuiteRunParams): void {
+    const { description, path: filePath } = params;
+
+    // Get the directory path and the file name separately
+    const directoryPath = path.dirname(filePath);  // Get the directory path
+    const fileName = path.basename(filePath);      // Get the file name
+
+
+    console.log(
+      `${chalk.bgYellowBright(" RUNNING " )} Suite: ${description} at ${chalk.grey(directoryPath)}${chalk.black(`/${fileName}`)}`
+    );
   }
 
   /**

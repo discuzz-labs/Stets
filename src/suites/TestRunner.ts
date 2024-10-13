@@ -124,7 +124,7 @@ export class TestRunner {
           break;
         } else {
           // If retry is needed, log it and wait before the next attempt
-          Log.warning(`Test failed on attempt ${attempt}. Retrying...`);
+          Log.warn(`Test failed on attempt ${attempt}. Retrying...`);
           await this.handleRetryDelay(metadata.retryDelay || 1000);
         }
       } finally {
@@ -172,7 +172,7 @@ export class TestRunner {
         !this.executedTests.has(dependentTestIndex)
       ) {
         const message = `Skipping test "${test.description}" because dependency "${metadata.dependsOn}" (Test #${dependentTestIndex}) failed or was not executed.`;
-        Log.warning(message);
+        Log.warn(message);
         this.handleTestFailure(test, metadata, new Error(message));
         return true;
       }
