@@ -51,7 +51,7 @@ export class TestRunner {
 
         // Fetch the latest metadata before executing the test
         let updatedMetadata =
-          suite.testMetadata.get(metadata.index) || metadata;
+          suite.testMetadata[metadata.index] || metadata;
 
         suite.currentTestIndex = updatedMetadata.index;
 
@@ -181,12 +181,12 @@ export class TestRunner {
   }
 
   private getTestMetadata(suite: Suite, index: number): TestMetadata {
-    return suite.testMetadata.get(index) || { index, retry: 1, timeout: 5000 };
+    return suite.testMetadata[index] || { index, retry: 1, timeout: 5000 };
   }
 
   private getTestIndexByName(suite: Suite, name: string): number {
     for (let i = 0; i < suite.tests.length; i++) {
-      const metadata = suite.testMetadata.get(i);
+      const metadata = suite.testMetadata[i]
       if (metadata?.name === name) {
         return i;
       }
@@ -240,10 +240,10 @@ export class TestRunner {
   ): void {
     // Ensure that metadata at the given index exists, or use an empty object
     const currentMetadata =
-      suite.testMetadata.get(index) || ({ index } as TestMetadata);
+      suite.testMetadata[index] || ({ index } as TestMetadata);
 
     // Merge the updates with the existing metadata
-    suite.testMetadata.set(index, { ...currentMetadata, ...updates });
+    suite.testMetadata[index] = { ...currentMetadata, ...updates };
   }
 
   private addIgnoredTestReport(id: number, description: string): void {

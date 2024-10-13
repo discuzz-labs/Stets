@@ -4,15 +4,21 @@
  * See the LICENSE file in the project root for license information.
  */
 import { Log } from "../utils/Log";
-import { SuiteCase, Test, TestMetadata } from "../types";
+import { SuiteCase } from "../types";
 import { RuntimeError } from "./RuntimeError";
 import { Suite } from "../framework/Suite";
 import { TestRunner } from "./TestRunner";
+import { SuiteRuntime } from "../runtime/SuiteRuntime"
 
 export class SuiteRunner {
   private suiteCase: SuiteCase = {} as SuiteCase;
   private failedTestIndexes: Set<number> = new Set(); // Track failed tests by their index
 
+  async runSuiteInProcess(suiteCase: SuiteCase): Promise<void> {
+    const processManager = new SuiteRuntime();
+    this.suiteCase = await processManager.runInProcess(suiteCase);
+  }
+  
   /**
    * Public method to run the entire suite inside a VirtualRuntime.
    */

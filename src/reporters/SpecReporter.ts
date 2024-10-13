@@ -11,8 +11,7 @@ import {
   SummaryParams,
   TestFailedParams,
   TestSuccessParams,
-  TestIgnoredParams,
-  SuiteIgnoredParams
+  TestIgnoredParams
 } from "../types";
 import { Config } from "../lib/Config";
 

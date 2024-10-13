@@ -10,7 +10,7 @@ export interface Suite {
   description: string;
   tests: Test[];
   currentTestIndex: number;
-  testMetadata: Map<number, TestMetadata>
+  testMetadata: Record<number, TestMetadata>
 
   beforeAllFn: AfterBeforeLifeCycleFunction;
   afterAllFn: AfterBeforeLifeCycleFunction;
@@ -27,11 +27,11 @@ export interface Suite {
   testAfter(): { test: Test, metadata: TestMetadata } | null;
 }
 
-export class Suite implements Suite {
+export class Suite {
   public description: string = "";
   public tests: Test[] = [];
   public currentTestIndex: number = -1; // Track the index of the currently running test
-  public testMetadata: Map<number, TestMetadata> = new Map(); // Store metadata by index
+  public testMetadata: Record<number, TestMetadata> = {}; // Store metadata by index as a Record
 
   public beforeAllFn: AfterBeforeLifeCycleFunction = async () => {};
   public afterAllFn: AfterBeforeLifeCycleFunction = async () => {};
@@ -71,16 +71,16 @@ export class Suite implements Suite {
       fn
     });
 
-    // Store metadata
-    this.testMetadata.set(testIndex, {
+    // Store metadata using Record
+    this.testMetadata[testIndex] = {
       index: testIndex,
       ...options,
-    });
+    };
 
     return this;
   }
-  
-  testBefore(): { test: Test, metadata: TestMetadata | { index : number} } | null {
+
+  testBefore(): { test: Test, metadata: TestMetadata | { index: number } } | null {
     const previousIndex = this.currentTestIndex - 1;
 
     if (previousIndex < 0) {
@@ -88,7 +88,7 @@ export class Suite implements Suite {
     }
 
     const previousTest = this.tests[previousIndex];
-    const previousMetadata = this.testMetadata.get(previousIndex) || { index: previousIndex };
+    const previousMetadata = this.testMetadata[previousIndex] || { index: previousIndex };
 
     return { test: previousTest, metadata: previousMetadata };
   }
@@ -101,7 +101,7 @@ export class Suite implements Suite {
     }
 
     const nextTest = this.tests[nextIndex];
-    const nextMetadata = this.testMetadata.get(nextIndex) || { index: nextIndex }
+    const nextMetadata = this.testMetadata[nextIndex] || { index: nextIndex };
 
     return { test: nextTest, metadata: nextMetadata };
   }

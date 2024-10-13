@@ -8,7 +8,7 @@ import { SuiteCase } from "../types";
 import { Log } from "../utils/Log";
 import { SpecReporter } from "../reporters/SpecReporter";
 import { SuitesLoader } from "./SuitesLoader";
-import { SuiteRunner } from "./SuiteRunner"
+import { SuiteRunner } from "./SuiteRunner";
 
 export class SuitesRunner {
   suiteCases: SuiteCase[] = [];
@@ -30,7 +30,7 @@ export class SuitesRunner {
         SpecReporter.onSuiteStart(suiteCase.suite.description);
         const suiteStartTime = Date.now(); // Start tracking suite duration
         const executor = new SuiteRunner();
-        await executor.runSuite(suiteCase); // Use the new SuiteExecutor class
+        await executor.runSuiteInProcess(suiteCase); // Use the new SuiteExecutor class
         const suiteEndTime = Date.now(); // End tracking suite duration
         // Calculate and set the duration for the whole suite
         suiteCase.duration = suiteEndTime - suiteStartTime;
