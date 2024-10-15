@@ -5,18 +5,18 @@
  */
 
 import { Log } from "../utils/Log";
-import { SuiteCase } from "../types";
+import { TestFile } from "../types";
 import fg from "fast-glob";
 import { Config } from "../config/Config"; // Assuming you have a Config class
 
-export class SuitesLoader {
-  private suiteCases: SuiteCase[] = [];
+export class TestFiles {
+  private testFiles: TestFile[] = [];
   private config: Config = Config.init();
 
   /**
    * Loads all test files by dynamically importing them and initializes Suite instances.
    */
-  async loadSuites(): Promise<void> {
+  load(): void {
     try {
       const testDirectory = this.config.get("testDirectory") || "";
       const filePatternConfig = this.config.get("filePattern");
@@ -31,11 +31,11 @@ export class SuitesLoader {
       Log.info(`Excluding patterns: ${excludePatterns ? excludePatterns : "None"}`);
 
       // Use globby to find test files with optional exclusions
-      const testFiles = await fg(filePatterns, {
+      const files = fg.sync(filePatterns, {
         ignore: Array.isArray(excludePatterns) ? excludePatterns : [excludePatterns]
       });
 
-      if (testFiles.length === 0) {
+      if (files.length === 0) {
         Log.error("No test files were found.");
         console.log(
           `No suites were found applying the following pattern(s): ${filePatterns.join(
@@ -45,14 +45,14 @@ export class SuitesLoader {
         process.exit(1)
       }
 
-      this.suiteCases = testFiles.map((testFile) => ({
+      this.testFiles = files.map((testFile) => ({
         duration: 0,
-        reports: [],
+        suites: [],
         path: testFile,
         status: "pending",
       }));
 
-      Log.info(`Found test files: ${testFiles.join(", ")}`);
+      Log.info(`Found test files: ${files.join(", ")}`);
     } catch (error: any) {
       Log.error(`Failed to load suites: ${error}`);
       process.exit(1)
@@ -60,6 +60,6 @@ export class SuitesLoader {
   }
 
   get() {
-    return this.suiteCases
+    return this.testFiles
   }
 }

@@ -30,17 +30,9 @@ export class SuiteRunner {
 
       // Listen for messages from the child process (test results)
       testProcess.on("message", (message: any) => {
-        if (message.type === "results") {
+        if (message.type === "report") {
           console.log(`Results from ${this.file}:`);
-          message.results.forEach((result: any) => {
-            if (result.passed) {
-              console.log(`✔ ${result.description}`);
-            } else {
-              console.error(`✘ ${result.description}`);
-              console.error(`  Error: ${result.error.message}`);
-              console.error(`  Stack: ${result.error.stack}`);
-            }
-          });
+          console.log(JSON.stringify(message.report, null, 2))
         }
       });
 

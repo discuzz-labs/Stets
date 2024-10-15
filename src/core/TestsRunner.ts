@@ -4,35 +4,35 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { SuiteCase } from "../types";
+import { TestFile } from "../types";
 import { Log } from "../utils/Log";
 import { SpecReporter } from "../reporters/SpecReporter";
 import { SuiteRunner } from "./SuiteRunner";
 
-export class SuitesRunner {
-  constructor(private suiteCases: SuiteCase[]){}
+export class TestsRunner {
+  constructor(private testFiles: TestFile[]){}
 
   get() {
-    return this.suiteCases
+    return this.testFiles
   }
   
-  async runSuites() {
-    Log.info("Loading test suites...");
-    Log.info(`${this.suiteCases.length} test suites loaded.`);
+  async runFiles() {
+    Log.info("Loading test files...");
+    Log.info(`${this.testFiles.length} test files loaded.`);
 
     // Execute all suites
     await Promise.all(
-      this.suiteCases.map(async (suiteCase) => {
-        Log.info(`Running suite: ${suiteCase.path}`);
+      this.testFiles.map(async (testFile) => {
+        Log.info(`Running file: ${testFile.path}`);
         SpecReporter.onSuiteStart({
-          path: suiteCase.path,
-          description: suiteCase.path
+          path: testFile.path,
+          description: testFile.path
         });
         const suiteStartTime = Date.now(); // Start tracking suite duration
-        await new SuiteRunner(suiteCase.path).runSuite()
+        await new SuiteRunner(testFile.path).runSuite()
         const suiteEndTime = Date.now(); // End tracking suite duration
         // Calculate and set the duration for the whole suite
-        suiteCase.duration = suiteEndTime - suiteStartTime;
+        testFile.duration = suiteEndTime - suiteStartTime;
       }),
     );
   }

@@ -51,27 +51,28 @@ export type SummaryParams = {
   duration: number;
 };
 
-export type SuiteCase = {
-  status: "pending" | "success" | "failed" | "ignored"
-  reports: Array<
-    | {
-        status: "success" | "ignored";
-        id: number;
-        description: string;
-        duration: number;
-        error?: undefined; // No error when success or ignored
-      }
-    | {
-        status: "failed";
-        id: number;
-        description: string;
-        duration: number;
-        error: RuntimeError; // Error is required when status is failed
-      }
-  >;
+export type TestFile = {
+  status: "pending" | "success" | "failed" ;
   path: string;
   duration: number;
+  suites: Array<Suite>; // Array of suites
 };
+
+export type Suite = {
+  name: string; // Name of the suite
+  status: "pending" | "success" | "failed" | "ignored"; // Suite status
+  duration: number; // Total duration of the suite
+  tests: Array<Test>; // Array of tests within the suite
+};
+
+export type Test = {
+  status: "success" | "ignored" | "failed"; // Test status
+  id: number;
+  description: string;
+  duration: number;
+  error?: RuntimeError; // Error is optional, only required when status is "failed"
+};
+
 
 export type TestConfig = {
   testDirectory: string;
