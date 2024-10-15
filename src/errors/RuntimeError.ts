@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import chalk from "chalk";
+import kleur from "kleur";
 
 export class RuntimeError extends Error {
   description: string;
@@ -63,21 +63,21 @@ export class RuntimeError extends Error {
     const firstLine = `An Error occurred in test : ${this.description}`;
 
     // Get the length of the first line to dynamically adjust the length of the "#####" line
-    const separator = chalk.bgRed("#".repeat(firstLine.length + 4)); // +4 for extra padding
+    const separator = kleur.bgRed("#".repeat(firstLine.length + 4)); // +4 for extra padding
 
     // Construct the error message
     const { file, line, char } = this.stackTrace();
-    errorMessage += `\n${chalk.bgRed(firstLine)}\n\n`;
-    errorMessage += chalk.red(this.message)
+    errorMessage += `\n${kleur.bgRed(firstLine)}\n\n`;
+    errorMessage += kleur.red(this.message)
     errorMessage += "\n\nStackTrace: \n "
-    errorMessage += `\n\tAt: ${chalk.blue(file)} ${chalk.yellow(line)}:${chalk.yellow(char)}\n`;
+    errorMessage += `\n\tAt: ${kleur.blue(file)} ${kleur.yellow(line)}:${kleur.yellow(char)}\n`;
     
 
     // Remove the first line from this.stack (which is the error message itself)
     const stackLines = this.stack?.split("\n").slice(1).join("\n") ?? "No stack available"; // Exclude the first line
 
     // Append the modified stack trace
-    errorMessage += `${chalk.gray(stackLines)}\n\n`;
+    errorMessage += `${kleur.gray(stackLines)}\n\n`;
 
     // Append the dynamic separator
     errorMessage += `${separator}`;

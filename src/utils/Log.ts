@@ -3,8 +3,8 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-import chalk from "chalk";
-import { Options } from "../config/Options";
+import { ArgsParser } from "../cli/ArgParser";
+import kleur from "kleur";
 
 export class Log {
   // Define log levels in descending order of priority
@@ -17,7 +17,7 @@ export class Log {
 
   // Get current log level from options or default to "info"
   static getCurrentLogLevel(): string {
-    return Options.getOption("logLevel")?.toLowerCase() || "";
+    return ArgsParser.get("logLevel")?.toLowerCase() || "";
   }
 
   // Check if the message should be logged based on the current log level
@@ -28,30 +28,30 @@ export class Log {
 
   // Check if verbose mode is enabled
   static isVerbose(): boolean {
-    return Options.hasOption("verbose") && Options.getOption("verbose")?.toLowerCase() === "true";
+    return ArgsParser.has("verbose") && ArgsParser.get("verbose")?.toLowerCase() === "true";
   }
 
   static error(message: string) {
     if (this.schouldBe("error") || this.isVerbose()) {
-      console.log(`[${chalk.red("ERROR")}]`, message);
+      console.log(`[${kleur.red("ERROR")}]`, message);
     }
   }
 
   static warn(message: string) {
     if (this.schouldBe("warning") || this.isVerbose()) {
-      console.log(`[${chalk.yellow("WARNING")}]`, message);
+      console.log(`[${kleur.yellow("WARNING")}]`, message);
     }
   }
 
   static info(message: string) {
     if (this.schouldBe("info") || this.isVerbose()) {
-      console.log(`[${chalk.blue("INFO")}]`, message);
+      console.log(`[${kleur.blue("INFO")}]`, message);
     }
   }
 
   static success(message: string) {
     if (this.schouldBe("success") || this.isVerbose()) {
-      console.log(`[${chalk.green("SUCCESS")}]`, message);
+      console.log(`[${kleur.green("SUCCESS")}]`, message);
     }
   }
 }

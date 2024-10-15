@@ -4,16 +4,16 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import defaultCmd from "./commands/default.cmd";
-import { version, name, description } from "../package.json";
-import { Log } from "./utils/Log";
-import { Options } from "./config/Options";
-import { OptionsConfig } from "./config/OptionsConfig";
+import run from "./commands/run";
+import { version, name, description } from "../../package.json";
+import { Log } from "../utils/Log";
+import { ArgsParser } from "../cli/ArgParser";
+import COMMANDS from "../constants/commands";
+import { ConfigValidator } from "../utils/ConfigValidator";
 
 class CLI {
   constructor() {
-    OptionsConfig.generateShortOptions();
-    this.run();
+    this.init();
   }
 
   private printVersion() {
@@ -21,19 +21,21 @@ class CLI {
   }
 
   private printHelp() {
-    const options = OptionsConfig.get(); // Get the options configuration
-
     // Constructing the help message
-    const optionsHelp = Object.entries(options)
-      .map(([key, { requiresValue, shortValue }]) => {
+    const optionsHelp = Object.entries(COMMANDS)
+      .map(([key, { shortValue, requiresValue, description }]) => {
         const optionNames = [
           shortValue ? "-" + shortValue + "," : "",
           "--" + key,
         ]
           .filter(Boolean)
           .join(" "); // Construct the option name string
+
         const valueDescription = requiresValue ? "=<value>" : ""; // Determine if a value is required
-        return "\t" + optionNames + "\t" + valueDescription; // Use \t for indentation
+
+        return (
+          "\t" + optionNames + "\t" + valueDescription + "\t" + description
+        ); // Use \t for indentation
       })
       .join("\n"); // Join all options for display
 
@@ -51,7 +53,7 @@ class CLI {
     );
   }
 
-  private run() {
+  private init() {
     Log.info("CLI Running");
 
     if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -65,9 +67,10 @@ class CLI {
       return;
     }
 
-    new Options(process.argv.slice(2));
-
-    defaultCmd();
+    new ArgsParser();
+    new ConfigValidator()
+    
+    run();
   }
 }
 

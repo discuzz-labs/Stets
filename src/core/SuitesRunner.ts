@@ -6,19 +6,16 @@
 
 import { SuiteCase } from "../types";
 import { Log } from "../utils/Log";
-import { SpecReporter } from "../report/SpecReporter";
-import { SuitesLoader } from "../loader/SuitesLoader";
+import { SpecReporter } from "../reporters/SpecReporter";
 import { SuiteRunner } from "./SuiteRunner";
 
 export class SuitesRunner {
-  suiteCases: SuiteCase[] = [];
+  constructor(private suiteCases: SuiteCase[]){}
 
-  async init() {
-    let suiteLoader = new SuitesLoader();
-    await suiteLoader.loadSuites();
-    this.suiteCases = suiteLoader.getSuites();
+  get() {
+    return this.suiteCases
   }
-
+  
   async runSuites() {
     Log.info("Loading test suites...");
     Log.info(`${this.suiteCases.length} test suites loaded.`);
@@ -26,14 +23,13 @@ export class SuitesRunner {
     // Execute all suites
     await Promise.all(
       this.suiteCases.map(async (suiteCase) => {
-        Log.info(`Running suite: ${suiteCase.suite.description}`);
+        Log.info(`Running suite: ${suiteCase.path}`);
         SpecReporter.onSuiteStart({
           path: suiteCase.path,
-          description: suiteCase.suite.description
+          description: suiteCase.path
         });
         const suiteStartTime = Date.now(); // Start tracking suite duration
-        const executor = new SuiteRunner();
-        await executor.runSuite(suiteCase); // Use the new SuiteExecutor class
+        await new SuiteRunner(suiteCase.path).runSuite()
         const suiteEndTime = Date.now(); // End tracking suite duration
         // Calculate and set the duration for the whole suite
         suiteCase.duration = suiteEndTime - suiteStartTime;

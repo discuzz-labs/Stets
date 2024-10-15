@@ -11,7 +11,6 @@ import {
   SummaryParams,
   TestFailedParams,
   TestSuccessParams,
-  Report,
   TestIgnoredParams
 } from "../types";
 import { File } from "../utils/File"
@@ -19,10 +18,37 @@ import { Config } from "../config/Config";
 import { Log } from "../utils/Log";
 import { SpecReporter } from "./SpecReporter";
 
+type JsonReport = {
+  suites: {
+    description: string;
+    status: string;
+    duration: number;
+    path: string;
+    tests: {
+      description: string;
+      status: string;
+      duration: number;
+      error?: {
+        message: string;
+      };
+    }[];
+  }[];
+  totalSuites: number;
+  failedSuites: number;
+  succededSuites: number;
+
+  totalTests: number;
+  failedTests: number;
+  succededTests: number;
+  ignoredTests: number;
+
+  duration: number;
+};
+
 export class JsonReporter extends SpecReporter{
   reportType: string = "json"
   
-  results: Report = {
+  results: JsonReport = {
     suites: [],
     totalSuites: 0,
     failedSuites: 0,
@@ -119,35 +145,10 @@ export class JsonReporter extends SpecReporter{
     this.results.ignoredTests++
   }
 
-  /**
-   * Logs a summary of the test results.
-   * @param {SummaryParams} params - The parameters containing the total and failed test counts.
-   */
-  onSummary(params: SummaryParams): void {
-    const { totalSuites, totalTests, failedSuites, succededSuites, failedTests, succededTests, ignoredTests, duration } = params;
-    this.results.totalSuites = totalSuites;
-    this.results.failedSuites = failedSuites;
-    this.results.succededSuites = succededSuites;
-
-    this.results.totalTests = totalTests;
-    this.results.failedTests = failedTests;
-    this.results.succededTests = succededTests;
-    this.results.ignoredTests = ignoredTests;
-    this.results.duration = duration;
-
-    console.log(
-      this.format(
-        `=====💥 ${this.reportType} report=====`, 
-        this.formatReportFile()
-      )
-    );
-
-    this.writeReport()
-  }
-
-  public writeReport(): void {
-    const config = Config.getInstance();
-    const outputDir = config.getConfig("outputDir") ? config.getConfig("outputDir") : "test-results";
+  public onSummary(): void {
+    const config = Config.init();
+    const outputDir = config.get("outputDir") ? config.get("outputDir") : "test-results";
+    
     Log.info(`Output directory: ${outputDir}`)
     
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -161,4 +162,5 @@ export class JsonReporter extends SpecReporter{
   formatReportFile() : string {
     return JSON.stringify(this.results, null, 4)
   }
+  
 }

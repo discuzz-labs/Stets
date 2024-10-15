@@ -9,16 +9,17 @@ import * as fs from "fs";
 import config from "../stets.config";
 import { StetsConfig, TestConfig } from "../types";
 import { Log } from "../utils/Log";
-import { Options } from "./Options";
-import { ConfigValidator } from "../utils/ConfigValidator";
+import { ArgsParser } from "../cli/ArgParser";
 
 export class Config {
   private static instance: Config;
   private config: TestConfig = config;
-  private loadedConfig: StetsConfig = {};  // Store loaded config from file
+  private loadedConfig: StetsConfig = {}; // Store loaded config from file
 
   private configFileName: string[] = [
-    Options.hasOption("config") ? path.join(process.cwd(), Options.getOption("config") as string) : "",
+    ArgsParser.has("config")
+      ? path.join(process.cwd(), ArgsParser.get("config") as string)
+      : "",
     path.join(process.cwd(), "stets.config.ts"),
     path.join(process.cwd(), "stets.config.js"),
   ];
@@ -29,14 +30,10 @@ export class Config {
   private constructor() {
     this.loadConfigFromFile();
     this.setConfig();
-    this.mapConfigValues();
-    new ConfigValidator(this.config).validate() ? Log.info("Config validation passed") : process.exit(1)
-    
-    Log.info(`Final merged configuration: ${JSON.stringify(this.config, null, 2)}`);
   }
 
   // Static method to provide a global access point to the singleton instance
-  public static getInstance(): Config {
+  public static init(): Config {
     if (!Config.instance) {
       Config.instance = new Config();
     }
@@ -56,7 +53,7 @@ export class Config {
           Log.error(`Failed to load config from ${filePath}: ${error.message}`);
         }
       } else {
-        Log.info("No configuration files were found.")
+        Log.info("No configuration files were found.");
         Log.warn(`Config file ${filePath} not found.`);
       }
     }
@@ -68,19 +65,16 @@ export class Config {
       if (this.loadedConfig.hasOwnProperty(key)) {
         // If loaded config has the property, override the default config
         (this.config as any)[key] = this.loadedConfig[key as keyof StetsConfig];
-        Log.info(`Overwritten config ${key} with value from file: ${(this.loadedConfig as any)[key]}`);
-      } else if (Options.hasOption(key as keyof TestConfig)) {
+        Log.info(
+          `Overwritten config ${key} with value from file: ${(this.loadedConfig as any)[key]}`,
+        );
+      } else if (ArgsParser.has(key as keyof TestConfig)) {
         // If CLI options or environment has the property, override with that
-        (this.config as any)[key] = Options.getOption(key as keyof TestConfig);
-        Log.info(`Overwritten config ${key} with value from CLI/ENV: ${Options.getOption(key as keyof TestConfig)}`);
+        (this.config as any)[key] = ArgsParser.get(key as keyof TestConfig);
+        Log.info(
+          `Overwritten config ${key} with value from CLI/ENV: ${ArgsParser.get(key as keyof TestConfig)}`,
+        );
       }
-    });
-  }
-
-  // Map config values to instance properties for easy access
-  private mapConfigValues(): void {
-    Object.keys(this.config).forEach((key) => {
-      this[key] = (this.config as any)[key];
     });
   }
 
@@ -89,7 +83,7 @@ export class Config {
   }
 
   // Method to get a specific config value
-  public getConfig(key: keyof TestConfig): any {
+  public get(key: keyof TestConfig): any {
     return this.config[key];
   }
 }

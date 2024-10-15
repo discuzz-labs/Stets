@@ -12,16 +12,16 @@ import { Log } from "../utils/Log";
 
 export class TsConfig {
   static get(): string {
-    const config = Config.getInstance();
-    const ignoreDefault = config.getConfig("ignoreDefault");
-    const ignoreDiscovered = config.getConfig("ignoreDiscovered");
+    const config = Config.init();
+    const ignoreDefault = config.get("ignoreDefault");
+    const ignoreDiscovered = config.get("ignoreDiscovered");
     
     let defaultTsconfigRaw = "";
     let discoveredTsconfigRaw = "";
 
     // Read the default tsconfig.json if ignoreDefault is false
     if (!ignoreDefault) {
-      const defaultTsconfigPath = config.getConfig("tsconfig");
+      const defaultTsconfigPath = config.get("tsconfig");
       defaultTsconfigRaw = new File(defaultTsconfigPath).readFile()!;
       if (!defaultTsconfigRaw) {
         console.error(
@@ -42,7 +42,7 @@ export class TsConfig {
           console.error(
             `Error while loading discovered tsconfig at ${discoveredTsconfigPath}`,
           );
-          process.exit(1);
+          process.exit(1)
         }
         discoveredTsconfigRaw = discoveredTsconfigContent;
       }

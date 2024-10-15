@@ -1,39 +1,10 @@
-import { Suite } from "./framework/Suite";
-import { SpecReporter } from "./report/SpecReporter";
-import { RuntimeError } from "./runtime/RuntimeError";
-import { JsonReporter } from "./report/JsonReporter";
-import { HtmlReporter } from "./report/HtmlReporter";
-import { MdReporter } from "./report/MdReporter";
-import { XMLReporter } from "./report/XMLReporter";
-import { CSVReporter } from "./report/CSVReporter";
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
 
-export interface TestMetadata {
-  index: number;
-  name?: string;
-  ignore?: boolean;
-  dependsOn?: string;
-  preRun?: (suite: Suite, metadata: TestMetadata, update: (updates: Partial<TestMetadata>) => void) => Promise<void>;
-  postRun?: (suite: Suite, metadata: TestMetadata, update: (updates: Partial<TestMetadata>) => void) => Promise<void>;
-  retry? : number;
-  retryDelay?: number;
-  timeout?: number;
-}
-
-export interface Test {
-  description: string;
-  fn: TestFunction;
-  ignore?: boolean;  // Field to ignore the test if set to true
-  metadata?: TestMetadata;  // Metadata related to the test
-}
-
-export type LifeCycleFunction = (suite: Suite, metadata: TestMetadata) => Promise<void>;
-export type AfterBeforeLifeCycleFunction = (suite: Suite) => Promise<void>; 
-export type TestFunction = (suite: Suite, metadata: Partial<TestMetadata>, update: (updates: Partial<TestMetadata>) => void) => Promise<void>;
+import { RuntimeError } from "./errors/RuntimeError";
 
 export type TestFailedParams = {
   description: string;
@@ -70,11 +41,11 @@ export type SuiteRunParams = {
 export type SummaryParams = {
   totalSuites: number;
   failedSuites: number;
-  succededSuites: number;
+  succeededSuites: number;
 
   totalTests: number;
   failedTests: number;
-  succededTests: number;
+  succeededTests: number;
   ignoredTests: number;
   
   duration: number;
@@ -99,7 +70,6 @@ export type SuiteCase = {
       }
   >;
   path: string;
-  suite: Suite;
   duration: number;
 };
 
@@ -120,45 +90,4 @@ export type TestConfig = {
   clearConsole: boolean;
 };
 
-export type Reporters =
-  | SpecReporter
-  | JsonReporter
-  | HtmlReporter
-  | MdReporter
-  | XMLReporter
-  | CSVReporter;
-
-export type Report = {
-  suites: {
-    description: string;
-    status: string;
-    duration: number;
-    path: string;
-    tests: {
-      description: string;
-      status: string;
-      duration: number;
-      error?: {
-        message: string;
-      };
-    }[];
-  }[];
-  totalSuites: number;
-  failedSuites: number;
-  succededSuites: number;
-
-  totalTests: number;
-  failedTests: number;
-  succededTests: number;
-  ignoredTests: number;
-  
-  duration: number;
-};
-
-export type ConfigOptions = keyof TestConfig;
 export type StetsConfig = Partial<TestConfig>;
-export type CLIOptions = Partial<TestConfig> & {
-  verbose?: boolean;
-  logLevel?: string;
-  config?: string;
-};

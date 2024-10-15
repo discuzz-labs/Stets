@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import chalk from "chalk";
+import kleur from "kleur";
 import {
   SuiteFailedParams,
   SuiteSuccessParams,
@@ -18,12 +18,9 @@ import { Config } from "../config/Config";
 import path from "path";
 
 export class SpecReporter {
-  private silent: boolean = false;
+  private config = Config.init()
+  private silent: boolean = this.config.get("silent");
   
-  constructor() {
-    const config = Config.getInstance()
-    if(config.getConfig("silent")) this.silent = true
-  }
   /**
    * Formats the arguments into a single string, joining them with a newline.
    * @param {...string[]} args - The strings to format.
@@ -47,7 +44,7 @@ export class SpecReporter {
 
 
     console.log(
-      `${chalk.bgYellowBright(" RUNNING " )} Suite: ${description} at ${chalk.grey(directoryPath)}${chalk.black(`/${fileName}`)}`
+      `${kleur.yellow(" RUNNING " )} Suite: ${description} at ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)}`
     );
   }
 
@@ -58,7 +55,7 @@ export class SpecReporter {
   onSuiteFailed(params: SuiteFailedParams): void {
     console.log(
       this.format(
-        `${chalk.bgRed(" FAIL ")} Suite: ${params.description} at ${chalk.gray(params.path)} in ${params.duration}ms`
+        `${kleur.bgRed(" FAIL ")} Suite: ${params.description} at ${kleur.gray(params.path)} in ${params.duration}ms`
       )
     );
   }
@@ -70,7 +67,7 @@ export class SpecReporter {
   onSuiteSuccess(params: SuiteSuccessParams): void {
     console.log(
       this.format(
-        `${chalk.bgGreen(" PASSED ")} Suite: ${params.description} at ${chalk.gray(params.path)} in ${params.duration}ms`
+        `${kleur.bgGreen(" PASSED ")} Suite: ${params.description} at ${kleur.gray(params.path)} in ${params.duration}ms`
       )
     );
   }
@@ -84,7 +81,7 @@ export class SpecReporter {
     const { description, error, duration } = params;
     console.log(
       this.format(
-        `${chalk.red("•")} Test: ${chalk.gray(description)} failed in ${duration} ms`,
+        `${kleur.red("•")} Test: ${kleur.gray(description)} failed in ${duration} ms`,
         error
       )
     );
@@ -98,7 +95,7 @@ export class SpecReporter {
     if(this.silent) return
     const { description, duration } = params;
     console.log(
-      this.format(`${chalk.green("•")} Test: ${chalk.gray(description)} passed in ${duration}ms`)
+      this.format(`${kleur.green("•")} Test: ${kleur.gray(description)} passed in ${duration}ms`)
     );
   }
 
@@ -110,7 +107,7 @@ export class SpecReporter {
     if(this.silent) return
     const { description } = params;
     console.log(
-      this.format(`${chalk.yellow("•")} Test: ${chalk.gray(description)} ignored`)
+      this.format(`${kleur.yellow("•")} Test: ${kleur.gray(description)} ignored`)
     );
   }
   
@@ -122,27 +119,27 @@ export class SpecReporter {
   onSummary(params: SummaryParams): void {
     const { 
       totalSuites, 
-      succededSuites, 
+      succeededSuites, 
       totalTests,
       failedTests, 
-      succededTests, 
+      succeededTests, 
       ignoredTests, 
       duration 
     } = params;
 
-    const passedSuitesText = `${succededSuites} passed`;
-    const passedTests = `${succededTests} passed`;
+    const passedSuitesText = `${succeededTests} passed`;
+    const passedTests = `${succeededTests} passed`;
     const failedTestsText = `${failedTests} failed`;
     const ignoredTestsText = `${ignoredTests} ignored`;
 
     const summary = [
-      `Suites:  ${chalk.green(passedSuitesText)} out of ${chalk.gray(totalSuites)} total`,
-      `Tests:   ${chalk.green(passedTests)} ${chalk.red(failedTestsText)} ${chalk.yellow(ignoredTestsText)} out of ${chalk.gray(totalTests)} total`,
-      `Time:    ${chalk.gray(duration)} ms`
+      `Suites:  ${kleur.green(passedSuitesText)} out of ${kleur.gray(totalSuites)} total`,
+      `Tests:   ${kleur.green(passedTests)} ${kleur.red(failedTestsText)} ${kleur.yellow(ignoredTestsText)} out of ${kleur.gray(totalTests)} total`,
+      `Time:    ${kleur.gray(duration)} ms`
     ];
 
     console.log(this.format(summary.join("\n")));
 
-    console.log(chalk.grey("Ran all test suites."))
+    console.log(kleur.grey("Ran all test suites."))
   }
 }

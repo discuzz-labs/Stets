@@ -6,20 +6,19 @@
 
 import path from "path";
 import { TestConfig } from "../types";
+import config from "../stets.config"
 import { Log } from "../utils/Log";
-import { File } from "./File";
+import { File } from "../utils/File";
+
 
 export class ConfigValidator {
-  private config: TestConfig;
+  private config: TestConfig = config
   private errors: string[] = [];
-
-  constructor(config: TestConfig) {
-    this.config = config;
-  }
+  
   /**
    * Run all validation checks on the config.
    */
-  validate(): boolean {
+  constructur() {
     if(this.config.suppressValidations) {
       console.warn("Suppressing config validation! Can cause unexpected behaviour.")
       return true
@@ -40,9 +39,8 @@ export class ConfigValidator {
 
     if (this.errors.length > 0) {
       this.logErrors();
-      return false; // Validation failed
+      process.abort()
     }
-    return true; // Validation passed
   }
 
   checkTsConfigIgnoringPattern() {
