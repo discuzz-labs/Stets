@@ -35,6 +35,7 @@ export type TestResult = {
 export type SuiteReport = {
   description: string;
   result: TestResult;
+  duration: number;
   children: SuiteReport[];
   error: TestError;
 };
@@ -54,11 +55,9 @@ export type TestConfig = {
   outputDir: string;
   silent: boolean;
 
-  tsconfig: string;
-  ignoreDefault: boolean;
-  ignoreDiscovered: boolean;
-
   clearConsole: boolean;
+  useIdentation: boolean;
+  useColors: boolean;
 };
 
 export type StetsConfig = Partial<TestConfig>;

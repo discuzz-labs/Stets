@@ -26,8 +26,33 @@ const COMMANDS: Record<
   testDirectory: {
     description: "Set a diretory to search for test files. ",
     requiresValue: true,
-    shortValue: "t"
-  }
+    shortValue: "t",
+  },
+  filePattern: {
+    description: "Set a fioe pattern to search for tests",
+    requiresValue: true,
+    shortValue: "f",
+  },
+  silent: {
+    description: "Show errors only",
+    requiresValue: true,
+    shortValue: "s",
+  },
+  outputDir: {
+    description: "Directory to write reporters into. (Default=test-result)",
+    requiresValue: true,
+    shortValue: "o",
+  },
+  useColors: {
+    description: "Set if you want a colored output.",
+    requiresValue: false,
+    shortValue: "co",
+  },
+  clearConsole: {
+    description: "Clear console before reporting",
+    requiresValue: false,
+    shortValue: "cc",
+  },
 };
 
 export default COMMANDS;

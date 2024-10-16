@@ -24,9 +24,10 @@ export class TestsRunner {
     await Promise.all(
       this.testFiles.map(async (testFile) => {
         Log.info(`Running file: ${testFile.path}`);
-        BaseReporter.onTestFileStart({
+        
+        process.stdout.write(new BaseReporter().onTestFileStart({
           path: testFile.path,
-        });
+        }))
 
         const startTime = Date.now(); // Start tracking suite duration
         

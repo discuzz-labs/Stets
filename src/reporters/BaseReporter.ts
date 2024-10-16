@@ -62,6 +62,7 @@ type SummaryParams = {
 export class BaseReporter {
   private config = Config.init();
   private silent: boolean = this.config.get("silent");
+  private usesColors: boolean = this.config.get("useColors"); // Add this option
 
   /**
    * Formats the arguments into a single string, joining them with a newline.
@@ -77,12 +78,16 @@ export class BaseReporter {
    * @param {TestFileStartParams} params - The parameters containing information about the test file.
    * @returns {string} - The formatted test file start message.
    */
-  static onTestFileStart(params: TestFileStartParams): string {
+  onTestFileStart(params: TestFileStartParams): string {
     const { path: filePath } = params;
     const directoryPath = path.dirname(filePath);
     const fileName = path.basename(filePath);
 
-    return `${kleur.bgYellow(" RUNNING ")} ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)}`;
+    if (this.usesColors) {
+      return `${kleur.bgYellow(" RUNNING ")} ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)}`;
+    } else {
+      return `RUNNING ${directoryPath}/${fileName}`;
+    }
   }
 
   /**
@@ -95,7 +100,11 @@ export class BaseReporter {
     const directoryPath = path.dirname(filePath);
     const fileName = path.basename(filePath);
 
-    return `${kleur.bgGreen(" PASSED ")} ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)} in ${duration} ms`;
+    if (this.usesColors) {
+      return `${kleur.bgGreen(" PASSED ")} ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)} in ${duration} ms`;
+    } else {
+      return `PASSED ${directoryPath}/${fileName} in ${duration} ms`;
+    }
   }
 
   /**
@@ -108,7 +117,11 @@ export class BaseReporter {
     const directoryPath = path.dirname(filePath);
     const fileName = path.basename(filePath);
 
-    return `${kleur.bgRed(" FAILED ")} ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)} in ${duration} ms\n${error}`;
+    if (this.usesColors) {
+      return `${kleur.bgRed(" FAILED ")} ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)} in ${duration} ms\n${error}`;
+    } else {
+      return `FAILED ${directoryPath}/${fileName} in ${duration} ms\n${error}`;
+    }
   }
 
   /**
@@ -117,9 +130,15 @@ export class BaseReporter {
    * @returns {string} - The formatted suite success message.
    */
   onSuiteSuccess(params: SuiteSuccessParams): string {
-    return this.format(
-      `${kleur.bgGreen(" PASSED ")} Suite: ${params.description} in ${params.duration} ms`
-    );
+    if (this.usesColors) {
+      return this.format(
+        `${kleur.bgGreen(" PASSED ")} Suite: ${params.description} in ${params.duration} ms`
+      );
+    } else {
+      return this.format(
+        `PASSED Suite: ${params.description} in ${params.duration} ms`
+      );
+    }
   }
 
   /**
@@ -128,9 +147,15 @@ export class BaseReporter {
    * @returns {string} - The formatted suite failure message.
    */
   onSuiteFailed(params: SuiteFailedParams): string {
-    return this.format(
-      `${kleur.bgRed(" FAIL ")} Suite: ${params.description} in ${params.duration} ms`
-    );
+    if (this.usesColors) {
+      return this.format(
+        `${kleur.bgRed(" FAIL ")} Suite: ${params.description} in ${params.duration} ms`
+      );
+    } else {
+      return this.format(
+        `FAIL Suite: ${params.description} in ${params.duration} ms`
+      );
+    }
   }
 
   /**
@@ -141,10 +166,17 @@ export class BaseReporter {
   onError(params: ErrorParams): string {
     const { description, error } = params;
 
-    return this.format(
-      `${kleur.red("•")} ${kleur.gray(description)} failed`,
-      error
-    );
+    if (this.usesColors) {
+      return this.format(
+        `${kleur.red("•")} ${kleur.gray(description)} failed`,
+        error
+      );
+    } else {
+      return this.format(
+        `• ${description} failed`,
+        error
+      );
+    }
   }
 
   /**
@@ -156,9 +188,15 @@ export class BaseReporter {
     if (this.silent) return "";
     const { description } = params;
 
-    return this.format(
-      `${kleur.green("•")} ${kleur.gray(description)} passed`
-    );
+    if (this.usesColors) {
+      return this.format(
+        `${kleur.green("•")} ${kleur.gray(description)} passed`
+      );
+    } else {
+      return this.format(
+        `• ${description} passed`
+      );
+    }
   }
 
   /**
@@ -170,9 +208,15 @@ export class BaseReporter {
     if (this.silent) return "";
     const { description } = params;
 
-    return this.format(
-      `${kleur.yellow("•")} ${kleur.gray(description)} ignored`
-    );
+    if (this.usesColors) {
+      return this.format(
+        `${kleur.yellow("•")} ${kleur.gray(description)} ignored`
+      );
+    } else {
+      return this.format(
+        `• ${description} ignored`
+      );
+    }
   }
 
   /**
@@ -197,11 +241,11 @@ export class BaseReporter {
     const ignoredTestsText = `${ignoredTests} ignored`;
 
     const summary = [
-      `Suites:  ${kleur.green(passedSuitesText)} out of ${kleur.gray(totalSuites)} total`,
-      `Tests:   ${kleur.green(passedTests)} ${kleur.red(failedTestsText)} ${kleur.yellow(ignoredTestsText)} out of ${kleur.gray(totalTests)} total`,
-      `Time:    ${kleur.gray(duration)} ms`,
+      `Suites:  ${this.usesColors ? kleur.green(passedSuitesText) : passedSuitesText} out of ${this.usesColors ? kleur.gray(totalSuites) : totalSuites} total`,
+      `Tests:   ${this.usesColors ? kleur.green(passedTests) : passedTests} ${this.usesColors ? kleur.red(failedTestsText) : failedTestsText} ${this.usesColors ? kleur.yellow(ignoredTestsText) : ignoredTestsText} out of ${this.usesColors ? kleur.gray(totalTests) : totalTests} total`,
+      `Time:    ${this.usesColors ? kleur.gray(duration) : duration} ms`,
     ];
 
-    return this.format(summary.join("\n")) + "\n" + kleur.grey("Ran all test suites.");
+    return this.format(summary.join("\n")) + "\n" + (this.usesColors ? kleur.grey("Ran all test suites.") : "Ran all test suites.");
   }
 }

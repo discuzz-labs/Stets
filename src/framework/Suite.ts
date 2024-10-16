@@ -99,6 +99,7 @@ export function beforeEach(fn: HookFunction): void {
 async function runSuite(suite: Suite): Promise<SuiteReport> {
     const suiteResult: SuiteReport = {
         description: suite.description,
+        duration: 0,
         result: {
             passed: true,
             tests: [],
