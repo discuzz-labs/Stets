@@ -21,7 +21,6 @@ export class SuiteRunner {
             tests: [],
             hooks: [],
             children: [],
-            error: { message: null, stack: null },
         };
     }
 
@@ -60,17 +59,13 @@ export class SuiteRunner {
         let hookResult: HookResult = {
             type: hook.type,
             passed: true,
-            error: { message: null, stack: null },
         };
 
         try {
             await hook.fn();
         } catch (error: any) {
             hookResult.passed = false;
-            hookResult.error = {
-                message: error.message,
-                stack: error.stack,
-            };
+            hookResult.error = error.stack
         }
 
         return hookResult;
@@ -103,17 +98,13 @@ export class SuiteRunner {
         let testResult: TestResult = {
             description: test.description,
             passed: true,
-            error: { message: null, stack: null },
         };
 
         try {
             await test.fn();
         } catch (error: any) {
             testResult.passed = false;
-            testResult.error = {
-                message: error.message,
-                stack: error.stack,
-            };
+            testResult.error = error.stack
         }
 
         return testResult;
@@ -154,10 +145,7 @@ export class SuiteRunner {
             await this.runTests();
             await this.runChildSuites();
         } catch (error: any) {
-            this.suiteReport.error = {
-                message: error.message,
-                stack: error.stack,
-            };
+            this.suiteReport.error = error
         }
         // Report the results for this specific suite
         return this.suiteReport;

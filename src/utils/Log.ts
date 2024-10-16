@@ -33,25 +33,25 @@ export class Log {
 
   static error(message: string) {
     if (this.schouldBe("error") || this.isVerbose()) {
-      console.log(`[${kleur.red("ERROR")}]`, message);
+      process.stdout.write(`[${kleur.red("ERROR")}]`, message);
     }
   }
 
   static warn(message: string) {
     if (this.schouldBe("warning") || this.isVerbose()) {
-      console.log(`[${kleur.yellow("WARNING")}]`, message);
+      process.stdout.write(`[${kleur.yellow("WARNING")}]`, message);
     }
   }
 
   static info(message: string) {
     if (this.schouldBe("info") || this.isVerbose()) {
-      console.log(`[${kleur.blue("INFO")}]`, message);
+      process.stdout.write(`[${kleur.blue("INFO")}]`, message);
     }
   }
 
   static success(message: string) {
     if (this.schouldBe("success") || this.isVerbose()) {
-      console.log(`[${kleur.green("SUCCESS")}]`, message);
+      process.stdout.write(`[${kleur.green("SUCCESS")}]`, message);
     }
   }
 }

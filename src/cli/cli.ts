@@ -16,7 +16,7 @@ class CLI {
   }
 
   private printVersion() {
-    console.log(`Version: ${version}`);
+    console.info(`Version: ${version}`);
   }
 
   private printHelp() {
@@ -38,7 +38,7 @@ class CLI {
       })
       .join("\n"); // Join all options for display
 
-    console.log(
+    process.stdout.write(
       name +
         "  " +
         description +

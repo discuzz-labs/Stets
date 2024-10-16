@@ -1,6 +1,6 @@
 import { BaseReporter } from "../reporters/BaseReporter";
 import { HookResult, SuiteReport, TestResult, TestFile } from "../types";
-import { consola } from "consola";
+import { formatError } from "../utils/format";
 
 export class Reporter {
   private baseReporter = new BaseReporter();
@@ -34,10 +34,10 @@ export class Reporter {
     // Report test file start
 
     this.baseReporter.onTestFileReport(testFile.path, testFile.duration),
-      testFile.error ? consola.error(testFile.error) : "";
+      testFile.error ? formatError(testFile.error) : "";
     // Report on main suite and any child suites
     testFile.report.children.forEach((suite) => this.reportSuite(suite, 0));
-    console.log(""); // Separate the reports for clarity
+    process.stdout.write(""); // Separate the reports for clarity
   }
 
   /**
@@ -73,13 +73,12 @@ export class Reporter {
     if (test.passed === false) {
       this.baseReporter.onFail(
         test.description,
-        test.error.message ?? "Unexpected Error",
-        test.error.stack ? test.error.stack : undefined
+        test.error ?? "Unexpected Error"
       );
 
-      this.allPassedTests += 1;
-    } else {
       this.allFailedTests += 1;
+    } else {
+      this.allPassedTests += 1;
     }
   }
 
@@ -89,15 +88,14 @@ export class Reporter {
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
   private reportHook(hook: HookResult, indentationLevel: number): void {
-    if (hook.passed) {
+    if (hook.passed === false) {
       this.baseReporter.onFail(
         `Hook: ${hook.type}`,
-         hook.error.message ?? "Unexpected Error",
-         hook.error.stack ? hook.error.stack : undefined
+         hook.error ?? "Unexpected Error"
       );
-      this.allPassedTests += 1;
-    } else {
       this.allFailedTests += 1;
+    } else {
+      this.allPassedTests += 1;
     }
   }
 }

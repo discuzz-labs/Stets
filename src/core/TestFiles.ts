@@ -44,7 +44,7 @@ export class TestFiles {
 
       if (files.length === 0) {
         Log.error("No test files were found.");
-        console.log(
+        process.stdout.write(
           `No suites were found applying the following pattern(s): ${filePatterns.join(
             ", "
           )} in the directory: ${testDirectory}`
@@ -62,8 +62,7 @@ export class TestFiles {
           failedTests: 0,
           hooks: [],
           tests: [],
-          children: [],
-          error: { message: null, stack: null}
+          children: []
         },
         path: testFile,
         status: "pending",
