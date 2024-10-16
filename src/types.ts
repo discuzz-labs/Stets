@@ -4,13 +4,11 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { RuntimeError } from "./errors/RuntimeError";
-
 export type TestFile = {
   status: "pending" | "success" | "failed";
   path: string;
   duration: number;
-  error?: RuntimeError;
+  error?: string ;
   report: SuiteReport;
 };
 

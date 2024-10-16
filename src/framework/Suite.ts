@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { SuiteRunner } from "./SuiteRunner";
+import { SuiteRunner } from "../core/SuiteRunner";
 
 
 export type TestFunction = () => void | Promise<void>;

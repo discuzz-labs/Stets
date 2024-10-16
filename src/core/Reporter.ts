@@ -23,35 +23,23 @@ export class Reporter {
    */
   private reportTestFile(testFile: TestFile): void {
     // Report test file success or failure
-    let output = "";
     if (testFile.status === "success") {
-      output = this.baseReporter.onTestFileSuccess({
+      console.log(this.baseReporter.onTestFileSuccess({
         path: testFile.path,
         duration: testFile.duration,
-      });
+      }))
     } else {
-      output = this.baseReporter.onTestFileFailed({
+      console.log(this.baseReporter.onTestFileFailed({
         path: testFile.path,
         duration: testFile.duration,
-        error: testFile.error?.toString() || "",
-      });
-      if (testFile.error) return; // If there's an error, stop further reporting
-    }
-
-    this.writeIndented(output, 0);
-
-    // If test file contains an error, report it
-    if (testFile.report.error?.message !== null) {
-      const errorOutput = this.baseReporter.onTestFileFailed({
-        path: testFile.path,
-        duration: testFile.duration,
-        error: testFile.report.error.toString(),
-      });
-      this.writeIndented(errorOutput, 0);
+        error: testFile.error || "",
+      }))
     }
 
     // Report on main suite and any child suites
     testFile.report.children.forEach((suite) => this.reportSuite(suite, 0));
+
+    console.log("")
   }
 
   /**
@@ -146,7 +134,7 @@ export class Reporter {
    * @returns {string} - The string representing the indentation.
    */
   private getIndentation(level: number): string {
-    return "\t".repeat(level); // Tab character for each level of indentation
+    return "  ".repeat(level); // Tab character for each level of indentation
   }
 
   /**

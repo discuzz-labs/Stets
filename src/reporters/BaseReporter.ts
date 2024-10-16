@@ -132,11 +132,11 @@ export class BaseReporter {
   onSuiteSuccess(params: SuiteSuccessParams): string {
     if (this.usesColors) {
       return this.format(
-        `${kleur.bgGreen(" PASSED ")} Suite: ${params.description} in ${params.duration} ms`
+        `${kleur.green("✔")} Suite: ${params.description} in ${params.duration} ms`
       );
     } else {
       return this.format(
-        `PASSED Suite: ${params.description} in ${params.duration} ms`
+        `✔ Suite: ${params.description} in ${params.duration} ms`
       );
     }
   }
@@ -149,11 +149,11 @@ export class BaseReporter {
   onSuiteFailed(params: SuiteFailedParams): string {
     if (this.usesColors) {
       return this.format(
-        `${kleur.bgRed(" FAIL ")} Suite: ${params.description} in ${params.duration} ms`
+        `${kleur.red("✘")} Suite: ${params.description} in ${params.duration} ms`
       );
     } else {
       return this.format(
-        `FAIL Suite: ${params.description} in ${params.duration} ms`
+        `✘ Suite: ${params.description} in ${params.duration} ms`
       );
     }
   }

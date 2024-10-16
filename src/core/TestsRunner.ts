@@ -8,6 +8,7 @@ import { TestFile } from "../types";
 import { Log } from "../utils/Log";
 import { BaseReporter } from "../reporters/BaseReporter";
 import { Test } from "./Test";
+import test from "node:test";
 
 export class TestsRunner {
   constructor(private testFiles: TestFile[]) {}
@@ -25,7 +26,7 @@ export class TestsRunner {
       this.testFiles.map(async (testFile) => {
         Log.info(`Running file: ${testFile.path}`);
         
-        process.stdout.write(new BaseReporter().onTestFileStart({
+        console.log(new BaseReporter().onTestFileStart({
           path: testFile.path,
         }))
 
@@ -35,8 +36,9 @@ export class TestsRunner {
           testFile.report = await new Test(testFile.path).run();
           testFile.status = testFile.report.result.passed ? "success" : "failed"
         } catch (error: any) {
-          testFile.error = error;
           testFile.status = "failed"
+          testFile.error = error.toString()
+          return
         }
         
         const endTime = Date.now(); // End tracking suite duration

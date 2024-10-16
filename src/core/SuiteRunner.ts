@@ -1,5 +1,12 @@
+/*
+ * Copyright (c) 2024 Discuzz Labs Organization
+ * Licensed under the MIT License.
+ * See the LICENSE file in the project root for license information.
+ */
+
+
 import type { HookResult, SuiteReport, TestResult } from "../types";
-import type { Hook, Suite, Test } from "./Suite";
+import type { Hook, Suite, Test } from "../framework/Suite";
 
 export class SuiteRunner {
   private suite: Suite;
