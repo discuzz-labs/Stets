@@ -1,6 +1,6 @@
 import { BaseReporter } from "../reporters/BaseReporter";
 import { RuntimeError } from "../errors/RuntimeError";
-import { Hook, SuiteReport, Test, TestFile } from "../types";
+import { HookResult, SuiteReport, TestResult, TestFile } from "../types";
 
 export class Reporter {
   private baseReporter = new BaseReporter();
@@ -64,12 +64,12 @@ export class Reporter {
     if (suite.result.passed) {
       output = this.baseReporter.onSuiteSuccess({
         description: suite.description,
-        duration: 0,
+        duration: suite.duration
       });
     } else {
       output = this.baseReporter.onSuiteFailed({
         description: suite.description,
-        duration: 0,
+        duration: suite.duration
       });
     }
     this.writeIndented(output, indentationLevel);
@@ -95,7 +95,7 @@ export class Reporter {
    * @param {Test} test - The test to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  private reportTest(test: Test, indentationLevel: number): void {
+  private reportTest(test: TestResult, indentationLevel: number): void {
     let output = "";
     if (test.passed) {
       output = this.baseReporter.onSuccess({
@@ -120,7 +120,7 @@ export class Reporter {
    * @param {Hook} hook - The hook to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  private reportHook(hook: Hook, indentationLevel: number): void {
+  private reportHook(hook: HookResult, indentationLevel: number): void {
     let output = "";
     if (hook.passed) {
       output = this.baseReporter.onSuccess({

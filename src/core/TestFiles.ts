@@ -56,6 +56,7 @@ export class TestFiles {
         duration: 0,
         report: {
           description: "Root Suite",
+          duration: 0,
           result: {
             passed: false,
             hooks: [],

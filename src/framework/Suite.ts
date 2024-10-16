@@ -4,24 +4,25 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { SuiteReport } from "../types";
+import { SuiteRunner } from "./SuiteRunner";
+
 
 export type TestFunction = () => void | Promise<void>;
 type HookFunction = () => void | Promise<void>;
 
-interface TestCase {
+export interface Test {
     description: string;
     fn: TestFunction;
 }
 
-interface Hook {
+export interface Hook {
     type: "beforeAll" | "beforeEach";
     fn: HookFunction;
 }
 
 export interface Suite {
     description: string;
-    tests: TestCase[];
+    tests: Test[];
     hooks: Hook[];
     children: Suite[];
     result: {
@@ -95,7 +96,7 @@ export function beforeEach(fn: HookFunction): void {
     currentSuite.hooks.push({ type: "beforeEach", fn });
 }
 
-// Helper function to run a suite and its nested suites
+/* Helper function to run a suite and its nested suites
 async function runSuite(suite: Suite): Promise<SuiteReport> {
     const suiteResult: SuiteReport = {
         description: suite.description,
@@ -173,15 +174,18 @@ async function runSuite(suite: Suite): Promise<SuiteReport> {
         return suiteResult;
     }
 }
+*/
 
 // Execute all suites starting from the root suite
 export async function run(): Promise<void> {
-    const report = await runSuite(rootSuite);
-    if(process.send){
-        process.send({
-            type: "report",
-            report
-        })
-        process.exit(0)
-    }
+  const rootRunner = new SuiteRunner(rootSuite);
+  const report = await rootRunner.run();
+
+  if (process.send) {
+      process.send({
+          type: "report",
+          report,
+      });
+      process.exit(0);
+  }
 }

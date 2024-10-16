@@ -14,27 +14,27 @@ export type TestFile = {
   report: SuiteReport;
 };
 
-export type Test = {
+export type TestResult = {
   description: string;
   passed: boolean;
   error: TestError;
 };
 
-export type Hook = {
+export type HookResult = {
   type: "beforeAll" | "beforeEach";
   passed: boolean;
   error: TestError;
 };
 
-export type TestResult = {
+export type SuiteResult = {
   passed: boolean;
-  tests: Array<Test>;
-  hooks: Array<Hook>;
+  tests: Array<TestResult>;
+  hooks: Array<HookResult>;
 };
 
 export type SuiteReport = {
   description: string;
-  result: TestResult;
+  result: SuiteResult;
   duration: number;
   children: SuiteReport[];
   error: TestError;
