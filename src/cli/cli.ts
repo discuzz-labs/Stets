@@ -72,5 +72,6 @@ class CLI {
   }
 }
 
+
 // Instantiate and run the CLI
 new CLI();

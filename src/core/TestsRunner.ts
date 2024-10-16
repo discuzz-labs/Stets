@@ -7,7 +7,7 @@
 import { TestFile } from "../types";
 import { Log } from "../utils/Log";
 import { BaseReporter } from "../reporters/BaseReporter";
-import { Test } from "./Test";
+import { Test } from "./Test"
 
 export class TestsRunner {
   constructor(private testFiles: TestFile[]) {}
@@ -25,7 +25,7 @@ export class TestsRunner {
       this.testFiles.map(async (testFile) => {
         Log.info(`Running file: ${testFile.path}`);
 
-        console.log(new BaseReporter().onStart(testFile.path));
+        new BaseReporter().onStart(testFile.path)
 
         const startTime = Date.now(); // Start tracking suite duration
 
@@ -35,7 +35,7 @@ export class TestsRunner {
             ? "success"
             : "failed";
         } catch (error: any) {
-          testFile.error = error;
+          testFile.error = new Error(error.message);
           testFile.status = "failed";
         }
 

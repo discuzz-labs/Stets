@@ -1,11 +1,12 @@
 import { BaseReporter } from "../reporters/BaseReporter";
 import { HookResult, SuiteReport, TestResult, TestFile } from "../types";
+import { consola } from "consola";
 
 export class Reporter {
   private baseReporter = new BaseReporter();
   private allFailedTests = 0;
   private allPassedTests = 0;
-  private allDurtaion = 0
+  private allDurtaion = 0;
 
   constructor(private testFiles: TestFile[]) {}
 
@@ -17,7 +18,11 @@ export class Reporter {
       this.reportTestFile(testFile); // Start with no indentation (level 0)
     });
 
-    console.log(this.baseReporter.onSummary(this.allPassedTests, this.allFailedTests, this.allDurtaion ))
+    this.baseReporter.onSummary(
+      this.allPassedTests,
+      this.allFailedTests,
+      this.allDurtaion,
+    );
   }
 
   /**
@@ -25,12 +30,11 @@ export class Reporter {
    * @param {TestFile} testFile - The test file to report.
    */
   private reportTestFile(testFile: TestFile): void {
-    this.allDurtaion += testFile.duration
+    this.allDurtaion += testFile.duration;
     // Report test file start
-    console.log(
-      this.baseReporter.onTestFileReport(testFile.path, testFile.duration),
-    );
-    testFile.error ? console.log(testFile.error) : "";
+
+    this.baseReporter.onTestFileReport(testFile.path, testFile.duration),
+      testFile.error ? consola.error(testFile.error) : "";
     // Report on main suite and any child suites
     testFile.report.children.forEach((suite) => this.reportSuite(suite, 0));
     console.log(""); // Separate the reports for clarity
@@ -42,13 +46,11 @@ export class Reporter {
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
   private reportSuite(suite: SuiteReport, indentationLevel: number): void {
-    let output = "";
-    output = this.baseReporter.onSuiteReport(
+    this.baseReporter.onSuiteReport(
       suite.description,
       suite.passedTests,
       suite.failedTests,
     );
-    this.writeIndented(output, indentationLevel);
 
     // Report hooks (setup/teardown)
     suite.hooks.forEach((hook) => this.reportHook(hook, indentationLevel + 1));
@@ -68,14 +70,13 @@ export class Reporter {
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
   private reportTest(test: TestResult, indentationLevel: number): void {
-    let output = "";
     if (test.passed === false) {
-      output = this.baseReporter.onFail(
+      this.baseReporter.onFail(
         test.description,
-        test.error?.message || "Unknown error",
+        test.error.message ?? "Unexpected Error",
+        test.error.stack ? test.error.stack : undefined
       );
 
-      this.writeIndented(output, indentationLevel);
       this.allPassedTests += 1;
     } else {
       this.allFailedTests += 1;
@@ -88,48 +89,15 @@ export class Reporter {
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
   private reportHook(hook: HookResult, indentationLevel: number): void {
-    let output = "";
     if (hook.passed) {
-      output = this.baseReporter.onFail(
+      this.baseReporter.onFail(
         `Hook: ${hook.type}`,
-        hook.error?.message || "Unknown hook error",
+         hook.error.message ?? "Unexpected Error",
+         hook.error.stack ? hook.error.stack : undefined
       );
-
-      this.writeIndented(output, indentationLevel);
       this.allPassedTests += 1;
     } else {
       this.allFailedTests += 1;
     }
-  }
-
-  /**
-   * Generates indentation based on the nesting level.
-   * @param {number} level - The level of indentation.
-   * @returns {string} - The string representing the indentation.
-   */
-  private getIndentation(level: number): string {
-    return "  ".repeat(level); // Tab character for each level of indentation
-  }
-
-  /**
-   * Writes indented output using the specified formatted string.
-   * @param {string} formattedOutput - The output string to write.
-   * @param {number} indentationLevel - The current level of indentation for logging.
-   */
-  private writeIndented(
-    formattedOutput: string,
-    indentationLevel: number,
-  ): void {
-    const indentation = this.getIndentation(indentationLevel);
-
-    // Split the formatted output into lines and indent each line
-    const indentedOutput = formattedOutput
-      .split("\n")
-      .map((line, index) =>
-        index === 0 ? indentation + line : indentation + line,
-      )
-      .join("\n");
-
-    process.stdout.write(indentedOutput + "\n");
   }
 }
