@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 import { ArgsParser } from "../cli/ArgParser";
-import kleur from "kleur";
+import kleur from "./kleur";
 
 export class Log {
   // Define log levels in descending order of priority
@@ -33,25 +33,25 @@ export class Log {
 
   static error(message: string) {
     if (this.schouldBe("error") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.red("ERROR")}]`, message);
+      process.stdout.write(`[${kleur.red("ERROR")}] ${message} \n`);
     }
   }
 
   static warn(message: string) {
     if (this.schouldBe("warning") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.yellow("WARNING")}]`, message);
+      process.stdout.write(`[${kleur.yellow("WARNING")}] ${message} \n`);
     }
   }
 
   static info(message: string) {
     if (this.schouldBe("info") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.blue("INFO")}]`, message);
+      process.stdout.write(`[${kleur.blue("INFO")}]  ${message} \n`);
     }
   }
 
   static success(message: string) {
     if (this.schouldBe("success") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.green("SUCCESS")}]`, message);
+      process.stdout.write(`[${kleur.green("SUCCESS")}] ${message} \n`);
     }
   }
 }

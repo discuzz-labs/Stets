@@ -1,4 +1,9 @@
-import kleur from "kleur";
+/*
+ * Copyright (c) 2024 Discuzz Labs Organization
+ * Licensed under the MIT License.
+ * See the LICENSE file in the project root for license information.
+ */
+import kleur from "./kleur"
 
 // Function to calculate terminal width and generate a line
 function generateLineWithData(data: string) {

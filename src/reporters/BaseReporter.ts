@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import kleur from "kleur";
+import kleur from "../utils/kleur";
 import path from "path";
 import { formatError } from "../utils/format";
 
@@ -14,7 +14,7 @@ export class BaseReporter {
     const fileName = path.basename(file);
 
     process.stdout.write(
-      `${kleur.bgYellow(" RUNNING ")} ${kleur.grey(directoryPath)}${kleur.black(`/${fileName}`)} \n`,
+      `${kleur.bgYellow(" RUNNING ")} ${kleur.gray(directoryPath)}${kleur.black(`/${fileName}`)} \n`,
     );
   }
 
