@@ -4,6 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import { Reporter } from "../../core/Reporter";
 import { Config } from "../../config/Config";
 import { TestFiles } from "../../core/TestFiles";
 import { TestsRunner } from "../../core/TestsRunner";
@@ -17,11 +18,11 @@ const run = async () => {
   testFiles.load()
   const runner = new TestsRunner(testFiles.get());
   await runner.runFiles()
-  //const reporter = new Reporter(runner.get());
+  const reporter = new Reporter(runner.get())
   
   if(config.get("clearConsole").toString() === "true") console.clear()
   
-  //reporter.reportSuites()
+  reporter.report()
   
   Log.info("Default Command finished")
 };

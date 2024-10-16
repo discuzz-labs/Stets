@@ -22,17 +22,24 @@ export class TestFiles {
       const filePatternConfig = this.config.get("filePattern");
       const excludePatterns = this.config.get("exclude");
 
+      // Convert test directory to a glob pattern
+      const directoryPattern = testDirectory === "" ? testDirectory : fg.convertPathToPattern(testDirectory);
+
       const filePatterns = Array.isArray(filePatternConfig)
-        ? filePatternConfig.map((pattern: string) => testDirectory ? `${testDirectory}/${pattern}` : pattern)
-        : testDirectory ? [`${testDirectory}/${filePatternConfig}`]: [filePatternConfig] ;
+        ? filePatternConfig.map((pattern: string) => directoryPattern ? `${directoryPattern}/${pattern}` : pattern)
+        : directoryPattern ? [`${directoryPattern}/${filePatternConfig}`] : [filePatternConfig];
 
       Log.info(`Tests directory: ${testDirectory}`);
       Log.info(`Using file patterns: ${filePatterns.join(", ")}`);
       Log.info(`Excluding patterns: ${excludePatterns ? excludePatterns : "None"}`);
 
-      // Use globby to find test files with optional exclusions
+      
+      // Use fast-glob to find test files with optional exclusions
       const files = fg.sync(filePatterns, {
-        ignore: Array.isArray(excludePatterns) ? excludePatterns : [excludePatterns]
+        ignore: excludePatterns,
+        onlyFiles: true,
+        dot: false,
+        absolute: true
       });
 
       if (files.length === 0) {
@@ -42,24 +49,33 @@ export class TestFiles {
             ", "
           )} in the directory: ${testDirectory}`
         );
-        process.exit(1)
+        process.exit(1);
       }
 
       this.testFiles = files.map((testFile) => ({
         duration: 0,
-        suites: [],
+        report: {
+          description: "Root Suite",
+          result: {
+            passed: false,
+            hooks: [],
+            tests: []
+          },
+          children: [],
+          error: { message: null, stack: null}
+        },
         path: testFile,
         status: "pending",
       }));
 
       Log.info(`Found test files: ${files.join(", ")}`);
     } catch (error: any) {
-      Log.error(`Failed to load suites: ${error}`);
-      process.exit(1)
+      console.error(`Failed to load files: ${error}`);
+      process.exit(1);
     }
   }
 
   get() {
-    return this.testFiles
+    return this.testFiles;
   }
 }

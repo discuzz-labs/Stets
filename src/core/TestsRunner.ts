@@ -6,16 +6,16 @@
 
 import { TestFile } from "../types";
 import { Log } from "../utils/Log";
-import { SpecReporter } from "../reporters/SpecReporter";
-import { SuiteRunner } from "./SuiteRunner";
+import { BaseReporter } from "../reporters/BaseReporter";
+import { Test } from "./Test";
 
 export class TestsRunner {
-  constructor(private testFiles: TestFile[]){}
+  constructor(private testFiles: TestFile[]) {}
 
   get() {
-    return this.testFiles
+    return this.testFiles;
   }
-  
+
   async runFiles() {
     Log.info("Loading test files...");
     Log.info(`${this.testFiles.length} test files loaded.`);
@@ -24,15 +24,23 @@ export class TestsRunner {
     await Promise.all(
       this.testFiles.map(async (testFile) => {
         Log.info(`Running file: ${testFile.path}`);
-        SpecReporter.onSuiteStart({
+        BaseReporter.onTestFileStart({
           path: testFile.path,
-          description: testFile.path
         });
-        const suiteStartTime = Date.now(); // Start tracking suite duration
-        await new SuiteRunner(testFile.path).runSuite()
-        const suiteEndTime = Date.now(); // End tracking suite duration
+
+        const startTime = Date.now(); // Start tracking suite duration
+        
+        try {
+          testFile.report = await new Test(testFile.path).run();
+          testFile.status = testFile.report.result.passed ? "success" : "failed"
+        } catch (error: any) {
+          testFile.error = error;
+          testFile.status = "failed"
+        }
+        
+        const endTime = Date.now(); // End tracking suite duration
         // Calculate and set the duration for the whole suite
-        testFile.duration = suiteEndTime - suiteStartTime;
+        testFile.duration = endTime - startTime;
       }),
     );
   }

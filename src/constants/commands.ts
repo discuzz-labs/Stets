@@ -23,6 +23,11 @@ const COMMANDS: Record<
     requiresValue: false,
     shortValue: "v",
   },
+  testDirectory: {
+    description: "Set a diretory to search for test files. ",
+    requiresValue: true,
+    shortValue: "t"
+  }
 };
 
 export default COMMANDS;
