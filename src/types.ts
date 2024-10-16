@@ -8,7 +8,7 @@ export type TestFile = {
   status: "pending" | "success" | "failed";
   path: string;
   duration: number;
-  error?: string ;
+  error?: string;
   report: SuiteReport;
 };
 
@@ -24,16 +24,13 @@ export type HookResult = {
   error: TestError;
 };
 
-export type SuiteResult = {
+export type SuiteReport = {
   passed: boolean;
+  description: string;
+  passedTests: number;
+  failedTests: number;
   tests: Array<TestResult>;
   hooks: Array<HookResult>;
-};
-
-export type SuiteReport = {
-  description: string;
-  result: SuiteResult;
-  duration: number;
   children: SuiteReport[];
   error: TestError;
 };

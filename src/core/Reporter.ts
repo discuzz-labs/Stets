@@ -1,9 +1,11 @@
 import { BaseReporter } from "../reporters/BaseReporter";
-import { RuntimeError } from "../errors/RuntimeError";
 import { HookResult, SuiteReport, TestResult, TestFile } from "../types";
 
 export class Reporter {
   private baseReporter = new BaseReporter();
+  private allFailedTests = 0;
+  private allPassedTests = 0;
+  private allDurtaion = 0
 
   constructor(private testFiles: TestFile[]) {}
 
@@ -14,32 +16,24 @@ export class Reporter {
     this.testFiles.forEach((testFile) => {
       this.reportTestFile(testFile); // Start with no indentation (level 0)
     });
+
+    console.log(this.baseReporter.onSummary(this.allPassedTests, this.allFailedTests, this.allDurtaion ))
   }
 
   /**
    * Reports on an individual test file.
    * @param {TestFile} testFile - The test file to report.
-   * @param {number} indentationLevel - The current level of indentation for logging.
    */
   private reportTestFile(testFile: TestFile): void {
-    // Report test file success or failure
-    if (testFile.status === "success") {
-      console.log(this.baseReporter.onTestFileSuccess({
-        path: testFile.path,
-        duration: testFile.duration,
-      }))
-    } else {
-      console.log(this.baseReporter.onTestFileFailed({
-        path: testFile.path,
-        duration: testFile.duration,
-        error: testFile.error || "",
-      }))
-    }
-
+    this.allDurtaion += testFile.duration
+    // Report test file start
+    console.log(
+      this.baseReporter.onTestFileReport(testFile.path, testFile.duration),
+    );
+    testFile.error ? console.log(testFile.error) : "";
     // Report on main suite and any child suites
     testFile.report.children.forEach((suite) => this.reportSuite(suite, 0));
-
-    console.log("")
+    console.log(""); // Separate the reports for clarity
   }
 
   /**
@@ -49,28 +43,18 @@ export class Reporter {
    */
   private reportSuite(suite: SuiteReport, indentationLevel: number): void {
     let output = "";
-    if (suite.result.passed) {
-      output = this.baseReporter.onSuiteSuccess({
-        description: suite.description,
-        duration: suite.duration
-      });
-    } else {
-      output = this.baseReporter.onSuiteFailed({
-        description: suite.description,
-        duration: suite.duration
-      });
-    }
+    output = this.baseReporter.onSuiteReport(
+      suite.description,
+      suite.passedTests,
+      suite.failedTests,
+    );
     this.writeIndented(output, indentationLevel);
 
     // Report hooks (setup/teardown)
-    suite.result.hooks.forEach((hook) =>
-      this.reportHook(hook, indentationLevel + 1),
-    );
+    suite.hooks.forEach((hook) => this.reportHook(hook, indentationLevel + 1));
 
     // Report individual tests within the suite
-    suite.result.tests.forEach((test) =>
-      this.reportTest(test, indentationLevel + 1),
-    );
+    suite.tests.forEach((test) => this.reportTest(test, indentationLevel + 1));
 
     // Recursively report on child suites (nested suites)
     suite.children.forEach((childSuite) =>
@@ -85,22 +69,17 @@ export class Reporter {
    */
   private reportTest(test: TestResult, indentationLevel: number): void {
     let output = "";
-    if (test.passed) {
-      output = this.baseReporter.onSuccess({
-        description: test.description,
-      });
-    } else {
-      output = this.baseReporter.onError({
-        description: test.description,
-        error: new RuntimeError({
-          message: test.error?.message || "An error occurred",
-          description: `${test.description} failed`,
-          stack: test.error?.stack || "No stack trace available",
-        }).toString(),
-      });
-    }
+    if (test.passed === false) {
+      output = this.baseReporter.onFail(
+        test.description,
+        test.error?.message || "Unknown error",
+      );
 
-    this.writeIndented(output, indentationLevel);
+      this.writeIndented(output, indentationLevel);
+      this.allPassedTests += 1;
+    } else {
+      this.allFailedTests += 1;
+    }
   }
 
   /**
@@ -111,21 +90,16 @@ export class Reporter {
   private reportHook(hook: HookResult, indentationLevel: number): void {
     let output = "";
     if (hook.passed) {
-      output = this.baseReporter.onSuccess({
-        description: `Hook: ${hook.type}`,
-      });
-    } else {
-      output = this.baseReporter.onError({
-        description: `Hook: ${hook.type}`,
-        error: new RuntimeError({
-          message: hook.error?.message || "Hook error occurred",
-          description: `Hook "${hook.type}" failed`,
-          stack: hook.error?.stack || "No stack trace available",
-        }).toString(),
-      });
-    }
+      output = this.baseReporter.onFail(
+        `Hook: ${hook.type}`,
+        hook.error?.message || "Unknown hook error",
+      );
 
-    this.writeIndented(output, indentationLevel);
+      this.writeIndented(output, indentationLevel);
+      this.allPassedTests += 1;
+    } else {
+      this.allFailedTests += 1;
+    }
   }
 
   /**
@@ -156,6 +130,6 @@ export class Reporter {
       )
       .join("\n");
 
-    process.stdout.write("\n" + indentedOutput + "\n");
+    process.stdout.write(indentedOutput + "\n");
   }
 }

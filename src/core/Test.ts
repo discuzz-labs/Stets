@@ -3,67 +3,106 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-import { fork } from "child_process";
+
+import { fork, ChildProcess } from "child_process";
 import { SuiteReport } from "../types";
 import { Log } from "../utils/Log";
-import { RuntimeError } from "../errors/RuntimeError";
 import path from "path";
 import { BuildError } from "../errors/BuildError";
+import { ProcessError } from "../errors/ProcessError";
 
 export class Test {
   constructor(public file: string) {}
 
   // Run a single test file in isolation
-
   public async run(): Promise<SuiteReport> {
     return new Promise((resolve, reject) => {
-      const testProcess = fork(this.file, {
-        execArgv: [
-          "-r",
-          path.resolve(__dirname, "..", "scripts", "register-esbuild.js"),
-        ], // Register esbuild programmatically
-        stdio: ["pipe", "pipe", "pipe", "ipc"], // Enable IPC
-      });
+      const testProcess = this.createTestProcess()
+      testProcess.on("message", (message: any) =>
+        this.handleMessage(message, resolve, reject)
+      );
 
-      testProcess.on("message", (message: any) => {
-        if (message.type === "report") {
-          Log.info(`Results from ${this.file}:`);
-          Log.info(JSON.stringify(message.report, null, 2));
-
-          if (!this.isSuiteReport(message.report)) {
-            reject(
-              new RuntimeError({
-                description: "Invalid report format",
-                message: `The report received from the test file at ${this.file} is not a valid SuiteReport.`,
-              }),
-            );
-          } else {
-            resolve(message.report);
-          }
-        } 
-
-        if(message.type === "buildError"){
-          reject(new BuildError(this.file, message.error))
-        }
-      });
-
-      testProcess.on("close", (code) => {
-        reject(
-          new RuntimeError({
-            description: "Process error",
-            message: `Test file at ${this.file} did not send any reports.`,
-          }),
-        );
-      });
-      
+      testProcess.on("close", () => 
+        this.handleProcessClose(reject)
+      );
     });
   }
 
+  // Create and configure the test process
+  public createTestProcess(): ChildProcess {
+    return fork(this.file, {
+      execArgv: [
+        "-r",
+        //path.resolve(__dirname, "..", "scripts", "register-esbuild.js"),
+      ], // Register esbuild programmatically
+      stdio: ["pipe", "pipe", "pipe", "ipc"], // Enable IPC
+    });
+  }
+
+  // Handle incoming messages from the test process
+  private handleMessage(
+    message: any,
+    resolve: (report: SuiteReport) => void,
+    reject: (error: Error) => void
+  ) {
+    if (message.type === "report") {
+      this.processReport(message, resolve, reject);
+    } else if (message.type === "buildError") {
+      this.processBuildError(message, reject);
+    }
+  }
+
+  // Handle the test report message
+  private processReport(
+    message: any,
+    resolve: (report: SuiteReport) => void,
+    reject: (error: Error) => void
+  ) {
+    Log.info(`Results from ${this.file}:`);
+    Log.info(JSON.stringify(message.report, null, 2));
+
+    if (!this.isSuiteReport(message.report)) {
+      reject(
+        new ProcessError({
+          path: this.file,
+          message: `The report received from the test file is not a valid SuiteReport.`,
+        })
+      );
+    } else {
+      resolve(message.report);
+    }
+  }
+
+  // Handle build errors received from the test process
+  private processBuildError(
+    message: any,
+    reject: (error: Error) => void
+  ) {
+    reject(
+      new BuildError({
+        path: this.file,
+        message: message.error,
+      })
+    );
+  }
+
+  // Handle when the test process closes without sending a report
+  private handleProcessClose(reject: (error: Error) => void) {
+    reject(
+      new ProcessError({
+        path: this.file,
+        message: `Test file did not send any reports.`,
+      })
+    );
+  }
+
+  // Validate that the object is a SuiteReport
   private isSuiteReport(report: any): report is SuiteReport {
     return (
       typeof report === "object" &&
       typeof report.description === "string" &&
-      typeof report.result === "object" &&
+      typeof report.passedTests === "number" &&
+      typeof report.failedTests === "number" &&
       Array.isArray(report.children)
     );
   }

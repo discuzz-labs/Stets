@@ -12,7 +12,7 @@ const config: TestConfig = {
 
   useIdentation: true,
   useColors: true,
-  clearConsole: true,
+  clearConsole: false,
 };
 
 export default config;

@@ -9,7 +9,6 @@ import { version, name, description } from "../../package.json";
 import { Log } from "../utils/Log";
 import { ArgsParser } from "../cli/ArgParser";
 import COMMANDS from "../constants/commands";
-import { ConfigValidator } from "../utils/ConfigValidator";
 
 class CLI {
   constructor() {
@@ -68,8 +67,7 @@ class CLI {
     }
 
     new ArgsParser();
-    new ConfigValidator()
-    
+
     run();
   }
 }

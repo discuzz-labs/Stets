@@ -55,13 +55,13 @@ export class TestFiles {
       this.testFiles = files.map((testFile) => ({
         duration: 0,
         report: {
-          description: "Root Suite",
+          description: "Parent Suite",
           duration: 0,
-          result: {
-            passed: false,
-            hooks: [],
-            tests: []
-          },
+          passed: true,
+          passedTests: 0,
+          failedTests: 0,
+          hooks: [],
+          tests: [],
           children: [],
           error: { message: null, stack: null}
         },

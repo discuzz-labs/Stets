@@ -7,18 +7,16 @@
 import kleur from "kleur";
 
 export class BuildError extends Error {
-  constructor(
-    public fileName: string,
-    public error: string
-  ) {
-    super(); // Initialize the Error class
-    this.fileName = fileName;
+  public path: string;
+  constructor({ path, message }: { path: string; message: string }) {
+    super(message); // Initialize the Error class
+    this.path = path;
   }
 
   toString() {
     return (
-      `\n${kleur.bgRed(" BUILD ERROR ")} at ${kleur.red(this.fileName)}\n` +
-      this.error
+      `\n${kleur.bgRed(" BUIlD ERROR ")} at ${kleur.red(this.path)}\n` +
+      this.message
     );
   }
 }
