@@ -5,7 +5,7 @@
  */
 
 import { SuiteRunner } from "../core/SuiteRunner";
-
+import type { SuiteReport } from "../types";
 
 export type TestFunction = () => void | Promise<void>;
 type HookFunction = () => void | Promise<void>;
@@ -31,7 +31,7 @@ const rootSuite: Suite = {
     description: "Root Suite of the file (always empty)",
     children: [],
     tests: [],
-    hooks: []
+    hooks: [],
 };
 let currentSuite: Suite = rootSuite;
 
@@ -68,15 +68,8 @@ export function beforeEach(fn: HookFunction): void {
 }
 
 // Execute all suites starting from the root suite
-export async function run(): Promise<void> {
-  const rootRunner = new SuiteRunner(rootSuite);
-  const report = await rootRunner.run();
-
-  if (process.send) {
-      process.send({
-          type: "report",
-          report,
-      });
-      process.exit(0);
-  }
+export async function run(): Promise<SuiteReport> {
+    const rootRunner = new SuiteRunner(rootSuite);
+    const report = await rootRunner.run();
+    return report
 }

@@ -48,10 +48,8 @@ export type TestConfig = {
   //reporters
   reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
   outputDir: string;
-  silent: boolean;
 
   clearConsole: boolean;
-  useIdentation: boolean;
   useColors: boolean;
 };
 
