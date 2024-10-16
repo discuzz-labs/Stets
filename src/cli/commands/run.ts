@@ -15,7 +15,7 @@ const run = async () => {
   const config = Config.init()
 
   const testFiles = new TestFiles()
-  testFiles.load()
+  await testFiles.load()
   const runner = new TestsRunner(testFiles.get());
   await runner.runFiles()
   const reporter = new Reporter(runner.get())

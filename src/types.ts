@@ -38,7 +38,7 @@ export type SuiteReport = {
 export type TestConfig = {
   testDirectory: string;
   filePattern: string | string[];
-  exclude: string[];
+  exclude: string | string[];
   suppressValidations: boolean;
   //reporters
   reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];

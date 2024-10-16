@@ -6,8 +6,8 @@
 
 import { Log } from "../utils/Log";
 import { TestFile } from "../types";
-import fg from "fast-glob";
 import { Config } from "../config/Config"; // Assuming you have a Config class
+import { Glob } from "./Glob";
 
 export class TestFiles {
   private testFiles: TestFile[] = [];
@@ -16,38 +16,36 @@ export class TestFiles {
   /**
    * Loads all test files by dynamically importing them and initializes Suite instances.
    */
-  load(): void {
+  async load(): Promise<void> {
     try {
       const testDirectory = this.config.get("testDirectory") || "";
-      const filePatternConfig = this.config.get("filePattern");
+      const filePattern = this.config.get("filePattern");
       const excludePatterns = this.config.get("exclude");
 
-      // Convert test directory to a glob pattern
-      const directoryPattern = testDirectory === "" ? testDirectory : fg.convertPathToPattern(testDirectory);
-
-      const filePatterns = Array.isArray(filePatternConfig)
-        ? filePatternConfig.map((pattern: string) => directoryPattern ? `${directoryPattern}/${pattern}` : pattern)
-        : directoryPattern ? [`${directoryPattern}/${filePatternConfig}`] : [filePatternConfig];
-
       Log.info(`Tests directory: ${testDirectory}`);
-      Log.info(`Using file patterns: ${filePatterns.join(", ")}`);
-      Log.info(`Excluding patterns: ${excludePatterns ? excludePatterns : "None"}`);
+      Log.info(`Using file patterns: ${filePattern}`);
+      Log.info(
+        `Excluding patterns: ${excludePatterns ? excludePatterns : "None"}`,
+      );
 
-      
-      // Use fast-glob to find test files with optional exclusions
-      const files = fg.sync(filePatterns, {
-        ignore: excludePatterns,
-        onlyFiles: true,
-        dot: false,
-        absolute: true
+      // Use Glob to find test files
+      const parser = new Glob({
+        ignoreDotFiles: true,
+        excludedPattern: excludePatterns
+          ? Array.isArray(excludePatterns)
+            ? excludePatterns
+            : [excludePatterns]
+          : null,
+        searchInOneFolder: testDirectory ? testDirectory : null,
       });
 
+      // Now, pass the directory and file patterns to Glob
+      const files = await parser.parse(testDirectory, filePattern);
+      
       if (files.length === 0) {
         Log.error("No test files were found.");
         process.stdout.write(
-          `No suites were found applying the following pattern(s): ${filePatterns.join(
-            ", "
-          )} in the directory: ${testDirectory}`
+          `No suites were found applying the following pattern(s): ${filePattern} in the directory: ${testDirectory}`,
         );
         process.exit(1);
       }
@@ -62,7 +60,7 @@ export class TestFiles {
           failedTests: 0,
           hooks: [],
           tests: [],
-          children: []
+          children: [],
         },
         path: testFile,
         status: "pending",
