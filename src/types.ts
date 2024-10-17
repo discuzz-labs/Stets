@@ -8,7 +8,7 @@ export type TestFile = {
   status: "pending" | "success" | "failed";
   path: string;
   duration: number;
-  error?: Error;
+  error?: {message: string, stack: string};
   report: SuiteReport;
 };
 

@@ -7,6 +7,7 @@
 import { TestFile } from "../types";
 import { Log } from "../utils/Log";
 import { BaseReporter } from "../reporters/BaseReporter";
+import { ErrorFormatter } from "../utils/ErrorFormatter"
 import { Test } from "./Test"
 
 export class TestsRunner {
@@ -35,7 +36,10 @@ export class TestsRunner {
             ? "success"
             : "failed";
         } catch (error: any) {
-          testFile.error = new Error(error.message);
+          testFile.error = {
+            message: error.message,
+            stack: error.stack
+          }
           testFile.status = "failed";
         }
 

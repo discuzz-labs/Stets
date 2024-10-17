@@ -16,22 +16,26 @@ export class Test {
 
   public async run(): Promise<SuiteReport> {
     try {
-      const code = this.loadTestFile();  // Load the test file content
-      const sandbox = this.createSandbox();  // Create an isolated sandbox
+      const code = this.loadTestFile(); // Load the test file content
+      const sandbox = this.createSandbox(); // Create an isolated sandbox
       const script = new vm.Script(code, {
-        filename: this.file
-      });  // Compile the test code
+        filename: this.file,
+        lineOffset: 0
+      }); // Compile the test code
 
       Log.info(`Executing ${this.file} in isolated VM...`);
-      const report = await script.runInNewContext(sandbox);  // Run the test code in the VM
+      const report = await script.runInNewContext(sandbox); // Run the test code in the VM
 
       if (this.isSuiteReport(report)) {
         Log.info(`Results from ${this.file}:`);
-        return report;  // Return the updated report object
+        return report; // Return the updated report object
       } else {
-        throw new Error(`The report received from the test file ${this.file} is not a valid SuiteReport. You proably forgot to call run() at the end of the file.`);
+        throw new Error(
+          `The report received from the test file ${this.file} is not a valid SuiteReport. You proably forgot to call run() at the end of the file.`,
+        );
       }
-    } catch (error) {
+      
+    } catch (error: any) {
       throw this.handleExecutionError(error);
     }
   }
@@ -41,7 +45,9 @@ export class Test {
       const filePath = path.resolve(this.file);
       return fs.readFileSync(filePath, "utf-8");
     } catch (error: any) {
-      throw new Error(`Failed to load test file ${this.file}: ${error.message}`);
+      throw new Error(
+        `Failed to load test file ${this.file}: ${error.message}`,
+      );
     }
   }
 
@@ -59,11 +65,14 @@ export class Test {
 
   private handleExecutionError(error: any): Error {
     if (error instanceof SyntaxError) {
-      return new Error(`Syntax error in test file ${this.file}: ${error.message}`);
+      error.message = `Syntax error in test file ${this.file}: ${error.message}`;
+      return error; // Rethrow the original error with the updated message
     } else {
-      return new Error(`Error executing test file ${this.file}: ${error.message}`);
+      error.message = `Error executing test file ${this.file}: ${error.message}`;
+      return error; // Rethrow the original error with the updated message
     }
   }
+
 
   private isSuiteReport(report: any): report is SuiteReport {
     return (

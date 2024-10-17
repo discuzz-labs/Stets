@@ -19,8 +19,7 @@ interface ParsedStack {
 }
 
 export class ErrorFormatter {
-  private nodeRe =
-    /^\s*at (?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+  private nodeRe =   /^\s*at (?!new Script) ?(?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
 
   private generateLineWithData(): string {
     const terminalWidth = process.stdout.columns || 80; // Default to 80 if terminal width is not available
@@ -87,7 +86,6 @@ export class ErrorFormatter {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
-    const formattedTime = hours + ":" + minutes; // Format HH:MM
 
     const parsedStack = this.parse(stack);
 
@@ -101,8 +99,8 @@ export class ErrorFormatter {
               reject(err);
             }
             const formattedError =
-              `${kleur.bgRed(" ERROR ")}${this.generateLineWithData(formattedTime)}\n` +
-              `${message}\n` +
+              `${kleur.bgRed(" ERROR ")}${this.generateLineWithData()}\n` +
+              `${message}\n\n` +
               `${kleur.gray(file)} ${kleur.bold(lineNumber)}:${kleur.bold(column)}\n` +
               `${lineNumber} │ ${line.trim()}\n` +
               `${" ".repeat(lineNumber.toString().length)} │ ${" ".repeat(column - 1)}${kleur.red("~~~~~")}\n`;

@@ -40,7 +40,8 @@ export class Reporter {
 
     // Report any error in the test file
     if (testFile.error) {
-      await new ErrorFormatter().format(testFile.error.message, testFile.error.stack ?? "");
+      const formattedError = await new ErrorFormatter().format(testFile.error.message, testFile.error.stack ?? "");
+      console.log(formattedError)
     }
 
     // Report on main suite and any child suites
