@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import { ErrorFormatter } from "../utils/ErrorFormatter";
 import kleur from "../utils/kleur";
 import path from "path";
-import { formatError } from "../utils/format";
 
 export class BaseReporter {
   onStart(file: string) {
@@ -37,12 +37,17 @@ export class BaseReporter {
     );
   }
 
-  onFail(description: string, error: string) {
+  onFail(
+    description: string,
+    error: {
+      message: string;
+      stack: string;
+    },
+  ) {
     process.stdout.write(
       `\n${kleur.bgRed(" FAILED ")} ${kleur.bgBlack(kleur.white(description))}\n`,
     );
-    const e = new Error(error);
-    formatError(e);
+    new ErrorFormatter().format(error.message, error.stack);
   }
 
   onSummary(passed: number, failed: number, duration: number) {

@@ -65,7 +65,10 @@ export class SuiteRunner {
             await hook.fn();
         } catch (error: any) {
             hookResult.passed = false;
-            hookResult.error = error.stack
+            hookResult.error = {
+                message: error.message,
+                stack: error.stack
+            }
         }
 
         return hookResult;
@@ -104,7 +107,10 @@ export class SuiteRunner {
             await test.fn();
         } catch (error: any) {
             testResult.passed = false;
-            testResult.error = error.stack
+            testResult.error =  {
+                message: error.message,
+                stack: error.stack
+            }
         }
 
         return testResult;

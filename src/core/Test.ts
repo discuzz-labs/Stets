@@ -18,7 +18,9 @@ export class Test {
     try {
       const code = this.loadTestFile();  // Load the test file content
       const sandbox = this.createSandbox();  // Create an isolated sandbox
-      const script = new vm.Script(code);  // Compile the test code
+      const script = new vm.Script(code, {
+        filename: this.file
+      });  // Compile the test code
 
       Log.info(`Executing ${this.file} in isolated VM...`);
       const report = await script.runInNewContext(sandbox);  // Run the test code in the VM

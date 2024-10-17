@@ -1,6 +1,6 @@
 import { BaseReporter } from "../reporters/BaseReporter";
 import { HookResult, SuiteReport, TestResult, TestFile } from "../types";
-import { formatError } from "../utils/format";
+import { ErrorFormatter } from "../utils/ErrorFormatter";
 
 export class Reporter {
   private baseReporter = new BaseReporter();
@@ -13,28 +13,28 @@ export class Reporter {
   /**
    * Starts the reporting process for all test files.
    */
-  report(): void {
-    this.testFiles.forEach((testFile) => {
-      this.reportTestFile(testFile); // Start with no indentation (level 0)
+  report() {
+    this.testFiles.forEach(async (testFile) => {
+      await this.reportTestFile(testFile); // Start with no indentation (level 0)
     });
 
-    this.baseReporter.onSummary(
+    /*this.baseReporter.onSummary(
       this.allPassedTests,
       this.allFailedTests,
       this.allDurtaion,
-    );
+    );*/
   }
 
   /**
    * Reports on an individual test file.
    * @param {TestFile} testFile - The test file to report.
    */
-  private reportTestFile(testFile: TestFile): void {
+  private async reportTestFile(testFile: TestFile) {
     this.allDurtaion += testFile.duration;
     // Report test file start
 
     this.baseReporter.onTestFileReport(testFile.path, testFile.duration),
-      testFile.error ? formatError(testFile.error) : "";
+      testFile.error ? await new ErrorFormatter().format(testFile.error.message, testFile.error.stack ?? "") : "";
     // Report on main suite and any child suites
     testFile.report.children.forEach((suite) => this.reportSuite(suite, 0));
     process.stdout.write(""); // Separate the reports for clarity
@@ -73,7 +73,7 @@ export class Reporter {
     if (test.passed === false) {
       this.baseReporter.onFail(
         test.description,
-        test.error ?? "Unexpected Error"
+        test.error || { message: "Unexpected Error", stack: ""}
       );
 
       this.allFailedTests += 1;
@@ -91,7 +91,7 @@ export class Reporter {
     if (hook.passed === false) {
       this.baseReporter.onFail(
         `Hook: ${hook.type}`,
-         hook.error ?? "Unexpected Error"
+         hook.error || { message: "Unexpected Error", stack: ""}
       );
       this.allFailedTests += 1;
     } else {

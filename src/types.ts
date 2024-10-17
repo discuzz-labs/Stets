@@ -15,13 +15,13 @@ export type TestFile = {
 export type TestResult = {
   description: string;
   passed: boolean;
-  error?: string;
+  error?: { message: string, stack: string};
 };
 
 export type HookResult = {
   type: "beforeAll" | "beforeEach";
   passed: boolean;
-  error? : string;
+  error? : { message: string, stack: string};
 };
 
 export type SuiteReport = {

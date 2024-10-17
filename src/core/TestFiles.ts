@@ -45,7 +45,7 @@ export class TestFiles {
       if (files.length === 0) {
         Log.error("No test files were found.");
         process.stdout.write(
-          `No suites were found applying the following pattern(s): ${filePattern} in the directory: ${testDirectory}`,
+          `No suites were found applying the following pattern(s): ${filePattern} in the directory: ${testDirectory ? testDirectory : process.cwd()} \n`
         );
         process.exit(1);
       }
