@@ -13,47 +13,72 @@ export class BaseReporter {
     const directoryPath = path.dirname(file);
     const fileName = path.basename(file);
 
-    process.stdout.write(
-      `${kleur.bgYellow(" RUNNING ")} ${kleur.gray(directoryPath)}${kleur.black(`/${fileName}`)} \n`,
+    console.log(
+      `${kleur.bgYellow(" RUNNING ")} ${kleur.gray(directoryPath)}${kleur.black(`/${fileName}`)}`,
     );
   }
 
   onTestFileReport(file: string, duration: number) {
     const fileName = path.basename(file);
-
-    process.stdout.write(
-      `${kleur.underline(kleur.bold(fileName))} in ${kleur.gray(duration)} ms \n\n`,
+    const directoryPath = path.dirname(file)
+    console.log(
+      `\n${kleur.underline(kleur.bold(fileName))} at ${kleur.gray(directoryPath)} in ${kleur.gray(duration)} ms \n`,
     );
   }
 
-  onSuiteReport(description: string, passed: number, failed: number) {
+  onSuiteReport(
+    description: string,
+    passed: number,
+    failed: number,
+    indentation: number = 0,
+  ) {
     const total = passed + failed;
-    process.stdout.write(
-      `${kleur.bgWhite(kleur.black(kleur.bold(description)))} ${kleur.gray("---")} ${
+    const indent = " ".repeat(indentation); // Add indentation
+
+    console.log(
+      `${indent}${kleur.bgWhite(kleur.black(kleur.bold(description)))} ${kleur.gray("---")} ${
         failed === 0
           ? kleur.green(`(${total} / ${passed})`)
           : kleur.red(`(${total} / ${passed})`)
-      }\n`,
+      }`,
     );
   }
 
-  onFail(
+  async onFail(
     description: string,
     error: {
       message: string;
       stack: string;
     },
+    indentation: number = 0,
   ) {
-    process.stdout.write(
-      `\n${kleur.bgRed(" FAILED ")} ${kleur.bgBlack(kleur.white(description))}\n`,
+    const indent = " ".repeat(indentation); // Add indentation
+
+    console.log(
+      `\n${indent}${kleur.bgRed(" FAILED ")} ${kleur.bgBlack(kleur.white(description))}\n`,
     );
-    new ErrorFormatter().format(error.message, error.stack);
+    const formattedError = await new ErrorFormatter().format(
+      error.message,
+      error.stack,
+    );
+
+    // Add indentation to each line of the formatted error
+    const indentedError = formattedError
+      .split("\n")
+      .map((line) => indent + line)
+      .join("\n");
+
+    console.log(indentedError);
   }
 
   onSummary(passed: number, failed: number, duration: number) {
     const total = passed + failed;
-    process.stdout.write(`
-\nTotal: ${total} \nPassed: ${kleur.green(passed)} \nDuration: ${duration} \n${kleur.gray("Ran all test files")}
+
+    console.log(`
+Total: ${total} 
+Passed: ${kleur.green(passed)} 
+Duration: ${duration} 
+${kleur.gray("Ran all test files")}
 `);
   }
 }

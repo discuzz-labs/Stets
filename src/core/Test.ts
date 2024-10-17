@@ -29,7 +29,7 @@ export class Test {
         Log.info(`Results from ${this.file}:`);
         return report;  // Return the updated report object
       } else {
-        throw new Error(`The report received from the test file ${this.file} is not a valid SuiteReport.`);
+        throw new Error(`The report received from the test file ${this.file} is not a valid SuiteReport. You proably forgot to call run() at the end of the file.`);
       }
     } catch (error) {
       throw this.handleExecutionError(error);

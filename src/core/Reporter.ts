@@ -6,23 +6,26 @@ export class Reporter {
   private baseReporter = new BaseReporter();
   private allFailedTests = 0;
   private allPassedTests = 0;
-  private allDurtaion = 0;
+  private allDuration = 0;
 
   constructor(private testFiles: TestFile[]) {}
 
   /**
    * Starts the reporting process for all test files.
    */
-  report() {
-    this.testFiles.forEach(async (testFile) => {
-      await this.reportTestFile(testFile); // Start with no indentation (level 0)
-    });
+  async report() {
+    for (const testFile of this.testFiles) {
+      await this.reportTestFile(testFile);
+    }
+    this.reportSummary(); // Call this after reporting all test files
+  }
 
-    /*this.baseReporter.onSummary(
+  private reportSummary() {
+    this.baseReporter.onSummary(
       this.allPassedTests,
       this.allFailedTests,
-      this.allDurtaion,
-    );*/
+      this.allDuration,
+    );
   }
 
   /**
@@ -30,14 +33,22 @@ export class Reporter {
    * @param {TestFile} testFile - The test file to report.
    */
   private async reportTestFile(testFile: TestFile) {
-    this.allDurtaion += testFile.duration;
-    // Report test file start
+    this.allDuration += testFile.duration;
 
-    this.baseReporter.onTestFileReport(testFile.path, testFile.duration),
-      testFile.error ? await new ErrorFormatter().format(testFile.error.message, testFile.error.stack ?? "") : "";
+    // Report test file start
+    this.baseReporter.onTestFileReport(testFile.path, testFile.duration);
+
+    // Report any error in the test file
+    if (testFile.error) {
+      await new ErrorFormatter().format(testFile.error.message, testFile.error.stack ?? "");
+    }
+
     // Report on main suite and any child suites
-    testFile.report.children.forEach((suite) => this.reportSuite(suite, 0));
-    process.stdout.write(""); // Separate the reports for clarity
+    for (const suite of testFile.report.children) {
+      await this.reportSuite(suite, 0);
+    }
+
+    console.log()
   }
 
   /**
@@ -45,23 +56,28 @@ export class Reporter {
    * @param {SuiteReport} suite - The test suite to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  private reportSuite(suite: SuiteReport, indentationLevel: number): void {
+  private async reportSuite(suite: SuiteReport, indentationLevel: number) {
     this.baseReporter.onSuiteReport(
       suite.description,
       suite.passedTests,
       suite.failedTests,
+      indentationLevel
     );
 
     // Report hooks (setup/teardown)
-    suite.hooks.forEach((hook) => this.reportHook(hook, indentationLevel + 1));
+    for (const hook of suite.hooks) {
+      await this.reportHook(hook, indentationLevel);
+    }
 
     // Report individual tests within the suite
-    suite.tests.forEach((test) => this.reportTest(test, indentationLevel + 1));
+    for (const test of suite.tests) {
+      await this.reportTest(test, indentationLevel);
+    }
 
     // Recursively report on child suites (nested suites)
-    suite.children.forEach((childSuite) =>
-      this.reportSuite(childSuite, indentationLevel + 1),
-    );
+    for (const childSuite of suite.children) {
+      await this.reportSuite(childSuite, indentationLevel + 1);
+    }
   }
 
   /**
@@ -69,11 +85,12 @@ export class Reporter {
    * @param {Test} test - The test to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  private reportTest(test: TestResult, indentationLevel: number): void {
-    if (test.passed === false) {
-      this.baseReporter.onFail(
+  private async reportTest(test: TestResult, indentationLevel: number) {
+    if (!test.passed) {
+      await this.baseReporter.onFail(
         test.description,
-        test.error || { message: "Unexpected Error", stack: ""}
+        test.error || { message: "Unexpected Error", stack: "" },
+        indentationLevel
       );
 
       this.allFailedTests += 1;
@@ -87,11 +104,12 @@ export class Reporter {
    * @param {Hook} hook - The hook to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  private reportHook(hook: HookResult, indentationLevel: number): void {
-    if (hook.passed === false) {
-      this.baseReporter.onFail(
+  private async reportHook(hook: HookResult, indentationLevel: number) {
+    if (!hook.passed) {
+      await this.baseReporter.onFail(
         `Hook: ${hook.type}`,
-         hook.error || { message: "Unexpected Error", stack: ""}
+        hook.error || { message: "Unexpected Error", stack: "" },
+        indentationLevel
       );
       this.allFailedTests += 1;
     } else {
