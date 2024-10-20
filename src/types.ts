@@ -3,13 +3,8 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-
 export type TestFile = {
-  status: "pending" | "success" | "failed";
   path: string;
-  duration: number;
-  error?: {message: string, stack: string};
-  report: SuiteReport;
 };
 
 export type TestResult = {
@@ -39,12 +34,10 @@ export type TestConfig = {
   testDirectory: string;
   filePattern: string | string[];
   exclude: string | string[];
-  suppressValidations: boolean;
   //reporters
   reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
   outputDir: string;
 
-  clearConsole: boolean;
   useColors: boolean;
 };
 

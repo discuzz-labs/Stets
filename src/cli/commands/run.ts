@@ -18,11 +18,8 @@ const run = async () => {
   await testFiles.load()
   const runner = new TestsRunner(testFiles.get());
   await runner.runFiles()
-  const reporter = new Reporter(runner.get())
-  
-  if(config.get("clearConsole").toString() === "true") console.clear()
-  
-  reporter.report()
+
+  Reporter.reportSummary()
   
   Log.info("Default Command finished")
 };

@@ -51,19 +51,7 @@ export class TestFiles {
       }
 
       this.testFiles = files.map((testFile) => ({
-        duration: 0,
-        report: {
-          description: "Parent Suite",
-          duration: 0,
-          passed: true,
-          passedTests: 0,
-          failedTests: 0,
-          hooks: [],
-          tests: [],
-          children: [],
-        },
-        path: testFile,
-        status: "pending",
+        path: testFile
       }));
 
       Log.info(`Found test files: ${files.join(", ")}`);

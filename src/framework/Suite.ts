@@ -4,9 +4,6 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { SuiteRunner } from "../core/SuiteRunner";
-import type { SuiteReport } from "../types";
-
 export type TestFunction = () => void | Promise<void>;
 type HookFunction = () => void | Promise<void>;
 
@@ -20,56 +17,61 @@ export interface Hook {
     fn: HookFunction;
 }
 
-export interface Suite {
+export interface SuiteCase {
     description: string;
     tests: Test[];
     hooks: Hook[];
-    children: Suite[];
+    children: SuiteCase[];
 }
 
-const rootSuite: Suite = {
-    description: "Root Suite of the file (always empty)",
-    children: [],
-    tests: [],
-    hooks: [],
-};
-let currentSuite: Suite = rootSuite;
+export default class Suite {
+    rootSuite: SuiteCase;
+    currentSuite: SuiteCase;
 
-// Register a new describe block
-export function describe(description: string, callback: () => void): void {
-    const newSuite: Suite = {
-        description,
-        tests: [],
-        hooks: [],
-        children: [],
-    };
-    currentSuite.children.push(newSuite);
-    const previousSuite = currentSuite; // Save current suite
-    currentSuite = newSuite; // Set the current suite to the new one
+    constructor() {
+        this.rootSuite = {
+            description: "Root",
+            children: [],
+            tests: [],
+            hooks: [],
+        };
+        this.currentSuite = this.rootSuite;
+    }
 
-    callback(); // Execute the callback to register tests/hooks in the current suite
+    // Register a new describe block
+    public describe(description: string, callback: () => void): void {
+        const newSuite: SuiteCase = {
+            description,
+            tests: [],
+            hooks: [],
+            children: [],
+        };
+        this.currentSuite.children.push(newSuite);
+        const previousSuite = this.currentSuite; // Save current suite
+        this.currentSuite = newSuite; // Set the current suite to the new one
 
-    currentSuite = previousSuite; // Restore previous suite context
-}
+        callback(); // Execute the callback to register tests/hooks in the current suite
 
-// Register a test case
-export function it(description: string, fn: TestFunction): void {
-    currentSuite.tests.push({ description, fn });
-}
+        this.currentSuite = previousSuite; // Restore previous suite context
+    }
 
-// Register a beforeAll hook
-export function beforeAll(fn: HookFunction): void {
-    currentSuite.hooks.push({ type: "beforeAll", fn });
-}
+    // Register a test case
+    public it(description: string, fn: TestFunction): void {
+        this.currentSuite.tests.push({ description, fn });
+    }
 
-// Register a beforeEach hook
-export function beforeEach(fn: HookFunction): void {
-    currentSuite.hooks.push({ type: "beforeEach", fn });
-}
+    // Register a beforeAll hook
+    public beforeAll(fn: HookFunction): void {
+        this.currentSuite.hooks.push({ type: "beforeAll", fn });
+    }
 
-// Execute all suites starting from the root suite
-export async function run(): Promise<SuiteReport> {
-    const rootRunner = new SuiteRunner(rootSuite);
-    const report = await rootRunner.run();
-    return report
+    // Register a beforeEach hook
+    public beforeEach(fn: HookFunction): void {
+        this.currentSuite.hooks.push({ type: "beforeEach", fn });
+    }
+
+    run(): SuiteCase {
+        
+        return this.rootSuite;
+    }
 }

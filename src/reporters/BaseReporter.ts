@@ -9,7 +9,7 @@ import kleur from "../utils/kleur";
 import path from "path";
 
 export class BaseReporter {
-  onStart(file: string) {
+  static onStart(file: string) {
     const directoryPath = path.dirname(file);
     const fileName = path.basename(file);
 
@@ -18,7 +18,7 @@ export class BaseReporter {
     );
   }
 
-  onTestFileReport(file: string, duration: number) {
+  static onTestFileReport(file: string, duration: number) {
     const fileName = path.basename(file);
     const directoryPath = path.dirname(file)
     console.log(
@@ -26,14 +26,14 @@ export class BaseReporter {
     );
   }
 
-  onSuiteReport(
+  static onSuiteReport(
     description: string,
     passed: number,
     failed: number,
     indentation: number = 0,
   ) {
     const total = passed + failed;
-    const indent = " ".repeat(indentation); // Add indentation
+    const indent = indentation > -1 ? " ".repeat(indentation) : ""; // Add indentation
 
     console.log(
       `${indent}${kleur.bgWhite(kleur.black(kleur.bold(description)))} ${kleur.gray("---")} ${
@@ -44,7 +44,7 @@ export class BaseReporter {
     );
   }
 
-  async onFail(
+  static onFail(
     description: string,
     error: {
       message: string;
@@ -55,23 +55,12 @@ export class BaseReporter {
     const indent = " ".repeat(indentation); // Add indentation
 
     console.log(
-      `\n${indent}${kleur.bgRed(" FAILED ")} ${kleur.bgBlack(kleur.white(description))}\n`,
+      `\n${indent}${kleur.bgRed(kleur.bold(" FAILED "))} ${kleur.bgBlack(kleur.white(description))}\n`,
     );
-    const formattedError = await new ErrorFormatter().format(
-      error.message,
-      error.stack,
-    );
-
-    // Add indentation to each line of the formatted error
-    const indentedError = formattedError
-      .split("\n")
-      .map((line) => indent + line)
-      .join("\n");
-
-    console.log(indentedError);
+    new ErrorFormatter().format(error.message, error.stack)
   }
 
-  onSummary(passed: number, failed: number, duration: number) {
+  static onSummary(passed: number, failed: number, duration: number) {
     const total = passed + failed;
 
     console.log(`

@@ -5,56 +5,55 @@
  */
 
 import type { HookResult, SuiteReport, TestResult } from "../types";
-import type { Hook, Suite, Test } from "../framework/Suite";
+import type { Hook, SuiteCase, Test } from "../framework/Suite";
 
 export class SuiteRunner {
-    private suite: Suite;
-    private suiteReport: SuiteReport;
+    suite: SuiteCase
 
-    constructor(suite: Suite) {
+    constructor(suite: SuiteCase) {
         this.suite = suite;
-        this.suiteReport = {
+    }
+
+    /**
+     * Execute the suite and return a new report.
+     */
+    public async run(): Promise<SuiteReport> {
+        const suiteReport: SuiteReport = {
             passed: true,
-            description: suite.description,
+            description: this.suite.description,
             passedTests: 0,
             failedTests: 0,
             tests: [],
             hooks: [],
             children: [],
         };
+
+        try {
+            await this.runHooks(suiteReport);
+            await this.runTests(suiteReport);
+            await this.runChildSuites(suiteReport);
+        } catch (error: any) {
+            suiteReport.error = error;
+        } finally {
+            return suiteReport; // Return the new report for this suite
+        }
     }
 
-    /**
-     * Reset the passedTests and failedTests counters for a new suite.
-     */
-    private resetCounters(): void {
-        this.suiteReport.passedTests = 0;
-        this.suiteReport.failedTests = 0;
-    }
-
-    /**
-     * Run all hooks (beforeAll) for the suite.
-     */
-    private async runHooks(): Promise<void> {
+    private async runHooks(suiteReport: SuiteReport): Promise<void> {
         for (const hook of this.suite.hooks) {
             const hookResult = await this.executeHook(hook);
-            this.suiteReport.hooks.push(hookResult);
+            suiteReport.hooks.push(hookResult);
 
             // Increment passed or failed counters based on hook result
             if (hookResult.passed) {
-                this.suiteReport.passedTests += 1;
+                suiteReport.passedTests += 1;
             } else {
-                this.suiteReport.failedTests += 1;
-                this.suiteReport.passed = false;
+                suiteReport.failedTests += 1;
+                suiteReport.passed = false;
             }
         }
     }
 
-    /**
-     * Executes a single hook and handles errors.
-     * @param hook - The hook function to execute.
-     * @returns The result of the hook execution.
-     */
     private async executeHook(hook: Hook): Promise<HookResult> {
         let hookResult: HookResult = {
             type: hook.type,
@@ -67,36 +66,28 @@ export class SuiteRunner {
             hookResult.passed = false;
             hookResult.error = {
                 message: error.message,
-                stack: error.stack
-            }
+                stack: error.stack,
+            };
         }
 
         return hookResult;
     }
 
-    /**
-     * Run all tests in the suite.
-     */
-    private async runTests(): Promise<void> {
+    private async runTests(suiteReport: SuiteReport): Promise<void> {
         for (const test of this.suite.tests) {
             const testResult = await this.executeTest(test);
-            this.suiteReport.tests.push(testResult);
+            suiteReport.tests.push(testResult);
 
             // Increment passed or failed counters based on test result
             if (testResult.passed) {
-                this.suiteReport.passedTests += 1;
+                suiteReport.passedTests += 1;
             } else {
-                this.suiteReport.failedTests += 1;
-                this.suiteReport.passed = false;
+                suiteReport.failedTests += 1;
+                suiteReport.passed = false;
             }
         }
     }
 
-    /**
-     * Executes a single test and handles errors.
-     * @param test - The test function to execute.
-     * @returns The result of the test execution.
-     */
     private async executeTest(test: Test): Promise<TestResult> {
         let testResult: TestResult = {
             description: test.description,
@@ -107,54 +98,21 @@ export class SuiteRunner {
             await test.fn();
         } catch (error: any) {
             testResult.passed = false;
-            testResult.error =  {
-                message: error.message,
-                stack: error.stack
-            }
+            testResult.error = error;
         }
 
         return testResult;
     }
 
-    /**
-     * Run all child suites recursively.
-     */
-    private async runChildSuites(): Promise<void> {
+    private async runChildSuites(suiteReport: SuiteReport): Promise<void> {
         for (const childSuite of this.suite.children) {
-            // Reset counters for the child suite
             const childRunner = new SuiteRunner(childSuite);
-            childRunner.resetCounters(); // Reset counters for child suite
-
             const childResult = await childRunner.run();
-            this.suiteReport.children.push(childResult);
-
-            // Add the passed/failed tests from the child suite to the parent suite
-            this.suiteReport.passedTests += childResult.passedTests;
-            this.suiteReport.failedTests += childResult.failedTests;
+            suiteReport.children.push(childResult);
 
             if (!childResult.passed) {
-                this.suiteReport.passed = false;
+                suiteReport.passed = false;
             }
         }
     }
-
-    /**
-     * Run the entire suite (hooks, tests, and child suites), and return the result.
-     */
-    public async run(): Promise<SuiteReport> {
-        try {
-            // Reset counters at the beginning of the run
-            this.resetCounters();
-
-            // Run hooks, tests, and child suites
-            await this.runHooks();
-            await this.runTests();
-            await this.runChildSuites();
-        } catch (error: any) {
-            this.suiteReport.error = error
-        }
-        // Report the results for this specific suite
-        return this.suiteReport;
-    }
 }
-

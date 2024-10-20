@@ -6,8 +6,6 @@
 
 import { TestFile } from "../types";
 import { Log } from "../utils/Log";
-import { BaseReporter } from "../reporters/BaseReporter";
-import { ErrorFormatter } from "../utils/ErrorFormatter"
 import { Test } from "./Test"
 
 export class TestsRunner {
@@ -26,26 +24,12 @@ export class TestsRunner {
       this.testFiles.map(async (testFile) => {
         Log.info(`Running file: ${testFile.path}`);
 
-        new BaseReporter().onStart(testFile.path)
-
-        const startTime = Date.now(); // Start tracking suite duration
-
         try {
-          testFile.report = await new Test(testFile.path).run();
-          testFile.status = testFile.report.passed
-            ? "success"
-            : "failed";
+          await new Test(testFile.path).run();
         } catch (error: any) {
-          testFile.error = {
-            message: error.message,
-            stack: error.stack
-          }
-          testFile.status = "failed";
+          console.error("Unexpected behaviour Due to: ", error)
+          process.exit(1)
         }
-
-        const endTime = Date.now(); // End tracking suite duration
-        // Calculate and set the duration for the whole suite
-        testFile.duration = endTime - startTime;
       }),
     );
   }
