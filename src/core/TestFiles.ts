@@ -6,52 +6,51 @@
 
 import { Log } from "../utils/Log";
 import { TestFile } from "../types";
-import { Config } from "../config/Config"; // Assuming you have a Config class
+import type { Config } from "../config/Config";
 import { Glob } from "./Glob";
+import type { ArgsParser } from "../cli/ArgParser";
 
 export class TestFiles {
   private testFiles: TestFile[] = [];
-  private config: Config = Config.init();
+
+  constructor(private args: ArgsParser, private config: Config) {}
 
   /**
    * Loads all test files by dynamically importing them and initializes Suite instances.
    */
   async load(): Promise<void> {
     try {
-      const testDirectory = this.config.get("testDirectory") || "";
-      const filePattern = this.config.get("filePattern");
-      const excludePatterns = this.config.get("exclude");
+      const testDirectory: string = this.args.get("testDirectory") ?? this.config.get("testDirectory");
+      const pattern: string | string[] = this.args.get("pattern") ?? this.config.get("pattern");
+      const maxTestFiles : number | undefined = this.args.get("maxTestFiles")
+      const excludePattern: string | string[] = this.config.get("exclude");
 
       Log.info(`Tests directory: ${testDirectory}`);
-      Log.info(`Using file patterns: ${filePattern}`);
-      Log.info(
-        `Excluding patterns: ${excludePatterns ? excludePatterns : "None"}`,
-      );
+      Log.info(`Max test files: ${maxTestFiles}`);
+      Log.info(`Using file patterns: ${pattern}`);
+      Log.info(`Excluding patterns: ${excludePattern}`);
 
       // Use Glob to find test files
-      const parser = new Glob({
-        ignoreDotFiles: true,
-        excludedPattern: excludePatterns
-          ? Array.isArray(excludePatterns)
-            ? excludePatterns
-            : [excludePatterns]
-          : null,
-        searchInOneFolder: testDirectory ? testDirectory : null,
+      const glob = new Glob({
+        excludePattern,
+        pattern,
+        maxTestFiles,
+        testDirectory
       });
 
       // Now, pass the directory and file patterns to Glob
-      const files = await parser.parse(testDirectory, filePattern);
-      
+      const files = await glob.collect();
+
       if (files.length === 0) {
         Log.error("No test files were found.");
         console.log(
-          `No suites were found applying the following pattern(s): ${filePattern} in the directory: ${testDirectory ? testDirectory : process.cwd()} \n`
+          `No suites were found applying the following pattern(s): ${pattern} in the directory: ${testDirectory ? testDirectory : process.cwd()} \n`,
         );
         process.exit(1);
       }
 
       this.testFiles = files.map((testFile) => ({
-        path: testFile
+        path: testFile,
       }));
 
       Log.info(`Found test files: ${files.join(", ")}`);

@@ -4,17 +4,16 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import run from "./commands/run";
 import { version, name, description } from "../../package.json";
 import { Log } from "../utils/Log";
 import { ArgsParser } from "../cli/ArgParser";
 import COMMANDS from "../constants/commands";
+import { Reporter } from "../core/Reporter";
+import { TestFiles } from "../core/TestFiles";
+import { TestsRunner } from "../core/TestsRunner";
+import { Config } from "../config/Config";
 
 class CLI {
-  constructor() {
-    this.init();
-  }
-
   private printVersion() {
     console.info(`Version: ${version}`);
   }
@@ -38,7 +37,7 @@ class CLI {
       })
       .join("\n"); // Join all options for display
 
-    process.stdout.write(
+    console.log(
       name +
         "  " +
         description +
@@ -52,7 +51,7 @@ class CLI {
     );
   }
 
-  private init() {
+  async init() {
     Log.info("CLI Running");
 
     if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -66,12 +65,19 @@ class CLI {
       return;
     }
 
-    new ArgsParser();
+    const args = new ArgsParser();
+    const config = new Config(args)
+    new Log(args.get("logLevel"), args.get("verbose"))
+    
+    const testFiles = new TestFiles(args, config)
+    await testFiles.load()
+    const runner = new TestsRunner(testFiles.get());
+    await runner.runFiles()
 
-    run();
+    Reporter.reportSummary()
   }
 }
 
 
 // Instantiate and run the CLI
-new CLI();
+new CLI().init()

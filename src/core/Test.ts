@@ -11,10 +11,9 @@ import vm from "vm";
 import { createRequire } from "module";
 import check from "syntax-error";
 import { Reporter } from "./Reporter";
-import Suite, { SuiteCase } from "../framework/Suite";
+import type { SuiteCase } from "../framework/Suite";
 import { SuiteRunner } from "./SuiteRunner";
-import { ErrorFormatter } from "../utils/ErrorFormatter";
-import { describe } from "node:test";
+import { ErrorFormatter } from "../utils/ErrorFormatter"
 
 export class Test {
 

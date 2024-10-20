@@ -4,8 +4,10 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import { CLIOptions } from "../types";
+
 const COMMANDS: Record<
-  string,
+  keyof CLIOptions,
   { description: string; requiresValue: boolean; shortValue: string }
 > = {
   config: {
@@ -24,34 +26,39 @@ const COMMANDS: Record<
     shortValue: "v",
   },
   testDirectory: {
-    description: "Set a diretory to search for test files. ",
+    description: "Set a directory to search for test files.",
     requiresValue: true,
     shortValue: "t",
   },
-  filePattern: {
-    description: "Set a fioe pattern to search for tests",
+  pattern: {
+    description: "Set a file pattern to search for tests",
     requiresValue: true,
-    shortValue: "f",
-  },
-  silent: {
-    description: "Show errors only",
-    requiresValue: true,
-    shortValue: "s",
+    shortValue: "p",
   },
   outputDir: {
     description: "Directory to write reporters into. (Default=test-result)",
     requiresValue: true,
     shortValue: "o",
   },
-  useColors: {
-    description: "Set if you want a colored output.",
-    requiresValue: false,
-    shortValue: "co",
+  exclude: {
+    description: "Exclude specific directories or files from testing",
+    requiresValue: true,
+    shortValue: "e",
   },
-  clearConsole: {
-    description: "Clear console before reporting",
+  reporters: {
+    description: "Specify reporters to use for test results",
+    requiresValue: true,
+    shortValue: "r",
+  },
+  useColors: {
+    description: "Enable or disable colored output in the test results",
     requiresValue: false,
-    shortValue: "cc",
+    shortValue: "color",
+  },
+  maxTestFiles: {
+    description: "Set the maximum number of test files to process",
+    requiresValue: true,
+    shortValue: "mtf",
   },
 };
 

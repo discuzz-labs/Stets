@@ -3,55 +3,62 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-import { ArgsParser } from "../cli/ArgParser";
 import kleur from "./kleur";
 
 export class Log {
   // Define log levels in descending order of priority
-  static logLevelPriority: Record<string, number> = {
-    "error": 1,
-    "warn": 2,
-    "success": 3,
-    "info": 4
+  private static logLevelPriority: Record<string, number> = {
+    error: 1,
+    warn: 2,
+    success: 3,
+    info: 4,
   };
 
-  // Get current log level from options or default to "info"
-  static getCurrentLogLevel(): string {
-    return ArgsParser.get("logLevel")?.toLowerCase() || "";
+  // Static variables for log level and verbosity
+  private static logLevel: string;
+  private static verbose: boolean = false;
+
+  // Static initialization method to configure the logger
+  constructor(logLevel: string = "", verbose: boolean = false) {
+    Log.logLevel = logLevel.toLowerCase();
+    Log.verbose = verbose;
   }
 
   // Check if the message should be logged based on the current log level
-  static schouldBe(logLevel: string): boolean {
-    const currentLogLevel = this.getCurrentLogLevel();
-    return this.logLevelPriority[logLevel.toLowerCase()] <= this.logLevelPriority[currentLogLevel];
+  private static shouldBe(logLevel: string): boolean {
+    return (
+      Log.logLevelPriority[logLevel.toLowerCase()] <=
+      Log.logLevelPriority[Log.logLevel]
+    );
   }
 
   // Check if verbose mode is enabled
-  static isVerbose(): boolean {
-    return ArgsParser.has("verbose") && ArgsParser.get("verbose")?.toLowerCase() === "true";
+  private static isVerbose(): boolean {
+    return Log.verbose;
   }
 
-  static error(message: string) {
-    if (this.schouldBe("error") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.red("ERROR")}] ${message} \n`);
+  // Static log methods using console
+  public static error(message: string) {
+    if (Log.shouldBe("error") || Log.isVerbose()) {
+      console.error(`[${kleur.red("ERROR")}] ${message}`);
     }
   }
 
-  static warn(message: string) {
-    if (this.schouldBe("warning") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.yellow("WARNING")}] ${message} \n`);
+  public static warn(message: string) {
+    if (Log.shouldBe("warn") || Log.isVerbose()) {
+      console.warn(`[${kleur.yellow("WARNING")}] ${message}`);
     }
   }
 
-  static info(message: string) {
-    if (this.schouldBe("info") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.blue("INFO")}]  ${message} \n`);
+  public static info(message: string) {
+    if (Log.shouldBe("info") || Log.isVerbose()) {
+      console.info(`[${kleur.blue("INFO")}] ${message}`);
     }
   }
 
-  static success(message: string) {
-    if (this.schouldBe("success") || this.isVerbose()) {
-      process.stdout.write(`[${kleur.green("SUCCESS")}] ${message} \n`);
+  public static success(message: string) {
+    if (Log.shouldBe("success") || Log.isVerbose()) {
+      console.log(`[${kleur.green("SUCCESS")}] ${message}`);
     }
   }
 }

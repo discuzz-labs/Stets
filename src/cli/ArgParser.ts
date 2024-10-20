@@ -4,35 +4,14 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Log } from "../utils/Log";
-import { TestConfig } from "../types";
+import type { CLIOptions } from "../types";
 import COMMANDS from "../constants/commands";
-import { ENV_PREFIX } from "../constants/env";
-
-type CLIOptions = Partial<TestConfig> & {
-  verbose?: boolean;
-  logLevel?: string;
-  config?: string;
-};
 
 export class ArgsParser {
   options: Partial<CLIOptions> = {};
 
   constructor() {
     this.parseArgs(process.argv.slice(2));
-    this.setToEnv();
-  }
-
-  /**
-   * Set the parsed options to environment variables.
-   */
-  private setToEnv(): void {
-    Object.keys(this.options).forEach((key) => {
-      const envKey = `${ENV_PREFIX}${key.toUpperCase()}`;
-      const value = this.options[key as keyof CLIOptions];
-      process.env[envKey] = String(value);
-      Log.info(`Setting ${envKey}=${value}`);
-    });
   }
 
   /**
@@ -101,14 +80,14 @@ export class ArgsParser {
   /**
    * Static method to check if an option exists in process.env
    */
-  static has(option: keyof CLIOptions ): boolean {
-    return process.env.hasOwnProperty(`${ENV_PREFIX}${option.toUpperCase()}`);
+  has(option: keyof CLIOptions ): boolean {
+    return this.options.hasOwnProperty(option);
   }
 
   /**
    * Static method to get an option from process.env
    */
-  static get(option: keyof CLIOptions ): string | undefined {
-    return process.env[`${ENV_PREFIX}${option.toUpperCase()}`];
+  public get<K extends keyof CLIOptions>(key: K): CLIOptions[K] {
+    return this.options[key];
   }
 }

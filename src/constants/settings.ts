@@ -4,8 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
-const ENV_PREFIX: string = "STETS_";
-
-export {
-  ENV_PREFIX
+const settings = {
+  MAX_TEST_FILES: 1000
 }
+
+export default settings

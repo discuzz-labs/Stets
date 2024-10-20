@@ -3,6 +3,14 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
+export type CLIOptions = Partial<TestConfig> & {
+  verbose?: boolean;
+  logLevel?: string;
+  config?: string;
+  useColors?: boolean;
+  maxTestFiles?: number;
+};
+
 export type TestFile = {
   path: string;
 };
@@ -32,13 +40,11 @@ export type SuiteReport = {
 
 export type TestConfig = {
   testDirectory: string;
-  filePattern: string | string[];
+  pattern: string | string[];
   exclude: string | string[];
   //reporters
   reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
   outputDir: string;
-
-  useColors: boolean;
 };
 
 export type StetsConfig = Partial<TestConfig>;
