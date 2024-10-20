@@ -8,7 +8,7 @@ import type { CLIOptions } from "../types";
 import COMMANDS from "../constants/commands";
 
 export class ArgsParser {
-  options: Partial<CLIOptions> = {};
+  options: CLIOptions = {};
 
   constructor() {
     this.parseArgs(process.argv.slice(2));
@@ -18,6 +18,8 @@ export class ArgsParser {
    * Parse command-line arguments and populate options.
    */
   private parseArgs(args: string[]): void {
+    let currentOption: keyof CLIOptions | null = null;
+
     args.forEach((arg) => {
       let flagKey: keyof CLIOptions | null;
       let value: string | boolean = true; // Default value for flags without `=`
@@ -27,21 +29,41 @@ export class ArgsParser {
         const [key, val] = arg.split("=");
         flagKey = this.normalizeFlag(key);
         value = val; // Assign the value from the argument
+        currentOption = null; // Reset current option after a key=value pair
+      } else if (arg.startsWith("-")) {
+        // It's a flag, so normalize it
+        flagKey = this.normalizeFlag(arg);
+        currentOption = flagKey;
+      } else if (currentOption) {
+        // This handles positional values that follow a flag, e.g., -f opt1 opt2
+        flagKey = currentOption;
+        value = arg;
       } else {
         flagKey = this.normalizeFlag(arg);
       }
 
       // Validate the flag and assign value/flag appropriately
       if (flagKey && flagKey in COMMANDS) {
-        if (COMMANDS[flagKey].requiresValue && value === true) {
+        const commandConfig = COMMANDS[flagKey];
+
+        if (commandConfig.requiresValue && value === true) {
           console.error(`Option ${arg} requires a value. Use ${arg}=value.`);
-          process.exit(1)
+          process.exit(1);
+        }
+
+        // If the command expects an array of values, collect multiple values
+        if (commandConfig.isArray) {
+          // Ensure it's an array and then push the new value
+          const arrayValue = (this.options[flagKey] as string[]) || [];
+          arrayValue.push(value as string);
+          this.options[flagKey] = arrayValue as any;
         } else {
           this.options[flagKey] = value as any;
         }
-      } else {
+
+      } else if (flagKey) {
         console.warn(`Unknown or unsupported option: ${arg}`);
-        process.exit(1)
+        process.exit(1);
       }
     });
   }
@@ -59,7 +81,7 @@ export class ArgsParser {
 
     // Check if it's a valid long or short option in the commandConfig
     if (COMMANDS.hasOwnProperty(normalizedFlag as string)) {
-      return normalizedFlag as keyof CLIOptions ;
+      return normalizedFlag as keyof CLIOptions;
     }
 
     return null; // Return null if the flag is not recognized
@@ -78,16 +100,17 @@ export class ArgsParser {
   }
 
   /**
-   * Static method to check if an option exists in process.env
+   * Check if an option exists.
    */
-  has(option: keyof CLIOptions ): boolean {
+  has(option: keyof CLIOptions): boolean {
     return this.options.hasOwnProperty(option);
   }
 
   /**
-   * Static method to get an option from process.env
+   * Get an option value.
    */
   public get<K extends keyof CLIOptions>(key: K): CLIOptions[K] {
     return this.options[key];
   }
 }
+

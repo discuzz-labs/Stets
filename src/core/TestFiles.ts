@@ -9,6 +9,7 @@ import { TestFile } from "../types";
 import type { Config } from "../config/Config";
 import { Glob } from "./Glob";
 import type { ArgsParser } from "../cli/ArgParser";
+import path from "path";
 
 export class TestFiles {
   private testFiles: TestFile[] = [];
@@ -24,7 +25,8 @@ export class TestFiles {
       const pattern: string | string[] = this.args.get("pattern") ?? this.config.get("pattern");
       const maxTestFiles : number | undefined = this.args.get("maxTestFiles")
       const excludePattern: string | string[] = this.config.get("exclude");
-
+      const passedFiles: string[] = this.args.get("file") ?? [];
+      
       Log.info(`Tests directory: ${testDirectory}`);
       Log.info(`Max test files: ${maxTestFiles}`);
       Log.info(`Using file patterns: ${pattern}`);
@@ -39,7 +41,8 @@ export class TestFiles {
       });
 
       // Now, pass the directory and file patterns to Glob
-      const files = await glob.collect();
+      const files =  passedFiles.map(file => path.resolve(file)) ?? await glob.collect();
+      ;
 
       if (files.length === 0) {
         Log.error("No test files were found.");

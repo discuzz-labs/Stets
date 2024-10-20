@@ -9,6 +9,7 @@ export type CLIOptions = Partial<TestConfig> & {
   config?: string;
   useColors?: boolean;
   maxTestFiles?: number;
+  file?: string[];
 };
 
 export type TestFile = {
