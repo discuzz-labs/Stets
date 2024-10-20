@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { ErrorFormatter } from "../utils/ErrorFormatter";
+import { Formatter } from "../utils/Formatter";
 import kleur from "../utils/kleur";
 import path from "path";
 
@@ -50,6 +50,7 @@ export class BaseReporter {
       message: string;
       stack: string;
     },
+    file: string,
     indentation: number = 0,
   ) {
     const indent = " ".repeat(indentation); // Add indentation
@@ -57,7 +58,7 @@ export class BaseReporter {
     console.log(
       `\n${indent}${kleur.bgRed(kleur.bold(" FAILED "))} ${kleur.bgBlack(kleur.white(description))}\n`,
     );
-    new ErrorFormatter().format(error.message, error.stack)
+     Formatter.formatError(error.message, error.stack, 10, file)
   }
 
   static onSummary(passed: number, failed: number, duration: number) {

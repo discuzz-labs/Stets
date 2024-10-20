@@ -13,16 +13,22 @@ import check from "syntax-error";
 import { Reporter } from "./Reporter";
 import type { SuiteCase } from "../framework/Suite";
 import { SuiteRunner } from "./SuiteRunner";
-import { ErrorFormatter } from "../utils/ErrorFormatter"
+import { Formatter } from "../utils/Formatter";
+import { ConsoleMock } from "./mocks";
+import kleur from "../utils/kleur";
 
 export class Test {
+  private consoleMock: ConsoleMock;
 
-  constructor(private file: string) {}
+  constructor(private file: string) {
+    // Initialize ConsoleMock to capture console logs
+    this.consoleMock = new ConsoleMock();
+  }
 
   public async run(): Promise<void> {
     const startTime = Date.now();
     try {
-      const code = this.loadTestFile();
+      let code = this.loadTestFile();
       if (this.hasSyntaxErrors(code)) return;
 
       const sandbox = this.createSandbox();
@@ -70,6 +76,7 @@ export class Test {
     return vm.createContext({
       global: {},
       globalThis: {},
+      console: this.consoleMock, // Use the ConsoleMock here for the VM context
       require: customRequire,
     });
   }
@@ -79,13 +86,15 @@ export class Test {
     const duration = Date.now() - startTime;
 
     Reporter.reportTestFile(this.file, duration);
-    Reporter.reportSuite(report, -1);
+    Reporter.reportSuite(report, this.file);
+
+    this.replayLogs();
   }
 
   private handleError(error: any, startTime: number): void {
     const duration = Date.now() - startTime;
     Reporter.reportTestFile(this.file, duration);
-    new ErrorFormatter().format(error.message, error.stack ?? "")
+    Formatter.formatError(error.message, error.stack ?? "");
   }
 
   private reportInvalidSuite(startTime: number): void {
@@ -94,9 +103,25 @@ export class Test {
     console.log(
       `The suite received from the test file ${this.file} is not a valid Suite. You probably forgot to call run() at the end of the file.`,
     );
+
+    this.replayLogs();
   }
 
- isSuite(obj: any): obj is SuiteCase {
+  // Method to replay the logs
+  private replayLogs(): void {
+    this.consoleMock.logs.forEach((log) => {
+      const { method, args, stack } = log;
+      console.log(kleur.blue(kleur.bold(`\nConsole.${method}()\n`)));
+      // Dynamically call the method using keyof Console to ensure it's valid
+      {
+        (console[method as keyof Console] as Function)(...args);
+      }
+      
+      Formatter.parseStack(stack ?? "" , 4, this.file)
+    });
+  }
+
+  private isSuite(obj: any): obj is SuiteCase {
     return (
       obj &&
       typeof obj.description === "string" &&
@@ -112,7 +137,7 @@ export class Test {
           typeof hook.fn === "function",
       ) &&
       Array.isArray(obj.children) &&
-      obj.children.every((child: any) => this.isSuite(child)) // Arrow function to maintain context of 'this'
+      obj.children.every((child: any) => this.isSuite(child))
     );
   }
 }

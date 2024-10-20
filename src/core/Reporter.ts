@@ -1,5 +1,5 @@
 import { BaseReporter } from "../reporters/BaseReporter";
-import { HookResult, SuiteReport, TestResult } from "../types"
+import { HookResult, SuiteReport, TestResult } from "../types";
 
 export class Reporter {
   static baseReporter = BaseReporter;
@@ -22,7 +22,11 @@ export class Reporter {
    * @param {SuiteReport} suite - The test suite to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  static reportSuite(suite: SuiteReport, indentationLevel: number) {
+  static reportSuite(
+    suite: SuiteReport,
+    file: string,
+    indentationLevel: number = -1,
+  ) {
     this.baseReporter.onSuiteReport(
       suite.description,
       suite.passedTests,
@@ -32,17 +36,17 @@ export class Reporter {
 
     // Report hooks (setup/teardown)
     for (const hook of suite.hooks) {
-      this.reportHook(hook, indentationLevel);
+      this.reportHook(hook, file, indentationLevel);
     }
 
     // Report individual tests within the suite
     for (const test of suite.tests) {
-      this.reportTest(test, indentationLevel);
+      this.reportTest(test, file, indentationLevel);
     }
 
     // Recursively report on child suites (nested suites)
     for (const childSuite of suite.children) {
-      this.reportSuite(childSuite, indentationLevel + 1);
+      this.reportSuite(childSuite, file, indentationLevel + 1);
     }
   }
 
@@ -51,11 +55,16 @@ export class Reporter {
    * @param {Test} test - The test to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  private static reportTest(test: TestResult, indentationLevel: number) {
+  private static reportTest(
+    test: TestResult,
+    file: string,
+    indentationLevel: number,
+  ) {
     if (!test.passed) {
       this.baseReporter.onFail(
         test.description,
         test.error || { message: "Unexpected Error", stack: "" },
+        file,
         indentationLevel,
       );
 
@@ -70,11 +79,16 @@ export class Reporter {
    * @param {Hook} hook - The hook to report.
    * @param {number} indentationLevel - The current level of indentation for logging.
    */
-  private static reportHook(hook: HookResult, indentationLevel: number) {
+  private static reportHook(
+    hook: HookResult,
+    file: string,
+    indentationLevel: number,
+  ) {
     if (!hook.passed) {
       this.baseReporter.onFail(
         `Hook: ${hook.type}`,
         hook.error || { message: "Unexpected Error", stack: "" },
+        file,
         indentationLevel,
       );
       this.allFailedTests += 1;
