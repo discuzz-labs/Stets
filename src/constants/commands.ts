@@ -63,12 +63,6 @@ const COMMANDS: Record<
     isArray: true,
     shortValue: "r",
   },
-  useColors: {
-    description: "Enable or disable colored output in the test results",
-    requiresValue: false,
-    isArray: false,
-    shortValue: "color",
-  },
   maxTestFiles: {
     description: "Set the maximum number of test files to process",
     isArray: false,

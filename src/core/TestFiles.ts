@@ -25,7 +25,7 @@ export class TestFiles {
       const pattern: string | string[] = this.args.get("pattern") ?? this.config.get("pattern");
       const maxTestFiles : number | undefined = this.args.get("maxTestFiles")
       const excludePattern: string | string[] = this.config.get("exclude");
-      const passedFiles: string[] = this.args.get("file") ?? [];
+      const passedFiles: string[] | undefined = this.args.get("file") ?? undefined;
       
       Log.info(`Tests directory: ${testDirectory}`);
       Log.info(`Max test files: ${maxTestFiles}`);
@@ -41,7 +41,7 @@ export class TestFiles {
       });
 
       // Now, pass the directory and file patterns to Glob
-      const files =  passedFiles.map(file => path.resolve(file)) ?? await glob.collect();
+      const files =  passedFiles?.map(file => path.resolve(file)) ?? await glob.collect();
       ;
 
       if (files.length === 0) {

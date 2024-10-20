@@ -5,7 +5,24 @@
  */
 
 export default class kleur {
+  // Flag to indicate if colors should be disabled
+  private static colorsDisabled: boolean = false;
+
+  // Check if FORCE_COLOR is set to 0 or -no-color is in process.argv
+  static initialize() {
+    const forceColor = process.env.FORCE_COLOR;
+    const noColorArg = process.argv.includes('-no-color');
+
+    if (forceColor === '0' || noColorArg) {
+      this.colorsDisabled = true;
+    }
+  }
+
+  // Function to apply the color if not disabled
   private static apply(code: string, text: string | number): string {
+    if (this.colorsDisabled) {
+      return String(text);  // Return plain text if colors are disabled
+    }
     return `\x1b[${code}m${text}\x1b[0m`;
   }
 
@@ -21,11 +38,11 @@ export default class kleur {
   public static yellow(text: string | number): string {
     return this.apply("33", text);
   }
-  
+
   public static bgBlack(text: string | number): string {
     return this.apply("40", text);
   }
-  
+
   public static blue(text: string | number): string {
     return this.apply("34", text);
   }
@@ -64,3 +81,6 @@ export default class kleur {
     return this.apply("4", text);
   }
 }
+
+// Initialize the color detection when the class is imported or used
+kleur.initialize();

@@ -7,7 +7,6 @@ export type CLIOptions = Partial<TestConfig> & {
   verbose?: boolean;
   logLevel?: string;
   config?: string;
-  useColors?: boolean;
   maxTestFiles?: number;
   file?: string[];
 };

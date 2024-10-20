@@ -60,7 +60,6 @@ export class Glob {
             : this.patterns;
 
         const absoluteDir = resolve(this.testDirectory || ".");
-        console.log(absoluteDir);
         const collectedFiles = await this.collectFiles(absoluteDir, searchPattern);
         return collectedFiles;
     }
