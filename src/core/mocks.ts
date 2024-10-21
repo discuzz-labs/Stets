@@ -1,4 +1,6 @@
 import { Console } from "console";
+import Module, { createRequire } from "module";
+import path from "path";
 
 // ConsoleMock class to capture logs in the VM context
 export class ConsoleMock extends Console {
@@ -103,4 +105,30 @@ export class ConsoleMock extends Console {
   resetTimers(): void {
     this.timers.clear();
   }
+}
+
+// Process
+
+export function Process(mainFilePath: string) {
+  // Shallow clone the main process object
+  const newProcess = { ...process };
+
+  const mainFileDir = path.dirname(mainFilePath);
+
+  // Rewrite the mainModule.paths only
+  if (newProcess.mainModule) {
+    newProcess.mainModule.filename = mainFileDir;
+    newProcess.mainModule.paths = [
+      mainFileDir,
+      path.join(mainFileDir, "node_modules"),
+    ];
+  }
+  
+  newProcess.env = {
+    ...process.env,
+    RUNNING: "true",
+    ISTEST: "true"
+  };
+
+  return newProcess;
 }

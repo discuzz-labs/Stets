@@ -23,6 +23,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "syntax-error": "^1.4.0"
   }
 }

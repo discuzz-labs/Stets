@@ -9,6 +9,7 @@ export type CLIOptions = Partial<TestConfig> & {
   config?: string;
   maxTestFiles?: number;
   file?: string[];
+  env?: string[];
 };
 
 export type TestFile = {
@@ -45,6 +46,8 @@ export type TestConfig = {
   //reporters
   reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
   outputDir: string;
+
+  env: string[];
 };
 
 export type StetsConfig = Partial<TestConfig>;

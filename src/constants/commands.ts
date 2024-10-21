@@ -75,6 +75,12 @@ const COMMANDS: Record<
     isArray: true,
     shortValue: "f",
   },
+  env: {
+    description: "Env files to load.",
+    requiresValue: true,
+    isArray: true,
+    shortValue: "env",
+  },
 };
 
 export default COMMANDS;

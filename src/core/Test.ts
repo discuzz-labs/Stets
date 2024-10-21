@@ -14,7 +14,7 @@ import { Reporter } from "./Reporter";
 import type { SuiteCase } from "../framework/Suite";
 import { SuiteRunner } from "./SuiteRunner";
 import { Formatter } from "../utils/Formatter";
-import { ConsoleMock } from "./mocks";
+import { ConsoleMock, Process } from "./mocks";
 import kleur from "../utils/kleur";
 
 export class Test {
@@ -74,8 +74,7 @@ export class Test {
   private createSandbox(): vm.Context {
     const customRequire = createRequire(path.resolve(this.file));
     return vm.createContext({
-      global: {},
-      globalThis: {},
+      process: Process(this.file),
       console: this.consoleMock, // Use the ConsoleMock here for the VM context
       require: customRequire,
     });
