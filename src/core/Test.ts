@@ -75,6 +75,7 @@ export class Test {
     const customRequire = createRequire(path.resolve(this.file));
     return vm.createContext({
       process: Process(this.file),
+      setTimeout: setTimeout,
       console: this.consoleMock, // Use the ConsoleMock here for the VM context
       require: customRequire,
     });

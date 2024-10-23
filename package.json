@@ -1,11 +1,10 @@
 {
-  "name": "stets",
+  "name": "veve",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "types": "dist/types.d.ts",
   "bin": {
-    "stets": "./bin/index.js"
+    "veve": "./bin/index.js"
   },
   "scripts": {
     "postinstall": "echo 'Thanks for using stets \n https://github.com/discuzz-labs/stets'",

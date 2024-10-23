@@ -4,8 +4,4 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import Suite from "./framework/Suite";
-
-export default Suite
-
-export type { StetsConfig } from "./types";
+export { default as Suite } from "./framework/Suite";

@@ -18,21 +18,24 @@ export type TestFile = {
 
 export type TestResult = {
   description: string;
-  passed: boolean;
-  error?: { message: string, stack: string};
+  status: "passed" | "failed" | "skipped";
+  error?: { message: string; stack: string };
 };
 
 export type HookResult = {
   type: "beforeAll" | "beforeEach";
-  passed: boolean;
-  error? : { message: string, stack: string};
+  status: "passed" | "failed" | "skipped";
+  error?: { message: string; stack: string };
 };
 
 export type SuiteReport = {
   passed: boolean;
   description: string;
-  passedTests: number;
-  failedTests: number;
+  metrics: {
+    passed: number;
+    failed: number;
+    skipped: number;
+  };
   tests: Array<TestResult>;
   hooks: Array<HookResult>;
   children: SuiteReport[];

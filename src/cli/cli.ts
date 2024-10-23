@@ -75,6 +75,8 @@ class CLI {
     await runner.runFiles()
 
     Reporter.reportSummary()
+    
+    process.exit()
   }
 }
 

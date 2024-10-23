@@ -8,21 +8,21 @@ import type { HookResult, SuiteReport, TestResult } from "../types";
 import type { Hook, SuiteCase, Test } from "../framework/Suite";
 
 export class SuiteRunner {
-    suite: SuiteCase
+    suite: SuiteCase;
 
     constructor(suite: SuiteCase) {
         this.suite = suite;
     }
 
-    /**
-     * Execute the suite and return a new report.
-     */
     public async run(): Promise<SuiteReport> {
         const suiteReport: SuiteReport = {
             passed: true,
             description: this.suite.description,
-            passedTests: 0,
-            failedTests: 0,
+            metrics: {
+                passed: 0,
+                failed: 0,
+                skipped: 0,
+            },
             tests: [],
             hooks: [],
             children: [],
@@ -35,73 +35,73 @@ export class SuiteRunner {
         } catch (error: any) {
             suiteReport.error = error;
         } finally {
-            return suiteReport; // Return the new report for this suite
+            return suiteReport;
         }
     }
 
     private async runHooks(suiteReport: SuiteReport): Promise<void> {
         for (const hook of this.suite.hooks) {
-            const hookResult = await this.executeHook(hook);
+            const hookResult: HookResult = await this.executeHook(hook);
             suiteReport.hooks.push(hookResult);
 
-            // Increment passed or failed counters based on hook result
-            if (hookResult.passed) {
-                suiteReport.passedTests += 1;
-            } else {
-                suiteReport.failedTests += 1;
-                suiteReport.passed = false;
-            }
+            if (hookResult.status === "passed") suiteReport.metrics.passed += 1;
+            else if (hookResult.status === "skipped")
+                suiteReport.metrics.skipped += 1;
+            else suiteReport.metrics.failed += 1;
+            suiteReport.passed = false;
         }
     }
 
     private async executeHook(hook: Hook): Promise<HookResult> {
         let hookResult: HookResult = {
             type: hook.type,
-            passed: true,
+            status: "passed",
         };
 
         try {
-            await hook.fn();
+            await this.withTimeout(hook.fn(), hook.timeout, hook.type);
         } catch (error: any) {
-            hookResult.passed = false;
+            hookResult.status = "failed";
             hookResult.error = {
                 message: error.message,
                 stack: error.stack,
             };
+        } finally {
+            return hookResult;
         }
-
-        return hookResult;
     }
 
     private async runTests(suiteReport: SuiteReport): Promise<void> {
         for (const test of this.suite.tests) {
+            if (test.skip) {
+                continue;
+            }
+
             const testResult = await this.executeTest(test);
             suiteReport.tests.push(testResult);
 
-            // Increment passed or failed counters based on test result
-            if (testResult.passed) {
-                suiteReport.passedTests += 1;
-            } else {
-                suiteReport.failedTests += 1;
-                suiteReport.passed = false;
-            }
+            if (testResult.status === "passed") suiteReport.metrics.passed += 1;
+            else if (testResult.status === "skipped")
+                suiteReport.metrics.skipped += 1;
+            else suiteReport.metrics.failed += 1;
+            suiteReport.passed = false;
         }
     }
 
     private async executeTest(test: Test): Promise<TestResult> {
         let testResult: TestResult = {
             description: test.description,
-            passed: true,
+            status: "passed",
         };
 
         try {
-            await test.fn();
+            await this.withTimeout(test.fn(), test.timeout, test.description);
         } catch (error: any) {
-            testResult.passed = false;
+            testResult.status = "failed";
             testResult.error = error;
+        } finally {
+            return testResult;
         }
-
-        return testResult;
     }
 
     private async runChildSuites(suiteReport: SuiteReport): Promise<void> {
@@ -114,5 +114,25 @@ export class SuiteRunner {
                 suiteReport.passed = false;
             }
         }
+    }
+
+    private async timeout(ms: number, test: string): Promise<void> {
+        return new Promise((_, reject) =>
+            setTimeout(
+                () => reject(new Error(`${test} took more than ${ms} ms.`)),
+                ms,
+            ),
+        );
+    }
+
+    private withTimeout(
+        promise: Promise<void> | void,
+        ms: number,
+        test: string,
+    ) {
+        if (ms <= 0) {
+            return Promise.resolve(promise); // No timeout, just return the original promise
+        }
+        return Promise.race([promise, this.timeout(ms, test)]);
     }
 }

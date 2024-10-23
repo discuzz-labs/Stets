@@ -3,16 +3,19 @@ import { HookResult, SuiteReport, TestResult } from "../types";
 
 export class Reporter {
   static baseReporter = BaseReporter;
-  static allFailedTests = 0;
-  static allPassedTests = 0;
-  static allDuration = 0;
+  static metrics = {
+    passed: 0,
+    failed: 0,
+    skipped: 0,
+    duration: 0,
+  };
 
   /**
    * Reports on an individual test file.
    * @param {TestFile} testFile - The test file to report.
    */
   static reportTestFile(file: string, duration: number) {
-    Reporter.allDuration += duration;
+    Reporter.metrics.duration += duration;
 
     // Report test file start
     this.baseReporter.onTestFileReport(file, duration);
@@ -29,8 +32,8 @@ export class Reporter {
   ) {
     this.baseReporter.onSuiteReport(
       suite.description,
-      suite.passedTests,
-      suite.failedTests,
+      suite.metrics.passed,
+      suite.metrics.failed,
       indentationLevel,
     );
 
@@ -60,7 +63,7 @@ export class Reporter {
     file: string,
     indentationLevel: number,
   ) {
-    if (!test.passed) {
+    if (test.status === "failed") {
       this.baseReporter.onFail(
         test.description,
         test.error || { message: "Unexpected Error", stack: "" },
@@ -68,9 +71,11 @@ export class Reporter {
         indentationLevel,
       );
 
-      this.allFailedTests += 1;
+      this.metrics.failed += 1;
+    } else if (test.status === "skipped") {
+      this.metrics.skipped += 1;
     } else {
-      this.allPassedTests += 1;
+      this.metrics.passed += 1;
     }
   }
 
@@ -84,24 +89,21 @@ export class Reporter {
     file: string,
     indentationLevel: number,
   ) {
-    if (!hook.passed) {
+    if (hook.status === "failed") {
       this.baseReporter.onFail(
         `Hook: ${hook.type}`,
         hook.error || { message: "Unexpected Error", stack: "" },
         file,
         indentationLevel,
       );
-      this.allFailedTests += 1;
-    } else {
-      this.allPassedTests += 1;
     }
   }
 
   static reportSummary() {
     this.baseReporter.onSummary(
-      this.allPassedTests,
-      this.allFailedTests,
-      this.allDuration,
+      this.metrics.passed,
+      this.metrics.failed,
+      this.metrics.duration,
     );
   }
 }
