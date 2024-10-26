@@ -1,5 +1,4 @@
 import { Console } from "console";
-import Module, { createRequire } from "module";
 import path from "path";
 
 // ConsoleMock class to capture logs in the VM context
@@ -132,3 +131,4 @@ export function Process(mainFilePath: string) {
 
   return newProcess;
 }
+

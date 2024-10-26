@@ -4,8 +4,23 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import type { CLIOptions } from "../types";
 import COMMANDS from "../constants/commands";
+
+////types
+export type CLIOptions = {
+  verbose?: boolean;
+  logLevel?: string;
+  config?: string;
+  maxTestFiles?: number;
+  file?: string[];
+  env?: string[];
+  testDirectory?: string;
+  pattern?: string;
+  outputDir?: string;
+  exclude?: string;
+  reporters?: string[];
+};
+////
 
 export class ArgsParser {
   options: CLIOptions = {};

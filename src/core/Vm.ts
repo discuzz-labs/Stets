@@ -26,10 +26,13 @@ export class VM {
 
     return vm.createContext({
       process: Process(this.file),
-      setTimeout: setTimeout,
       console: this.consoleMock,
       require: customRequire,
       exports: exports,
+      setInterval,
+      setTimeout,
+      clearInterval,
+      clearTimeout,
       __filename: this.file,
       __dirname: path.dirname(this.file),
     });

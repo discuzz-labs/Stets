@@ -4,8 +4,35 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import type { HookResult, SuiteReport, TestResult } from "../types";
 import type { Hook, SuiteCase, Test } from "../framework/Suite";
+
+///types
+export type TestResult = {
+  description: string;
+  status: "passed" | "failed" | "skipped";
+  error?: { message: string; stack: string };
+};
+
+export type HookResult = {
+  type: "beforeAll" | "beforeEach";
+  status: "passed" | "failed" | "skipped";
+  error?: { message: string; stack: string };
+};
+
+export type SuiteReport = {
+  passed: boolean;
+  description: string;
+  metrics: {
+    passed: number;
+    failed: number;
+    skipped: number;
+  };
+  tests: Array<TestResult>;
+  hooks: Array<HookResult>;
+  children: SuiteReport[];
+  error?: string;
+};
+///
 
 export class SuiteRunner {
     suite: SuiteCase;

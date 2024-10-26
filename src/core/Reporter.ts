@@ -1,5 +1,5 @@
 import { BaseReporter } from "../reporters/BaseReporter";
-import { HookResult, SuiteReport, TestResult } from "../types";
+import { HookResult, SuiteReport, TestResult } from "./SuiteRunner";
 
 export class Reporter {
   static baseReporter = BaseReporter;

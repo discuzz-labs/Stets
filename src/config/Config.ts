@@ -7,9 +7,23 @@
 import * as path from "path";
 import * as fs from "fs";
 import config from "../stets.config";
-import { StetsConfig, TestConfig } from "../types";
 import { Log } from "../utils/Log";
 import { ArgsParser } from "../cli/ArgParser";
+
+///types
+export type TestConfig = {
+  testDirectory: string;
+  pattern: string | string[];
+  exclude: string | string[];
+  //reporters
+  reporters: ("html" | "json" | "spec" | "md" | "xml" | "csv")[];
+  outputDir: string;
+
+  env: string[];
+};
+
+export type StetsConfig = Partial<TestConfig>;
+///
 
 export class Config {
   private config: TestConfig = config;
