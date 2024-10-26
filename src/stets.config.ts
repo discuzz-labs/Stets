@@ -1,4 +1,4 @@
-import { TestConfig } from "./config/Config";
+import type { TestConfig } from "./config/Config";
 
 const config: TestConfig = {
   pattern: ["**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js"],

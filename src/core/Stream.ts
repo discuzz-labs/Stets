@@ -4,8 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { transform } from '@swc/core';
+import { build } from 'esbuild';
 import { createReadStream } from 'fs';
+import path from 'path';
 
 export class Stream {
   private file: string;
@@ -17,53 +18,30 @@ export class Stream {
   // Public method to read and transform the file
   public async processFile(): Promise<string> {
     try {
-      // Read file using stream and process it efficiently
-      const code = await this.readFileStream(this.file);
-      const transformedCode = await this.transformCode(code);
-
-      return transformedCode.code;
+      const result = await this.bundleFile(this.file);
+      return result;
     } catch (error) {
       console.error(`Error processing file ${this.file}:`, error);
       throw error;
     }
   }
 
-  // Private method to read the file using a stream (efficient for large files)
-  private async readFileStream(file: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      let fileContent = '';
-
-      const readStream = createReadStream(file, { encoding: 'utf-8' });
-      readStream.on('data', (chunk) => {
-        fileContent += chunk;
-      });
-
-      readStream.on('end', () => {
-        resolve(fileContent);
-      });
-
-      readStream.on('error', (err) => {
-        reject(err);
-      });
-    });
-  }
-
-  // Private method to transform the code using SWC
-  private async transformCode(code: string): Promise<{ code: string }> {
-    return transform(code, {
-      filename: this.file,
-      sourceMaps: true,
-      isModule: true,
-      module: {
-        type: "commonjs",
-      },
-      jsc: {
-        parser: {
-          syntax: "typescript",
-          tsx: true,
-        },
-        transform: {},
+  // Private method to bundle and transform the file using esbuild
+  private async bundleFile(entryFile: string): Promise<string> {
+    const result = await build({
+      entryPoints: [entryFile],
+      bundle: true, // Bundle all dependencies
+      platform: 'node', // For Node.js environment
+      format: 'cjs', // CommonJS output
+      write: false, // Do not write to disk
+      outdir: 'output', // Temporary output directory
+      absWorkingDir: path.dirname(entryFile), // Base directory for resolving paths
+      loader: {
+        '.ts': 'ts', // Handle TypeScript files
       },
     });
+
+    // Return the bundled code as a string
+    return result.outputFiles[0].text;
   }
 }
