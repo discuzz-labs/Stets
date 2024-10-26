@@ -4,9 +4,6 @@
  * See the LICENSE file in the project root for license information.
  */
 
-export type TestFunction = () => void | Promise<void>;
-type HookFunction = () => void | Promise<void>;
-
 interface TestOptions {
     timeout?: number;
     skip?: boolean;
@@ -23,27 +20,44 @@ export interface Test {
     skip: boolean;
 }
 
+export interface SuiteCase {
+    description: string;
+    children: SuiteCase[];
+    tests: TestCase[];
+    hooks: Hook[];
+}
+
+interface TestCase {
+    description: string;
+    fn: TestFunction;
+    timeout: number;
+    skip: boolean;
+    only?: boolean;
+}
+
 export interface Hook {
     type: "beforeAll" | "beforeEach";
     fn: HookFunction;
     timeout: number;
 }
 
-export interface SuiteCase {
-    description: string;
-    tests: Test[];
-    hooks: Hook[];
-    children: SuiteCase[];
+interface TestOptions {
+    timeout?: number;
+    skip?: boolean;
 }
 
-export default class Suite {
-    rootSuite: SuiteCase;
-    currentSuite: SuiteCase;
-    
-    /**
-     * Represents a Suite.
-     * @constructor
-     */
+interface HookOptions {
+    timeout?: number;
+}
+
+export type TestFunction = () => void;
+type HookFunction = () => void;
+
+// suite.ts
+class Suite {
+    private rootSuite: SuiteCase;
+    private currentSuite: SuiteCase;
+
     constructor() {
         this.rootSuite = {
             description: "Root",
@@ -54,68 +68,64 @@ export default class Suite {
         this.currentSuite = this.rootSuite;
     }
 
-    // Register a new describe block
-    /**
-     * describe
-     * @param {string} description - The description of the describe block
-     */
-    public describe(description: string, callback: () => void): void {
+    describe(description: string, callback: () => void) {
         const newSuite: SuiteCase = {
             description,
+            children: [],
             tests: [],
             hooks: [],
-            children: [],
         };
         this.currentSuite.children.push(newSuite);
-        const previousSuite = this.currentSuite; // Save current suite
-        this.currentSuite = newSuite; // Set the current suite to the new one
+        const previousSuite = this.currentSuite;
+        this.currentSuite = newSuite;
 
-        callback(); // Execute the callback to register tests/hooks in the current suite
+        callback();
 
-        this.currentSuite = previousSuite; // Restore previous suite context
+        this.currentSuite = previousSuite;
     }
 
-    // Register a test case
-    public it(
+    it(
         description: string,
         fn: TestFunction,
-        options: TestOptions = {
-            timeout: 0,
-            skip: false,
-        },
-    ): void {
+        options: TestOptions = { timeout: 0, skip: false }
+    ) {
         this.currentSuite.tests.push({
             description,
             fn,
-            timeout: options.timeout ? options.timeout : 0,
-            skip: options.skip ? options.skip : false,
+            timeout: options.timeout ?? 0,
+            skip: options.skip ?? false,
         });
     }
 
-    // Register a beforeAll hook
-    public beforeAll(fn: HookFunction, options: HookOptions): void {
+    beforeAll(
+        fn: HookFunction,
+        options: HookOptions = { timeout: 0 }
+    ) {
         this.currentSuite.hooks.push({
             type: "beforeAll",
             fn,
-            timeout: options.timeout ? options.timeout : 0,
+            timeout: options.timeout ?? 0,
         });
     }
 
-    // Register a beforeEach hook
-    public beforeEach(
+    beforeEach(
         fn: HookFunction,
-        options: HookOptions = {
-            timeout: 0,
-        },
-    ): void {
+        options: HookOptions = { timeout: 0 }
+    ) {
         this.currentSuite.hooks.push({
             type: "beforeEach",
             fn,
-            timeout: options.timeout ? options.timeout : 0,
+            timeout: options.timeout ?? 0,
         });
     }
 
     run(): SuiteCase {
+        const suiteWithOnlyTests = this.rootSuite.tests.some((test) => test.only);
+        if (suiteWithOnlyTests) {
+            this.rootSuite.tests = this.rootSuite.tests.filter((test) => test.only);
+        }
         return this.rootSuite;
     }
 }
+
+export default Suite;

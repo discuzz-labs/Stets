@@ -61,7 +61,7 @@ const COMMANDS: Record<
     description: "Specify reporters to use for test results",
     requiresValue: true,
     isArray: true,
-    shortValue: "r",
+    shortValue: "rp",
   },
   maxTestFiles: {
     description: "Set the maximum number of test files to process",
@@ -80,7 +80,7 @@ const COMMANDS: Record<
     requiresValue: true,
     isArray: true,
     shortValue: "env",
-  },
+  }
 };
 
 export default COMMANDS;

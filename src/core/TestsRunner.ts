@@ -4,12 +4,11 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { TestFile } from "../types";
 import { Log } from "../utils/Log";
 import { Test } from "./Test"
 
 export class TestsRunner {
-  constructor(private testFiles: TestFile[]) {}
+  constructor(private testFiles: string[]) {}
 
   get() {
     return this.testFiles;
@@ -22,10 +21,10 @@ export class TestsRunner {
     // Execute all suites
     await Promise.all(
       this.testFiles.map(async (testFile) => {
-        Log.info(`Running file: ${testFile.path}`);
+        Log.info(`Running file: ${testFile}`);
 
         try {
-          await new Test(testFile.path).run();
+          await new Test(testFile).run();
         } catch (error: any) {
           console.error("Unexpected behaviour Due to: ", error)
           process.exit(1)

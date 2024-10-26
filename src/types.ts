@@ -12,10 +12,6 @@ export type CLIOptions = Partial<TestConfig> & {
   env?: string[];
 };
 
-export type TestFile = {
-  path: string;
-};
-
 export type TestResult = {
   description: string;
   status: "passed" | "failed" | "skipped";
@@ -41,6 +37,11 @@ export type SuiteReport = {
   children: SuiteReport[];
   error?: string;
 };
+
+interface TransformerConfig {
+  pattern: RegExp;
+  fn: (code: string) => Promise<string> | string;
+}
 
 export type TestConfig = {
   testDirectory: string;

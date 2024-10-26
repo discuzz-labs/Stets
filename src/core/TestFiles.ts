@@ -5,7 +5,6 @@
  */
 
 import { Log } from "../utils/Log";
-import { TestFile } from "../types";
 import type { Config } from "../config/Config";
 import { Glob } from "./Glob";
 import type { ArgsParser } from "../cli/ArgParser";
@@ -13,7 +12,7 @@ import path from "path";
 import dotenv from "dotenv";
 
 export class TestFiles {
-  private testFiles: TestFile[] = [];
+  private testFiles: string[] = [];
 
   constructor(
     private args: ArgsParser,
@@ -58,9 +57,7 @@ export class TestFiles {
         process.exit(1);
       }
 
-      this.testFiles = files.map((testFile) => ({
-        path: testFile,
-      }));
+      this.testFiles = files
 
       const envFiles =
         this.args
