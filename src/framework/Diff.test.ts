@@ -40,6 +40,8 @@ suite.describe("Diff Class Comparison Tests", () => {
       { path: [2], expected: 3, received: 4 },
       { path: [3], expected: undefined, received: 5 }
     ]);
+
+    console.log(result)
   });
 });
 
