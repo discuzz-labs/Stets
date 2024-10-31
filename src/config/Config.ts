@@ -12,14 +12,16 @@ import config from "../veve.config";
 export type Veve = { pattern: string[]; exclude: string[]; reporters: string[]; };
 
 export class Config {
-  private config: Veve;
+  private config: Veve = config;
 
   constructor(configPath: string | undefined) {
-    const path = join(process.cwd(), configPath as string)
-    this.config = existsSync(path) ? require(path).default : config;
+      // Initialize the config property based on the configPath
+      if (configPath && existsSync(join(process.cwd(), configPath))) {
+          this.config = require(join(process.cwd(), configPath)).default;
+      }
   }
 
   public get<K extends keyof Veve>(key: K): Veve[K] {
-    return this.config[key];
+      return this.config[key];
   }
 }

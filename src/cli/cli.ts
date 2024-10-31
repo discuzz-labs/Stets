@@ -8,8 +8,9 @@ import { version, name, description } from "../../package.json";
 import { ArgsParser } from "../cli/ArgParser";
 import { Reporter } from "../reporters/Reporter";
 import { Config } from "../config/Config";
-import COMMANDS from "./commands";
 import { Glob } from "../glob/Glob";
+import {initialize} from "core"
+import COMMANDS from "./commands";
 
 (async () => {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -32,12 +33,15 @@ import { Glob } from "../glob/Glob";
 
   const args = new ArgsParser();
   const config = new Config(args.get("config"));
+  initialize()
+  
   const exclude = args.get("exclude") || config.get("exclude")
   const pattern = args.get("pattern") || config.get("pattern")
   const files = args.get("file") 
   
   const testFiles = await new Glob(files, exclude, pattern).collect();
-  console.log(testFiles)
+  
+  
   Reporter.reportSummary();
   
   process.exit();

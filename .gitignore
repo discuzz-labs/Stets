@@ -52,4 +52,5 @@ test
 examples
 src/core/target
 src/core/Cargo.lock
+stc/core/tests
 build.js

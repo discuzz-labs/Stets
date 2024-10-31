@@ -11,6 +11,7 @@ import { GlobBuilder } from "./GlobBuilder";
 export class Glob {
     private exclude: RegExp[];
     private pattern: RegExp[];
+    private rpattern; 
     private files: string[] | undefined;
     private maxFiles: number = 4000; // Default max file limit
     private fileCount: number = 0;
@@ -20,6 +21,7 @@ export class Glob {
         let globBuilder = new GlobBuilder();
         this.exclude = exclude.map((p) => globBuilder.convert(p));
         this.pattern = pattern.map((p) => globBuilder.convert(p));
+        this.rpattern = pattern;
         this.files = files;
     }
 
@@ -35,7 +37,7 @@ export class Glob {
 
         if (collected.length === 0) {
             console.log(
-                `No suites were found applying the following pattern(s): ${this.pattern} in the directory: ${process.cwd()} \n`,
+                `No suites were found applying the following pattern(s): ${this.rpattern} in the directory: ${process.cwd()} \n`,
             );
             process.exit(1);
         }
