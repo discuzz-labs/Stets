@@ -1,12 +1,11 @@
 import { BaseReporter } from "../reporters/BaseReporter";
-import { HookResult, SuiteReport, TestResult } from "./SuiteRunner";
+import { HookResult, SuiteReport, TestResult } from "../core/SuiteRunner";
 
 export class Reporter {
   static baseReporter = BaseReporter;
   static metrics = {
     passed: 0,
     failed: 0,
-    skipped: 0,
     duration: 0,
   };
 
@@ -72,8 +71,6 @@ export class Reporter {
       );
 
       this.metrics.failed += 1;
-    } else if (test.status === "skipped") {
-      this.metrics.skipped += 1;
     } else {
       this.metrics.passed += 1;
     }
@@ -91,7 +88,7 @@ export class Reporter {
   ) {
     if (hook.status === "failed") {
       this.baseReporter.onFail(
-        `Hook: ${hook.type}`,
+        `Hook: ${hook.description}`,
         hook.error || { message: "Unexpected Error", stack: "" },
         file,
         indentationLevel,

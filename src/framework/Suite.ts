@@ -4,54 +4,29 @@
  * See the LICENSE file in the project root for license information.
  */
 
-interface TestOptions {
-    timeout?: number;
-    skip?: boolean;
-}
 
-interface HookOptions {
-    timeout?: number;
-}
+export type TestFunction = () => void;
+export type HookFunction = () => void;
 
 export interface Test {
     description: string;
     fn: TestFunction;
     timeout: number;
-    skip: boolean;
+    only?: boolean;
+}
+
+export interface Hook {
+    description: "beforeAll" | "beforeEach";
+    fn: HookFunction;
+    timeout: number;
 }
 
 export interface SuiteCase {
     description: string;
     children: SuiteCase[];
-    tests: TestCase[];
+    tests: Test[];
     hooks: Hook[];
 }
-
-interface TestCase {
-    description: string;
-    fn: TestFunction;
-    timeout: number;
-    skip: boolean;
-    only?: boolean;
-}
-
-export interface Hook {
-    type: "beforeAll" | "beforeEach";
-    fn: HookFunction;
-    timeout: number;
-}
-
-interface TestOptions {
-    timeout?: number;
-    skip?: boolean;
-}
-
-interface HookOptions {
-    timeout?: number;
-}
-
-export type TestFunction = () => void;
-type HookFunction = () => void;
 
 // suite.ts
 class Suite {
@@ -84,46 +59,35 @@ class Suite {
         this.currentSuite = previousSuite;
     }
 
-    it(
-        description: string,
-        fn: TestFunction,
-        options: TestOptions = { timeout: 0, skip: false }
-    ) {
-        this.currentSuite.tests.push({
-            description,
-            fn,
-            timeout: options.timeout ?? 0,
-            skip: options.skip ?? false,
-        });
+    it(description: string, fn: TestFunction, timeout = 0) {
+        this.currentSuite.tests.push({ description, fn, timeout });
     }
 
-    beforeAll(
-        fn: HookFunction,
-        options: HookOptions = { timeout: 0 }
-    ) {
-        this.currentSuite.hooks.push({
-            type: "beforeAll",
-            fn,
-            timeout: options.timeout ?? 0,
-        });
+    skip(description: string, fn: TestFunction, timeout = 0) {
+        return;
     }
 
-    beforeEach(
-        fn: HookFunction,
-        options: HookOptions = { timeout: 0 }
-    ) {
-        this.currentSuite.hooks.push({
-            type: "beforeEach",
-            fn,
-            timeout: options.timeout ?? 0,
-        });
+    only(description: string, fn: TestFunction, timeout = 0) {
+        this.currentSuite.tests.push({ description, fn, timeout, only: true });
+    }
+
+    beforeAll(fn: HookFunction, timeout = 0) {
+        this.currentSuite.hooks.push({ description: "beforeAll", fn, timeout });
+    }
+
+    beforeEach(fn: HookFunction, timeout = 0) {
+        this.currentSuite.hooks.push({ description: "beforeEach", fn, timeout });
     }
 
     run(): SuiteCase {
-        const suiteWithOnlyTests = this.rootSuite.tests.some((test) => test.only);
-        if (suiteWithOnlyTests) {
-            this.rootSuite.tests = this.rootSuite.tests.filter((test) => test.only);
+        // Check if there are any tests marked with "only"
+        const hasOnlyTests = this.rootSuite.tests.some(test => test.only);
+
+        // If "only" tests exist, filter out tests that are not marked as "only"
+        if (hasOnlyTests) {
+            this.rootSuite.tests = this.rootSuite.tests.filter(test => test.only);
         }
+
         return this.rootSuite;
     }
 }

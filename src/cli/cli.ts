@@ -6,7 +6,7 @@
 
 import { version, name, description } from "../../package.json";
 import { ArgsParser } from "../cli/ArgParser";
-import { Reporter } from "../core/Reporter";
+import { Reporter } from "../reporters/Reporter";
 import { Config } from "../config/Config";
 import COMMANDS from "./commands";
 import { Glob } from "../glob/Glob";

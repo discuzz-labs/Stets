@@ -8,7 +8,8 @@
   },
   "scripts": {
     "postinstall": "echo 'Thanks for using stets \n https://github.com/discuzz-labs/stets'",
-    "build:watch": "tsc -w"
+    "build:watch": "tsc -w",
+    "build:core": "RUSTFLAGS='-C opt-level=s' wasm-pack build src/core --mode no-install --out-name wasm --out-dir ./ --target nodejs --no-pack --release"
   },
   "files": [
     "/dist"
