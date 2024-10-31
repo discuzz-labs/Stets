@@ -9,7 +9,7 @@ import { ArgsParser } from "../cli/ArgParser";
 import { Reporter } from "../reporters/Reporter";
 import { Config } from "../config/Config";
 import { Glob } from "../glob/Glob";
-import {initialize} from "core"
+import { init } from "@veve/core"
 import COMMANDS from "./commands";
 
 (async () => {
@@ -33,11 +33,13 @@ import COMMANDS from "./commands";
 
   const args = new ArgsParser();
   const config = new Config(args.get("config"));
-  initialize()
+  init()
   
   const exclude = args.get("exclude") || config.get("exclude")
   const pattern = args.get("pattern") || config.get("pattern")
   const files = args.get("file") 
+
+  init()
   
   const testFiles = await new Glob(files, exclude, pattern).collect();
   

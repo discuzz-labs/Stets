@@ -1,0 +1,14 @@
+{
+  "name": "core",
+  "collaborators": [
+    "https://github.com/discuzz-labs"
+  ],
+  "version": "0.1.0",
+  "files": [
+    "index_bg.wasm",
+    "index.js",
+    "index.d.ts"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts"
+}

@@ -1,27 +1,45 @@
 {
   "name": "veve",
   "version": "1.0.0",
-  "description": "",
+  "description": "Veve - Run tests with ease.",
   "main": "dist/index.js",
   "bin": {
     "veve": "./bin/index.js"
   },
-  "scripts": {
-    "postinstall": "echo 'Thanks for using stets \n https://github.com/discuzz-labs/stets'",
-    "build:watch": "tsc -w",
-    "build:core": "wasm-pack build core --out-name wasm --out-dir ./ --target nodejs --release"
-  },
   "files": [
-    "/dist"
+    "dist",
+    "core"
   ],
   "keywords": [],
-  "author": "",
+  "author": "A. Shaheen",
   "license": "ISC",
+
+  "workspaces": [
+    "core",
+    "src"
+  ],
+
+  "scripts": {
+    "postinstall": "echo 'Thanks for using stets\n https://github.com/discuzz-labs/stets'",
+
+    "build:typescript": "tsc",
+    "build:watch": "tsc -w",
+    "build:core": "cd core-wasm && wasm-pack build --out-name index --out-dir ../core --target nodejs --release",
+
+    
+    "clean": "rm -rf dist core/pkg",
+    "clean:core": "rm -rf core/pkg",
+
+    "prepublishOnly": "npm run build && npm test",
+    "postpublish": "echo 'Publishing completed!'"
+  },
+
   "devDependencies": {
     "@types/node": "^22.8.1",
     "typescript": "^5.6.3"
   },
+  
   "dependencies": {
-    "core": "file:core"
+    "@veve/core": "1.0.0"
   }
 }
