@@ -5,80 +5,40 @@
  */
 
 import { version, name, description } from "../../package.json";
-import { Log } from "../utils/Log";
 import { ArgsParser } from "../cli/ArgParser";
-import COMMANDS from "../constants/commands";
 import { Reporter } from "../core/Reporter";
-import { TestFiles } from "../core/TestFiles";
-import { TestsRunner } from "../core/TestsRunner";
 import { Config } from "../config/Config";
+import COMMANDS from "./commands";
+import { Glob } from "../glob/Glob";
 
-class CLI {
-  private printVersion() {
-    console.info(`Version: ${version}`);
-  }
-
-  private printHelp() {
-    // Constructing the help message
-    const optionsHelp = Object.entries(COMMANDS)
-      .map(([key, { shortValue, requiresValue, description }]) => {
-        const optionNames = [
-          shortValue ? "-" + shortValue + "," : "",
-          "--" + key,
-        ]
-          .filter(Boolean)
-          .join(" "); // Construct the option name string
-
-        const valueDescription = requiresValue ? "=<value>" : ""; // Determine if a value is required
-
-        return (
-          "\t" + optionNames + "\t" + valueDescription + "\t" + description
-        ); // Use \t for indentation
-      })
-      .join("\n"); // Join all options for display
-
-    console.log(
-      name +
-        "  " +
-        description +
-        "\n" +
-        "Usage: <command> [options]\n\n" +
-        "Options:\n" +
-        "\t--version\n" +
-        "\t-v, --verbose\n" +
-        "\t-h, --help\n" +
-        optionsHelp,
+(async () => {
+  if (process.argv.includes("--help") || process.argv.includes("-h")) {
+    console.info(
+      `${name}  ${description}\nUsage: <command> [options]\n\nOptions:\n\t--version\n` +
+        Object.entries(COMMANDS)
+          .map(
+            ([key, { shortValue, requiresValue, description }]) =>
+              `\t${shortValue ? `-${shortValue},` : ""}--${key} ${requiresValue ? "=<value>" : ""}\t${description}`,
+          )
+          .join("\n"),
     );
+    return;
   }
 
-  async init() {
-    Log.info("CLI Running");
-
-    if (process.argv.includes("--help") || process.argv.includes("-h")) {
-      this.printHelp();
-      return;
-    }
-
-    // Handle --version
-    if (process.argv.includes("--version")) {
-      this.printVersion();
-      return;
-    }
-
-    const args = new ArgsParser();
-    const config = new Config(args)
-    new Log(args.get("logLevel"), args.get("verbose"))
-    
-    const testFiles = new TestFiles(args, config)
-    await testFiles.load()
-    const runner = new TestsRunner(testFiles.get());
-    await runner.runFiles()
-
-    Reporter.reportSummary()
-    
-    process.exit()
+  if (process.argv.includes("--version")) {
+    console.info(`Version: ${version}`);
+    return;
   }
-}
 
-// Instantiate and run the CLI
-new CLI().init()
+  const args = new ArgsParser();
+  const config = new Config(args.get("config"));
+  const exclude = args.get("exclude") || config.get("exclude")
+  const pattern = args.get("pattern") || config.get("pattern")
+  const files = args.get("file") 
+  
+  const testFiles = await new Glob(files, exclude, pattern).collect();
+  console.log(testFiles)
+  Reporter.reportSummary();
+  
+  process.exit();
+})();

@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "nix"]
+modules = ["nodejs-20", "rust-stable", "nix"]
 hidden = [".config", "package-lock.json"]
 run = "node index.js"
 [gitHubImport]

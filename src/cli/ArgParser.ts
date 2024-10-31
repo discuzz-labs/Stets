@@ -4,20 +4,15 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import COMMANDS from "../constants/commands";
+import COMMANDS from "./commands";
 
 ////types
 export type CLIOptions = {
-  verbose?: boolean;
-  logLevel?: string;
   config?: string;
-  maxTestFiles?: number;
   file?: string[];
-  env?: string[];
-  testDirectory?: string;
-  pattern?: string;
-  outputDir?: string;
-  exclude?: string;
+  
+  pattern?: string[];
+  exclude?: string[];
   reporters?: string[];
 };
 ////

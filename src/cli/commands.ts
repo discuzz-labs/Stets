@@ -21,35 +21,11 @@ const COMMANDS: Record<
     isArray: false,
     shortValue: "c",
   },
-  logLevel: {
-    description: "Set the logging level",
-    requiresValue: true,
-    isArray: false,
-    shortValue: "l",
-  },
-  verbose: {
-    description: "Enable verbose logging",
-    requiresValue: false,
-    isArray: false,
-    shortValue: "v",
-  },
-  testDirectory: {
-    description: "Set a directory to search for test files.",
-    requiresValue: true,
-    isArray: false,
-    shortValue: "t",
-  },
   pattern: {
     description: "Set a file pattern to search for tests",
     requiresValue: true,
     isArray: false,
     shortValue: "p",
-  },
-  outputDir: {
-    description: "Directory to write reporters into. (Default=test-result)",
-    requiresValue: true,
-    isArray: false,
-    shortValue: "o",
   },
   exclude: {
     description: "Exclude specific directories or files from testing",
@@ -63,23 +39,11 @@ const COMMANDS: Record<
     isArray: true,
     shortValue: "rp",
   },
-  maxTestFiles: {
-    description: "Set the maximum number of test files to process",
-    isArray: false,
-    requiresValue: true,
-    shortValue: "mtf",
-  },
   file: {
     description: "files to run.",
     requiresValue: true,
     isArray: true,
     shortValue: "f",
-  },
-  env: {
-    description: "Env files to load.",
-    requiresValue: true,
-    isArray: true,
-    shortValue: "env",
   }
 };
 
