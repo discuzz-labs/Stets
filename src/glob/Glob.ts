@@ -30,11 +30,11 @@ export class Glob {
      * @returns A promise that resolves to an array of absolute file paths.
      */
     async collect(): Promise<string[]> {
-        const absoluteDir = resolve(".");
+        const absoluteDir = process.cwd();
         const collected =
             this.files?.map((file) => resolve(file)) ||
             (await this.collectFiles(absoluteDir, this.pattern));
-
+    
         if (collected.length === 0) {
             console.log(
                 `No suites were found applying the following pattern(s): ${this.rpattern} in the directory: ${process.cwd()} \n`,
@@ -58,7 +58,7 @@ export class Glob {
     ): Promise<string[]> {
         let results: string[] = [];
         const entries = await readdir(dir);
-
+        
         await Promise.all(
             entries.map(async (entry) => {
                 if (this.fileCount >= this.maxFiles) return; // Stop if maxFiles is reached
@@ -67,7 +67,7 @@ export class Glob {
 
                 // Check if file should be excluded (including dotfiles/directories)
                 if (this.shouldExclude(entry)) return;
-
+                
                 const stats = await stat(filePath);
 
                 if (stats.isDirectory()) {
@@ -96,7 +96,7 @@ export class Glob {
      */
     private shouldExclude(entry: string): boolean {
         // Ignore dotfiles and dot directories
-        if (entry.startsWith(".") || entry === "node_modules") return true;
+        if (entry.startsWith(".") || entry === "node_modules") return true
 
         // Check if the entry matches the exclude pattern
         return this.exclude.some((pattern) => pattern.test(entry));

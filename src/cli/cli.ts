@@ -9,8 +9,8 @@ import { ArgsParser } from "../cli/ArgParser";
 import { Reporter } from "../reporters/Reporter";
 import { Config } from "../config/Config";
 import { Glob } from "../glob/Glob";
-import { init } from "@veve/core"
 import COMMANDS from "./commands";
+import { Require } from "../core/Require";
 
 (async () => {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -33,18 +33,19 @@ import COMMANDS from "./commands";
 
   const args = new ArgsParser();
   const config = new Config(args.get("config"));
-  init()
-  
-  const exclude = args.get("exclude") || config.get("exclude")
-  const pattern = args.get("pattern") || config.get("pattern")
-  const files = args.get("file") 
 
-  init()
-  
+  const exclude = args.get("exclude") || config.get("exclude");
+  const pattern = args.get("pattern") || config.get("pattern");
+  const files = args.get("file");
+
   const testFiles = await new Glob(files, exclude, pattern).collect();
-  
-  
+
+  for (const file of testFiles) {
+    const { code , fileName } = new Require().require(file)
+    console.log(code, fileName )
+  }
+
   Reporter.reportSummary();
-  
+
   process.exit();
 })();

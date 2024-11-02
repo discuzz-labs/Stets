@@ -2,8 +2,6 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
-    "jsx": "react",
-    "lib": ["dom", "esnext"],
     "moduleResolution": "node",
     "outDir": "./dist",
     "rootDir": "./src",
