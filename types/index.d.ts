@@ -5,78 +5,233 @@
 
  */
 
+
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
-
-export interface TestOptions {
-  timeout?: number;
-  skip?: boolean;
-}
-
-export interface HookOptions {
-  timeout?: number;
-}
 
 export interface Test {
   description: string;
   fn: TestFunction;
   timeout: number;
-  skip: boolean;
+  only?: boolean;
 }
 
 export interface Hook {
-  type: "beforeAll" | "beforeEach";
+  description: "beforeAll" | "beforeEach";
   fn: HookFunction;
   timeout: number;
 }
 
-export interface SuiteCase {
+export type TestResult = {
   description: string;
-  tests: Test[];
-  hooks: Hook[];
-  children: SuiteCase[];
+  status: "passed" | "failed";
+  error?: { message: string; stack: string };
+};
+
+export type HookResult = {
+  description: "beforeAll" | "beforeEach";
+  status: "passed" | "failed";
+  error?: { message: string; stack: string };
+};
+
+export type SuiteReport = {
+  passed: boolean;
+  description: string;
+  metrics: {
+    passed: number;
+    failed: number;
+    skipped: number;
+  };
+  tests: Array<TestResult>;
+  hooks: Array<HookResult>;
+  children: SuiteReport[];
+  error?: string;
+};
+
+declare global {
+  /**
+   * Registers a new describe block to group related tests.
+   * 
+   * @param {string} description - The description of the describe block.
+   * @param {() => void} callback - The function containing tests/hooks to register in this block.
+   * @example
+   * describe('My Test Suite', () => {
+   *   it('should pass this test', () => {
+   *     // Test logic
+   *   });
+   * });
+   */
+  function describe(description: string, callback: () => void): void;
+
+  /**
+   * Registers an individual test case.
+   * 
+   * @param {string} description - The description of the test case.
+   * @param {TestFunction} fn - The test function to execute.
+   * @param {number} [timeout] - Optional timeout for the test in milliseconds.
+   * @example
+   * it('should test something', () => {
+   *   // Test logic
+   * }, 1000);
+   */
+  function it(description: string, fn: TestFunction, timeout?: number): void;
+
+  /**
+   * Registers a test case to be executed exclusively.
+   * 
+   * @param {string} description - The description of the exclusive test case.
+   * @param {TestFunction} fn - The test function to execute.
+   * @param {number} [timeout] - Optional timeout for the test in milliseconds.
+   * @example
+   * only('should only run this test', () => {
+   *   // Test logic
+   * }, 1000);
+   */
+  function only(description: string, fn: TestFunction, timeout?: number): void;
+
+  /**
+   * Registers a test case to be skipped.
+   * 
+   * @param {string} description - The description of the skipped test case.
+   * @param {TestFunction} fn - The test function to execute.
+   * @param {number} [timeout] - Optional timeout for the test in milliseconds.
+   * @example
+   * skip('should skip this test', () => {
+   *   // Test logic
+   * });
+   */
+  function skip(description: string, fn: TestFunction, timeout?: number): void;
+
+  /**
+   * Registers a beforeAll hook to run once before all tests in the suite.
+   * 
+   * @param {HookFunction} fn - The hook function to execute.
+   * @param {number} [timeout] - Optional timeout for the hook in milliseconds.
+   * @example
+   * beforeAll(() => {
+   *   // Setup logic
+   * });
+   */
+  function beforeAll(fn: HookFunction, timeout?: number): void;
+
+  /**
+   * Registers a beforeEach hook to run before each test in the suite.
+   * 
+   * @param {HookFunction} fn - The hook function to execute.
+   * @param {number} [timeout] - Optional timeout for the hook in milliseconds.
+   * @example
+   * beforeEach(() => {
+   *   // Reset state logic
+   * });
+   */
+  function beforeEach(fn: HookFunction, timeout?: number): void;
+
+  /**
+   * Runs the Suite and returns the Report.
+   * 
+   * @returns {Promise<SuiteReport>} - The report of the test suite execution.
+   * @example
+   * run().then(report => console.log(report));
+   */
+  function run(): Promise<SuiteReport>;
 }
 
-/**
- * Represents a test suite.
- * @class
- */
-declare class Suite {
+export declare class Suite {
   /**
-   * Registers a new describe block.
+   * Creates a new Suite.
+   * 
+   * @param {string} [description] - The description of the Suite block.
+   * @param {Suite | null} [parent] - Optional parent Suite to nest this Suite within.
+   * @example
+   * const suite = new Suite('My Test Suite');
+   */
+  constructor(description?: string, parent?: Suite | null);
+
+  /**
+   * Registers a new describe block to group related tests.
+   * 
    * @param {string} description - The description of the describe block.
-   * @param {function} callback - The function containing tests/hooks to register in the new suite.
+   * @param {() => void} callback - The function containing tests/hooks to register in this block.
+   * @example
+   * suite.describe('Inner Suite', () => {
+   *   suite.it('should pass this test', () => {
+   *     // Test logic
+   *   });
+   * });
    */
   describe(description: string, callback: () => void): void;
 
   /**
-   * Registers a test case.
+   * Registers an individual test case.
+   * 
    * @param {string} description - The description of the test case.
    * @param {TestFunction} fn - The test function to execute.
-   * @param {TestOptions} [options] - Options for the test case.
+   * @param {number} [timeout] - Optional timeout for the test in milliseconds.
+   * @example
+   * suite.it('should test something', () => {
+   *   // Test logic
+   * }, 1000);
    */
-  it(description: string, fn: TestFunction, options?: TestOptions): void;
+  it(description: string, fn: TestFunction, timeout?: number): void;
 
   /**
-   * Registers a beforeAll hook.
-   * @param {HookFunction} fn - The hook function to execute before all tests.
-   * @param {HookOptions} options - Options for the hook.
+   * Registers a test case to be executed exclusively.
+   * 
+   * @param {string} description - The description of the exclusive test case.
+   * @param {TestFunction} fn - The test function to execute.
+   * @param {number} [timeout] - Optional timeout for the test in milliseconds.
+   * @example
+   * suite.only('should only run this test', () => {
+   *   // Test logic
+   * }, 1000);
    */
-  beforeAll(fn: HookFunction, options: HookOptions): void;
+  only(description: string, fn: TestFunction, timeout?: number): void;
 
   /**
-   * Registers a beforeEach hook.
-   * @param {HookFunction} fn - The hook function to execute before each test.
-   * @param {HookOptions} [options] - Options for the hook.
+   * Registers a test case to be skipped.
+   * 
+   * @param {string} description - The description of the skipped test case.
+   * @param {TestFunction} fn - The test function to execute.
+   * @param {number} [timeout] - Optional timeout for the test in milliseconds.
+   * @example
+   * suite.skip('should skip this test', () => {
+   *   // Test logic
+   * });
    */
-  beforeEach(fn: HookFunction, options?: HookOptions): void;
+  skip(description: string, fn: TestFunction, timeout?: number): void;
 
   /**
-   *
-   * Runs the test suite and returns the root suite case.
-   * @returns {SuiteCase} The root suite case.
+   * Registers a beforeAll hook to run once before all tests in the suite.
+   * 
+   * @param {HookFunction} fn - The hook function to execute.
+   * @param {number} [timeout] - Optional timeout for the hook in milliseconds.
+   * @example
+   * suite.beforeAll(() => {
+   *   // Setup logic
+   * });
    */
-  run(): SuiteCase;
+  beforeAll(fn: HookFunction, timeout?: number): void;
+
+  /**
+   * Registers a beforeEach hook to run before each test in the suite.
+   * 
+   * @param {HookFunction} fn - The hook function to execute.
+   * @param {number} [timeout] - Optional timeout for the hook in milliseconds.
+   * @example
+   * suite.beforeEach(() => {
+   *   // Reset state logic
+   * });
+   */
+  beforeEach(fn: HookFunction, timeout?: number): void;
+
+  /**
+   * Runs the Suite and returns the Report.
+   * 
+   * @returns {Promise<SuiteReport>} - The report of the test suite execution.
+   * @example
+   * suite.run().then(report => console.log(report));
+   */
+  run(): Promise<SuiteReport>;
 }
 
-export = Suite
+export default Suite;

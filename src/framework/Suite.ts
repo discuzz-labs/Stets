@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-// types.ts
+
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
 
@@ -92,7 +92,7 @@ class Suite {
     }
 
     skip(description: string, fn: TestFunction, timeout = 0): void {
-        Suite.currentSuite.tests.push({ description, fn, timeout, skipped: true });
+        return
     }
 
     only(description: string, fn: TestFunction, timeout = 0): void {
@@ -116,13 +116,6 @@ class Suite {
     }
 
     private async executeTest(test: Test): Promise<TestResult> {
-        if (test.skipped) {
-            return {
-                description: test.description,
-                status: "skipped"
-            };
-        }
-
         const result: TestResult = {
             description: test.description,
             status: "passed",
