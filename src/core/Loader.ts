@@ -7,11 +7,11 @@
 import Module, { createRequire } from "module";
 import "esbuild-register";
 
-type RequireReturn = { code: string | null; filename: string | null };
+type LoaderReturn = { code: string | null; filename: string | null };
 
-export class Require {
-  require(filename: string): RequireReturn {
-    let convertedContent: RequireReturn = { code: null, filename: null };
+export class Loader {
+  require(filename: string): LoaderReturn {
+    let convertedContent: LoaderReturn = { code: null, filename: null };
 
     // Backup the original _compile method
     const originalCompile = (Module.prototype as any)._compile;

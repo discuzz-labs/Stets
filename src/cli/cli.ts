@@ -6,12 +6,11 @@
 
 import { version, name, description } from "../../package.json";
 import { ArgsParser } from "../cli/ArgParser";
-import { Reporter } from "../reporters/Reporter";
 import { Config } from "../config/Config";
+import { TestsPooler } from "../core/TestsPooler";
 import { Glob } from "../glob/Glob";
+import { Reporter } from "../reporters/Reporter";
 import COMMANDS from "./commands";
-import { Require } from "../core/Require";
-import { Isolated } from "../core/Isolated";
 
 (async () => {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -40,17 +39,7 @@ import { Isolated } from "../core/Isolated";
   const files = args.get("file");
 
   const testFiles = await new Glob(files, exclude, pattern).collect();
-
-  for (const file of testFiles) {
-    const { code, filename } = new Require().require(file);
-    if (code !== null && filename !== null) {
-      const isolated = new Isolated();
-      const script = isolated.script({ code, filename });
-      const context = isolated.context();
-      console.log(isolated.exec({ filename, script, context}))
-    }
-  }
-
+  await new TestsPooler(testFiles).runTests();
   Reporter.reportSummary();
 
   process.exit();
