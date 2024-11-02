@@ -11,6 +11,7 @@ import { Config } from "../config/Config";
 import { Glob } from "../glob/Glob";
 import COMMANDS from "./commands";
 import { Require } from "../core/Require";
+import { Isolated } from "../core/Isolated";
 
 (async () => {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
@@ -41,8 +42,13 @@ import { Require } from "../core/Require";
   const testFiles = await new Glob(files, exclude, pattern).collect();
 
   for (const file of testFiles) {
-    const { code , fileName } = new Require().require(file)
-    console.log(code, fileName )
+    const { code, filename } = new Require().require(file);
+    if (code !== null && filename !== null) {
+      const isolated = new Isolated();
+      const script = isolated.script({ code, filename });
+      const context = isolated.context();
+      console.log(isolated.exec({ filename, script, context}))
+    }
   }
 
   Reporter.reportSummary();

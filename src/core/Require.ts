@@ -7,11 +7,11 @@
 import Module, { createRequire } from "module";
 import "esbuild-register";
 
-type RequireReturn = { code: string | null; fileName: string | null };
+type RequireReturn = { code: string | null; filename: string | null };
 
 export class Require {
-  require(file: string): RequireReturn {
-    let convertedContent: RequireReturn = { code: null, fileName: null };
+  require(filename: string): RequireReturn {
+    let convertedContent: RequireReturn = { code: null, filename: null };
 
     // Backup the original _compile method
     const originalCompile = (Module.prototype as any)._compile;
@@ -23,15 +23,15 @@ export class Require {
     ): void {
       convertedContent = {
         code: content,
-        fileName: filename,
+          filename: filename,
       };
     };
 
     try {
-      const re = createRequire(file);
-      re(file); // Require the file, triggering the overridden _compile method
+      const re = createRequire(filename);
+      re(filename); // Require the file, triggering the overridden _compile method
     } catch (error) {
-      console.error(`Error transforming file ${file}:`, error);
+      console.error(`Error loading file ${filename}:`, error);
     } finally {
       // Restore the original _compile method to avoid affecting other modules
       (Module.prototype as any)._compile = originalCompile;
