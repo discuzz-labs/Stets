@@ -10,7 +10,11 @@ import { Formatter } from "../utils/Formatter";
 import { Reporter } from "../reporters/Reporter";
 
 export class TestsPooler {
-  constructor(private files: string[]) {}
+  constructor(
+    private reporters: string[],
+    private outputDir: string,
+    private files: string[],
+  ) {}
 
   // Runs all tests in parallel
   public async runTests(): Promise<void> {
@@ -58,6 +62,14 @@ export class TestsPooler {
 
     if (report.status && !report.error && report.report) {
       Reporter.reportSuite(report.report, loadedFile, -1);
+      if (this.reporters.length !== 0) {
+        Reporter.writeReport(
+          this.reporters,
+          this.outputDir,
+          loadedFile,
+          report.report,
+        );
+      }
     } else if (!report.status && !report.error && !report.report) {
       console.log(`File ${loadedFile} didn't call run() at all!`);
     } else if (report.error) {

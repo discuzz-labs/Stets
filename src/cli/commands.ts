@@ -37,7 +37,13 @@ const COMMANDS: Record<
     description: "Specify reporters to use for test results",
     requiresValue: true,
     isArray: true,
-    shortValue: "rp",
+    shortValue: "r",
+  },
+  outputDir: {
+    description: "Specify where reporter results must be omitted",
+    requiresValue: true,
+    isArray: false,
+    shortValue: "o",
   },
   file: {
     description: "files to run.",

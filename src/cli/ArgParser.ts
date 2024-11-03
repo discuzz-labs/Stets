@@ -11,7 +11,7 @@ export type CLIOptions = {
   config?: string;
   file?: string[];
   
-  
+  outputDir?: string;
   pattern?: string[];
   exclude?: string[];
   reporters?: string[];

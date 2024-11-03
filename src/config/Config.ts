@@ -9,19 +9,24 @@ import { existsSync } from "fs";
 import config from "../veve.config";
 
 // Types
-export type Veve = { pattern: string[]; exclude: string[]; reporters: string[]; };
+export type Veve = {
+    outputDir: string;
+    reporters: string[];
+    pattern: string[];
+    exclude: string[];
+};
 
 export class Config {
-  private config: Veve = config;
+    private config: Veve = config;
 
-  constructor(configPath: string | undefined) {
-      // Initialize the config property based on the configPath
-      if (configPath && existsSync(join(process.cwd(), configPath))) {
-          this.config = require(join(process.cwd(), configPath)).default;
-      }
-  }
+    constructor(configPath: string | undefined) {
+        // Initialize the config property based on the configPath
+        if (configPath && existsSync(join(process.cwd(), configPath))) {
+            this.config = require(join(process.cwd(), configPath)).default;
+        }
+    }
 
-  public get<K extends keyof Veve>(key: K): Veve[K] {
-      return this.config[key];
-  }
+    public get<K extends keyof Veve>(key: K): Veve[K] {
+        return this.config[key];
+    }
 }

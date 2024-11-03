@@ -20,7 +20,7 @@ export class BaseReporter {
 
   static onTestFileReport(file: string, duration: number) {
     const fileName = path.basename(file);
-    const directoryPath = path.dirname(file)
+    const directoryPath = path.dirname(file);
     console.log(
       `\n${kleur.underline(kleur.bold(fileName))} at ${kleur.gray(directoryPath)} in ${kleur.gray(duration)} ms \n`,
     );
@@ -58,7 +58,7 @@ export class BaseReporter {
     console.log(
       `\n${indent}${kleur.bgRed(kleur.bold(" FAILED "))} ${kleur.bgBlack(kleur.white(description))}\n`,
     );
-     Formatter.formatError(error.message, error.stack, 10, file)
+    Formatter.formatError(error.message, error.stack, 10, file);
   }
 
   static onSummary(passed: number, failed: number, duration: number) {
@@ -68,7 +68,7 @@ export class BaseReporter {
 Total: ${total} 
 Passed: ${kleur.green(passed)} 
 Duration: ${duration} 
-${kleur.gray("Ran all test files")}
+🧉 ${kleur.gray("Ran all test files")}
 `);
   }
 }

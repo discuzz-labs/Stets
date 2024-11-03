@@ -1,5 +1,6 @@
 import { BaseReporter } from "../reporters/BaseReporter";
 import { HookResult, SuiteReport, TestResult } from "../framework/Suite";
+import { JsonReporter } from "./JsonReporter";
 
 export class Reporter {
   static baseReporter = BaseReporter;
@@ -102,5 +103,19 @@ export class Reporter {
       this.metrics.failed,
       this.metrics.duration,
     );
+  }
+
+  static writeReport(
+    reporters: string[],
+    outputDir: string,
+    file: string,
+    report: SuiteReport
+  ) {
+    for (let i = 0; i <= reporters.length; i++) {
+      switch (reporters[i]) {
+        case "json":
+          new JsonReporter(report, Reporter.metrics).write(file, outputDir);
+      }
+    }
   }
 }

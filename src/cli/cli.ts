@@ -36,10 +36,13 @@ import COMMANDS from "./commands";
 
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
+  const reporters = args.get("reporters") || config.get("reporters");
+  const outputDir = args.get("outputDir") || config.get("outputDir");
   const files = args.get("file");
 
   const testFiles = await new Glob(files, exclude, pattern).collect();
-  await new TestsPooler(testFiles).runTests();
+  await new TestsPooler(reporters, outputDir, testFiles).runTests();
+  
   Reporter.reportSummary();
 
   process.exit();
