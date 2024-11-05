@@ -127,6 +127,29 @@ declare global {
   function beforeEach(fn: HookFunction, timeout?: number): void;
 
   /**
+   * Executes a test for each set of data provided in the table.
+   *
+   * @param {Array<any[]>} table - An array of arrays, each containing arguments to pass to the test function.
+   * @param {string} description - A formatted description of the test using printf-style placeholders.
+   * @param {(...args: any[]) => void | Promise<void>} fn - The test function to execute for each set of arguments.
+   * @param {number} [timeout=0] - Optional timeout for the test in milliseconds.
+   * @example
+   * each([
+   *   [1, 1, 2],
+   *   [1, 2, 3],
+   *   [2, 1, 3],
+   * ])('.add(%i, %i)', (a, b, expected) => {
+   *   expect(a + b).toBe(expected);
+   * });
+   */
+  function each(
+      table: any[],
+      description: string,
+      fn: (...args: any[]) => void | Promise<void>,
+      timeout?: number
+  ): void; 
+  
+  /**
    * Runs the Suite and returns the Report.
    * 
    * @returns {Promise<SuiteReport>} - The report of the test suite execution.

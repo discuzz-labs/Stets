@@ -4,6 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import Run from "./Run"
+import { format } from 'util';
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
@@ -16,7 +18,7 @@ export interface Test {
 }
 
 export interface Hook {
-    description: "beforeAll" | "beforeEach";
+    description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
     fn: HookFunction;
     timeout: number;
 }
@@ -28,7 +30,7 @@ export type TestResult = {
 };
 
 export type HookResult = {
-    description: "beforeAll" | "beforeEach";
+    description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
     status: "passed" | "failed";
     error?: { message: string; stack: string };
 };
@@ -48,181 +50,109 @@ export type SuiteReport = {
 };
 
 class Suite {
-    private description: string;
-    private children: Suite[];
-    private tests: Test[];
-    private hooks: Hook[];
-    private parent: Suite | null;
-    private onlyMode: boolean;
-    private static currentSuite: Suite;
+  public description: string;
+  public children: Suite[];
+  public tests: Test[];
+  public hooks: Hook[];
+  public parent: Suite | null;
+  public onlyMode: boolean;
+  public static currentSuite: Suite;
 
-    constructor(description: string = "Root", parent: Suite | null = null) {
-        this.description = description;
-        this.children = [];
-        this.tests = [];
-        this.hooks = [];
-        this.parent = parent;
-        this.onlyMode = false;
+  constructor(description: string = "Root", parent: Suite | null = null) {
+    this.description = description;
+    this.children = [];
+    this.tests = [];
+    this.hooks = [];
+    this.parent = parent;
+    this.onlyMode = false;
 
-        // If this is the root suite, set it as current
-        if (!parent) {
-            Suite.currentSuite = this;
-        }
+    if (!parent) {
+      Suite.currentSuite = this;
     }
-    
-    describe(description: string, callback: () => void): void {
-        const childSuite = new Suite(description, this);
-        this.children.push(childSuite);
+  }
 
-        // Save previous current suite
-        const previousSuite = Suite.currentSuite;
-        // Set new current suite
-        Suite.currentSuite = childSuite;
+  describe(description: string, callback: () => void): void {
+    const childSuite = new Suite(description, this);
+    this.children.push(childSuite);
 
-        // Execute the callback
-        callback();
+    const previousSuite = Suite.currentSuite;
+    Suite.currentSuite = childSuite;
 
-        // Restore previous suite
-        Suite.currentSuite = previousSuite;
-    }
+    callback();
 
-    it(description: string, fn: TestFunction, timeout = 0): void {
-        // Add test to current suite instead of this
-        Suite.currentSuite.tests.push({ description, fn, timeout });
-    }
+    Suite.currentSuite = previousSuite;
+  }
 
-    skip(description: string, fn: TestFunction, timeout = 0): void {
-        return
-    }
+  it(description: string, fn: TestFunction, timeout = 0): void {
+    Suite.currentSuite.tests.push({ description, fn, timeout });
+  }
 
-    only(description: string, fn: TestFunction, timeout = 0): void {
-        Suite.currentSuite.tests.push({ description, fn, timeout, only: true });
-        Suite.currentSuite.setOnlyMode();
-    }
+  
 
-    beforeAll(fn: HookFunction, timeout = 0): void {
-        Suite.currentSuite.hooks.push({ description: "beforeAll", fn, timeout });
-    }
+  only(description: string, fn: TestFunction, timeout = 0): void {
+      Suite.currentSuite.tests.push({ description, fn, timeout, only: true });
+      Suite.currentSuite.setOnlyMode();
 
-    beforeEach(fn: HookFunction, timeout = 0): void {
-        Suite.currentSuite.hooks.push({ description: "beforeEach", fn, timeout });
-    }
+  }
 
-    private setOnlyMode(): void {
-        this.onlyMode = true;
-        if (this.parent) {
-            this.parent.setOnlyMode();
-        }
-    }
+  each(
+      table: any[],
+      description: string,
+      fn: (...args: any[]) => void | Promise<void>,
+      timeout = 0,
+  ): void {
+      table.forEach((data, index) => {
+          const formattedDescription = format(description, ...data);
+          this.it(formattedDescription, () => fn(...data), timeout);
+      });
+  }
 
-    private async executeTest(test: Test): Promise<TestResult> {
-        const result: TestResult = {
-            description: test.description,
-            status: "passed",
-        };
+  skip(description: string, fn: TestFunction, timeout = 0): void {
+      return;
+  }
+  
+  private setOnlyMode(): void {
+      this.onlyMode = true;
+      if (this.parent) {
+          this.parent.setOnlyMode();
+      }
+  }
 
-        try {
-            // Execute beforeEach hooks from parent to child
-            await this.executeBeforeEachHooks();
-            await this.withTimeout(test.fn(), test.timeout, test.description);
-        } catch (error: any) {
-            result.status = "failed";
-            result.error = { message: error.message, stack: error.stack };
-        }
-        return result;
-    }
+  beforeAll(fn: HookFunction, timeout = 0): void {
+    Suite.currentSuite.hooks.push({
+      description: "beforeAll",
+      fn,
+      timeout,
+    });
+  }
 
-    private async executeBeforeEachHooks(): Promise<void> {
-        // Execute parent beforeEach hooks first
-        if (this.parent) {
-            await this.parent.executeBeforeEachHooks();
-        }
+  beforeEach(fn: HookFunction, timeout = 0): void {
+    Suite.currentSuite.hooks.push({
+      description: "beforeEach",
+      fn,
+      timeout,
+    });
+  }
 
-        // Then execute this suite's beforeEach hooks
-        const beforeEachHooks = this.hooks.filter(hook => hook.description === "beforeEach");
-        for (const hook of beforeEachHooks) {
-            await this.executeHook(hook);
-        }
-    }
+  afterAll(fn: HookFunction, timeout = 0): void {
+    Suite.currentSuite.hooks.push({
+      description: "afterAll",
+      fn,
+      timeout,
+    });
+  }
 
-    private async executeHook(hook: Hook): Promise<HookResult> {
-        const result: HookResult = {
-            description: hook.description,
-            status: "passed",
-        };
-        try {
-            await this.withTimeout(hook.fn(), hook.timeout, hook.description);
-        } catch (error: any) {
-            result.status = "failed";
-            result.error = { message: error.message, stack: error.stack };
-        }
-        return result;
-    }
+  afterEach(fn: HookFunction, timeout = 0): void {
+    Suite.currentSuite.hooks.push({
+      description: "afterEach",
+      fn,
+      timeout,
+    });
+  }
 
-    private timeout(ms: number, description: string): Promise<void> {
-        return new Promise((_, reject) =>
-            setTimeout(
-                () => reject(new Error(`${description} exceeded ${ms} ms.`)),
-                ms,
-            ),
-        );
-    }
-
-    private withTimeout(
-        promise: Promise<void> | void,
-        ms: number,
-        description: string,
-    ) {
-        return ms > 0
-            ? Promise.race([promise, this.timeout(ms, description)])
-            : Promise.resolve(promise);
-    }
-
-    async run(): Promise<SuiteReport> {
-        const report: SuiteReport = {
-            passed: true,
-            description: this.description,
-            metrics: { passed: 0, failed: 0, skipped: 0 },
-            tests: [],
-            hooks: [],
-            children: [],
-        };
-
-        // Run beforeAll hooks
-        const beforeAllHooks = this.hooks.filter(hook => hook.description === "beforeAll");
-        for (const hook of beforeAllHooks) {
-            const result = await this.executeHook(hook);
-            report.hooks.push(result);
-            if (result.status === "failed") {
-                report.passed = false;
-            }
-        }
-
-        // Run tests
-        const testsToRun = this.onlyMode
-            ? this.tests.filter((test) => test.only)
-            : this.tests;
-
-        for (const test of testsToRun) {
-            const result = await this.executeTest(test);
-            report.tests.push(result);
-            report.metrics[result.status]++;
-            if (result.status === "failed") {
-                report.passed = false;
-            }
-        }
-
-        // Run child suites
-        for (const child of this.children) {
-            const childReport = await child.run();
-            report.children.push(childReport);
-            if (!childReport.passed) {
-                report.passed = false;
-            }
-        }
-
-        return report;
-    }
+  async run(): Promise<SuiteReport> {
+    return new Run(this).run();
+  }
 }
 
 export default Suite;

@@ -35,6 +35,7 @@ export class Isolated {
       it: suite.it.bind(suite),
       only: suite.only.bind(suite),
       skip: suite.skip.bind(suite),
+      each: suite.each.bind(suite),
       beforeEach: suite.beforeEach.bind(suite),
       beforeAll: suite.beforeAll.bind(suite),
       run: suite.run.bind(suite),
