@@ -4,49 +4,49 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import Run from "./Run"
-import { format } from 'util';
+import Run from "./Run";
+import { format } from "util";
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
 
 export interface Test {
-    description: string;
-    fn: TestFunction;
-    timeout: number;
-    only?: boolean;
+  description: string;
+  fn: TestFunction;
+  timeout: number;
+  only?: boolean;
 }
 
 export interface Hook {
-    description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-    fn: HookFunction;
-    timeout: number;
+  description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
+  fn: HookFunction;
+  timeout: number;
 }
 
 export type TestResult = {
-    description: string;
-    status: "passed" | "failed";
-    error?: { message: string; stack: string };
+  description: string;
+  status: "passed" | "failed";
+  error?: { message: string; stack: string };
 };
 
 export type HookResult = {
-    description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-    status: "passed" | "failed";
-    error?: { message: string; stack: string };
+  description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
+  status: "passed" | "failed";
+  error?: { message: string; stack: string };
 };
 
 export type SuiteReport = {
-    passed: boolean;
-    description: string;
-    metrics: {
-        passed: number;
-        failed: number;
-        skipped: number;
-    };
-    tests: Array<TestResult>;
-    hooks: Array<HookResult>;
-    children: SuiteReport[];
-    error?: string;
+  passed: boolean;
+  description: string;
+  metrics: {
+    passed: number;
+    failed: number;
+    skipped: number;
+  };
+  tests: Array<TestResult>;
+  hooks: Array<HookResult>;
+  children: SuiteReport[];
+  error?: string;
 };
 
 class Suite {
@@ -71,7 +71,7 @@ class Suite {
     }
   }
 
-  describe(description: string, callback: () => void): void {
+  Describe(description: string, callback: () => void): void {
     const childSuite = new Suite(description, this);
     this.children.push(childSuite);
 
@@ -83,39 +83,52 @@ class Suite {
     Suite.currentSuite = previousSuite;
   }
 
+  Skip(description: string, callback: () => void): void {
+    return;
+  }
+  
+  Each(
+    table: any[],
+    description: string,
+    fn: (...args: any[]) => void,
+  ): void {
+    table.forEach((data) => {
+      const formattedDescription = format(description, ...data);
+      // Call describe with the formatted description and the callback function
+      this.Describe(formattedDescription, () => fn(...data));
+    });
+  }
+
   it(description: string, fn: TestFunction, timeout = 0): void {
     Suite.currentSuite.tests.push({ description, fn, timeout });
   }
 
-  
-
   only(description: string, fn: TestFunction, timeout = 0): void {
-      Suite.currentSuite.tests.push({ description, fn, timeout, only: true });
-      Suite.currentSuite.setOnlyMode();
-
+    Suite.currentSuite.tests.push({ description, fn, timeout, only: true });
+    Suite.currentSuite.setOnlyMode();
   }
 
   each(
-      table: any[],
-      description: string,
-      fn: (...args: any[]) => void | Promise<void>,
-      timeout = 0,
+    table: any[],
+    description: string,
+    fn: (...args: any[]) => void | Promise<void>,
+    timeout = 0,
   ): void {
-      table.forEach((data, index) => {
-          const formattedDescription = format(description, ...data);
-          this.it(formattedDescription, () => fn(...data), timeout);
-      });
+    table.forEach((data, index) => {
+      const formattedDescription = format(description, ...data);
+      this.it(formattedDescription, () => fn(...data), timeout);
+    });
   }
 
   skip(description: string, fn: TestFunction, timeout = 0): void {
-      return;
+    return;
   }
-  
+
   private setOnlyMode(): void {
-      this.onlyMode = true;
-      if (this.parent) {
-          this.parent.setOnlyMode();
-      }
+    this.onlyMode = true;
+    if (this.parent) {
+      this.parent.setOnlyMode();
+    }
   }
 
   beforeAll(fn: HookFunction, timeout = 0): void {

@@ -30,8 +30,12 @@ export class Isolated {
     const suite = new Suite()
     
     const globals = {
-      console: new Console(),
-      describe: suite.describe.bind(suite),
+      
+      
+      Describe: suite.Describe.bind(suite),
+      Skip: suite.Skip.bind(suite),
+      Each: suite.Each.bind(suite),
+      
       it: suite.it.bind(suite),
       only: suite.only.bind(suite),
       skip: suite.skip.bind(suite),
@@ -39,7 +43,8 @@ export class Isolated {
       beforeEach: suite.beforeEach.bind(suite),
       beforeAll: suite.beforeAll.bind(suite),
       run: suite.run.bind(suite),
-      
+
+      console: new Console(),
       require: createRequire(this.filename),
       exports: {},
       __filename: this.filename,

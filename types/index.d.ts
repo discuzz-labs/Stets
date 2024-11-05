@@ -55,13 +55,54 @@ declare global {
    * @param {string} description - The description of the describe block.
    * @param {() => void} callback - The function containing tests/hooks to register in this block.
    * @example
-   * describe('My Test Suite', () => {
+   * Describe('My Test Suite', () => {
    *   it('should pass this test', () => {
    *     // Test logic
    *   });
    * });
    */
-  function describe(description: string, callback: () => void): void;
+  function Describe(description: string, callback: () => void): void;
+
+  /**
+   * Executes a suite of tests for each set of data provided in the table.
+   *
+   * @param {Array<any[]>} table - An array of arrays, each containing arguments for the test suite.
+   * @param {string} description - A formatted description of the suite using printf-style placeholders.
+   * @param {function} fn - The function that defines the suite for each set of arguments.
+   * @example
+   * Each([
+   *   ['Case 1', 1, 1, 2],
+   *   ['Case 2', 1, 2, 3],
+   *   ['Case 3', 2, 1, 3],
+   * ], '%s: add(%i, %i)', (caseName, a, b, expected) => {
+   *   it('should return the correct sum', () => {
+   *     expect(a + b).toBe(expected);
+   *   });
+   * });
+   */
+  function Each(
+      table: any[],
+      description: string,
+      fn: (...args: any[]) => void
+  ): void;
+
+  /**
+   * Skips a suite of tests with the specified description.
+   *
+   * @param {string} description - The name of the suite to be skipped.
+   * @param {function} callback - The function containing the tests to be skipped.
+   * @example
+   * Skip('Skipped Test Suite', () => {
+   *   it('should skip this test', () => {
+   *     // Test logic
+   *   });
+   * });
+   */
+  function Skip(
+      description: string,
+      callback: () => void
+  ): void;
+
 
   /**
    * Registers an individual test case.
@@ -138,7 +179,7 @@ declare global {
    *   [1, 1, 2],
    *   [1, 2, 3],
    *   [2, 1, 3],
-   * ])('.add(%i, %i)', (a, b, expected) => {
+   * ], '.add(%i, %i)', (a, b, expected) => {
    *   expect(a + b).toBe(expected);
    * });
    */
@@ -148,7 +189,7 @@ declare global {
       fn: (...args: any[]) => void | Promise<void>,
       timeout?: number
   ): void; 
-  
+
   /**
    * Runs the Suite and returns the Report.
    * 
