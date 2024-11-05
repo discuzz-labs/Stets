@@ -68,45 +68,61 @@ export default class Run {
   }
 
   async run(): Promise<SuiteReport> {
-    const report: SuiteReport = {
-      passed: true,
-      description: this.suite.description,
-      metrics: { passed: 0, failed: 0, skipped: 0 },
-      tests: [],
-      hooks: [],
-      children: [],
-    };
+      const report: SuiteReport = {
+        passed: true,
+        description: this.suite.description,
+        metrics: { passed: 0, failed: 0, skipped: 0 },
+        tests: [],
+        hooks: [],
+        children: [],
+      };
 
-    // Execute beforeAll hooks
-    await this.executeHooks("beforeAll");
+      // Check if there are any suites marked with `onlyMode`
+      const onlySuites = this.suite.children.filter(child => child.onlyMode);
 
-    // Execute each test with beforeEach and afterEach hooks
-    for (const test of this.suite.tests) {
-      await this.executeHooks("beforeEach");
-
-      // Execute the test and store its result
-      const result = await this.executeTest(test);
-      report.tests.push(result);
-      report.metrics[result.status]++;
-      if (result.status === "failed") {
-        report.passed = false;
+      if (onlySuites.length > 0) {
+        // Run only `onlyMode` suites and collect their reports
+        for (const onlySuite of onlySuites) {
+          const onlySuiteReport = await onlySuite.run();
+          report.children.push(onlySuiteReport); // Collect report of each `onlyMode` suite
+          if (!onlySuiteReport.passed) {
+            report.passed = false;
+          }
+        }
+        return report; // Return early since only `onlyMode` suites should run
       }
 
-      await this.executeHooks("afterEach");
-    }
+      // Run hooks before all tests if no `onlyMode` suites exist
+      await this.executeHooks("beforeAll");
 
-    // Run child suites
-    for (const child of this.suite.children) {
-      const childReport = await child.run();
-      report.children.push(childReport);
-      if (!childReport.passed) {
-        report.passed = false;
+      // Run each test (including potential `onlyTests`)
+      const testsToRun = this.suite.onlyTests.length !== 0 ? this.suite.onlyTests : this.suite.tests;
+      for (const test of testsToRun) {
+        await this.executeHooks("beforeEach");
+
+        const result = await this.executeTest(test);
+        report.tests.push(result);
+        report.metrics[result.status]++;
+        if (result.status === "failed") {
+          report.passed = false;
+        }
+
+        await this.executeHooks("afterEach");
       }
-    }
 
-    // Execute afterAll hooks
-    await this.executeHooks("afterAll");
+      // Run child suites (if no `onlyMode` suites exist)
+      for (const child of this.suite.children) {
+        const childReport = await child.run();
+        report.children.push(childReport);
+        if (!childReport.passed) {
+          report.passed = false;
+        }
+      }
 
-    return report;
+      // Execute afterAll hooks
+      await this.executeHooks("afterAll");
+
+      return report;
   }
+
 }

@@ -33,6 +33,7 @@ export class Isolated {
       
       
       Describe: suite.Describe.bind(suite),
+      Only: suite.Only.bind(suite),
       Skip: suite.Skip.bind(suite),
       Each: suite.Each.bind(suite),
       

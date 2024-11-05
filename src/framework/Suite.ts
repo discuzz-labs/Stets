@@ -14,7 +14,6 @@ export interface Test {
   description: string;
   fn: TestFunction;
   timeout: number;
-  only?: boolean;
 }
 
 export interface Hook {
@@ -53,6 +52,7 @@ class Suite {
   public description: string;
   public children: Suite[];
   public tests: Test[];
+  public onlyTests: Test[];
   public hooks: Hook[];
   public parent: Suite | null;
   public onlyMode: boolean;
@@ -62,6 +62,7 @@ class Suite {
     this.description = description;
     this.children = [];
     this.tests = [];
+    this.onlyTests = [];
     this.hooks = [];
     this.parent = parent;
     this.onlyMode = false;
@@ -83,15 +84,26 @@ class Suite {
     Suite.currentSuite = previousSuite;
   }
 
+  Only(description: string, callback: () => void): void {
+    const onlySuite = new Suite(description, this);
+    onlySuite.onlyMode = true; // Mark this suite as exclusive
+    this.children.push(onlySuite);
+
+    const previousSuite = Suite.currentSuite;
+    Suite.currentSuite = onlySuite;
+
+    // Set only mode for parent suites, if applicable
+    onlySuite.onlyMode = true;
+    callback();
+
+    Suite.currentSuite = previousSuite;
+  }
+
   Skip(description: string, callback: () => void): void {
     return;
   }
-  
-  Each(
-    table: any[],
-    description: string,
-    fn: (...args: any[]) => void,
-  ): void {
+
+  Each(table: any[], description: string, fn: (...args: any[]) => void): void {
     table.forEach((data) => {
       const formattedDescription = format(description, ...data);
       // Call describe with the formatted description and the callback function
@@ -104,8 +116,7 @@ class Suite {
   }
 
   only(description: string, fn: TestFunction, timeout = 0): void {
-    Suite.currentSuite.tests.push({ description, fn, timeout, only: true });
-    Suite.currentSuite.setOnlyMode();
+    Suite.currentSuite.onlyTests.push({ description, fn, timeout });
   }
 
   each(
@@ -122,13 +133,6 @@ class Suite {
 
   skip(description: string, fn: TestFunction, timeout = 0): void {
     return;
-  }
-
-  private setOnlyMode(): void {
-    this.onlyMode = true;
-    if (this.parent) {
-      this.parent.setOnlyMode();
-    }
   }
 
   beforeAll(fn: HookFunction, timeout = 0): void {
