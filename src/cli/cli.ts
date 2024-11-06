@@ -7,7 +7,7 @@
 import { version, name, description } from "../../package.json";
 import { ArgsParser } from "../cli/ArgParser";
 import { Config } from "../config/Config";
-import { TestsPooler } from "../core/TestsPooler";
+import { TestsPool } from "../core/TestsPool";
 import { Glob } from "../glob/Glob";
 import { Reporter } from "../reporters/Reporter";
 import COMMANDS from "./commands";
@@ -41,7 +41,7 @@ import COMMANDS from "./commands";
   const files = args.get("file");
 
   const testFiles = await new Glob(files, exclude, pattern).collect();
-  await new TestsPooler(reporters, outputDir, testFiles).runTests();
+  await new TestsPool(reporters, outputDir, testFiles).runTests();
   
   Reporter.reportSummary();
 

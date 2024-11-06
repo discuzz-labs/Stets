@@ -1,8 +1,12 @@
 import type Suite from "./Suite";
 import type { Hook, HookResult, SuiteReport, Test, TestResult } from "./Suite";
+import { cpus } from "os"
 
 export default class Run {
-  constructor(private suite: Suite) {}
+  private hookCache: Map<string, Promise<void>> = new Map();
+  private readonly MAX_PARALLEL_TESTS = cpus.length || 4;
+
+  constructor(private suite: Suite){}
 
   private async executeTest(test: Test): Promise<TestResult> {
     const result: TestResult = {
@@ -11,11 +15,32 @@ export default class Run {
     };
 
     try {
-      await this.withTimeout(test.fn(), test.timeout, test.description);
+      // Use AbortController for more efficient timeout handling
+      const controller = new AbortController();
+      const timeoutId = test.timeout > 0 
+        ? setTimeout(() => controller.abort(), test.timeout)
+        : null;
+
+      try {
+        await Promise.race([
+          test.fn(),
+          new Promise((_, reject) => {
+            controller.signal.addEventListener('abort', () => 
+              reject(new Error(`${test.description} exceeded ${test.timeout} ms.`))
+            );
+          })
+        ]);
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+      }
     } catch (error: any) {
       result.status = "failed";
-      result.error = { message: error.message, stack: error.stack };
+      result.error = { 
+        message: error.message, 
+        stack: error.stack 
+      };
     }
+
     return result;
   }
 
@@ -24,105 +49,123 @@ export default class Run {
       description: hook.description,
       status: "passed",
     };
+
     try {
-      await this.withTimeout(hook.fn(), hook.timeout, hook.description);
+      const controller = new AbortController();
+      const timeoutId = hook.timeout > 0
+        ? setTimeout(() => controller.abort(), hook.timeout)
+        : null;
+
+      try {
+        await Promise.race([
+          hook.fn(),
+          new Promise((_, reject) => {
+            controller.signal.addEventListener('abort', () => 
+              reject(new Error(`${hook.description} exceeded ${hook.timeout} ms.`))
+            );
+          })
+        ]);
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId);
+      }
     } catch (error: any) {
       result.status = "failed";
-      result.error = { message: error.message, stack: error.stack };
+      result.error = { 
+        message: error.message, 
+        stack: error.stack 
+      };
     }
+
     return result;
   }
 
-  private timeout(ms: number, description: string): Promise<void> {
-    return new Promise((_, reject) =>
-      setTimeout(
-        () => reject(new Error(`${description} exceeded ${ms} ms.`)),
-        ms,
-      ),
-    );
-  }
-
-  private withTimeout(
-    promise: Promise<void> | void,
-    ms: number,
-    description: string,
-  ) {
-    return ms > 0
-      ? Promise.race([promise, this.timeout(ms, description)])
-      : Promise.resolve(promise);
-  }
-
-  // Method to execute all hooks for a specific type
   private async executeHooks(hookType: "beforeAll" | "afterAll" | "beforeEach" | "afterEach"): Promise<void> {
-    // Run parent's hooks first
+    // Use cached result for parent hooks if available
     if (this.suite.parent) {
-      await new Run(this.suite.parent).executeHooks(hookType);
+      const parentCacheKey = `${this.suite.parent.description}-${hookType}`;
+      if (!this.hookCache.has(parentCacheKey)) {
+        this.hookCache.set(
+          parentCacheKey,
+          new Run(this.suite.parent).executeHooks(hookType)
+        );
+      }
+      await this.hookCache.get(parentCacheKey);
     }
 
+    // Execute current suite's hooks
     const hooksToExecute = this.suite.hooks.filter(
       (hook) => hook.description === hookType
     );
-    for (const hook of hooksToExecute) {
-      await this.executeHook(hook);
+
+    // Parallelize hook execution when possible
+    if (hookType === "beforeAll" || hookType === "afterAll") {
+      await Promise.all(hooksToExecute.map(hook => this.executeHook(hook)));
+    } else {
+      for (const hook of hooksToExecute) {
+        await this.executeHook(hook);
+      }
     }
   }
 
   async run(): Promise<SuiteReport> {
-      const report: SuiteReport = {
-        passed: true,
-        description: this.suite.description,
-        metrics: { passed: 0, failed: 0, skipped: 0 },
-        tests: [],
-        hooks: [],
-        children: [],
-      };
+    const report: SuiteReport = {
+      passed: true,
+      description: this.suite.description,
+      metrics: { passed: 0, failed: 0, skipped: 0 },
+      tests: [],
+      hooks: [],
+      children: [],
+    };
 
-      // Check if there are any suites marked with `onlyMode`
-      const onlySuites = this.suite.children.filter(child => child.onlyMode);
-
-      if (onlySuites.length > 0) {
-        // Run only `onlyMode` suites and collect their reports
-        for (const onlySuite of onlySuites) {
+    // Handle only mode suites
+    const onlySuites = this.suite.children.filter(child => child.onlyMode);
+    if (onlySuites.length > 0) {
+      await Promise.all(
+        onlySuites.map(async (onlySuite) => {
           const onlySuiteReport = await onlySuite.run();
-          report.children.push(onlySuiteReport); // Collect report of each `onlyMode` suite
-          if (!onlySuiteReport.passed) {
-            report.passed = false;
-          }
-        }
-        return report; // Return early since only `onlyMode` suites should run
-      }
+          report.children.push(onlySuiteReport);
+          if (!onlySuiteReport.passed) report.passed = false;
+        })
+      );
+      return report;
+    }
 
-      // Run hooks before all tests if no `onlyMode` suites exist
-      await this.executeHooks("beforeAll");
+    await this.executeHooks("beforeAll");
 
-      // Run each test (including potential `onlyTests`)
-      const testsToRun = this.suite.onlyTests.length !== 0 ? this.suite.onlyTests : this.suite.tests;
-      for (const test of testsToRun) {
-        await this.executeHooks("beforeEach");
+    // Parallelize test execution with controlled concurrency
+    const testsToRun = this.suite.onlyTests.length !== 0 ? 
+      this.suite.onlyTests : 
+      this.suite.tests;
 
-        const result = await this.executeTest(test);
+    // Process tests in batches for controlled parallelization
+    for (let i = 0; i < testsToRun.length; i += this.MAX_PARALLEL_TESTS) {
+      const batch = testsToRun.slice(i, i + this.MAX_PARALLEL_TESTS);
+      const results = await Promise.all(
+        batch.map(async (test) => {
+          await this.executeHooks("beforeEach");
+          const result = await this.executeTest(test);
+          await this.executeHooks("afterEach");
+          return result;
+        })
+      );
+
+      results.forEach(result => {
         report.tests.push(result);
         report.metrics[result.status]++;
-        if (result.status === "failed") {
-          report.passed = false;
-        }
+        if (result.status === "failed") report.passed = false;
+      });
+    }
 
-        await this.executeHooks("afterEach");
-      }
-
-      // Run child suites (if no `onlyMode` suites exist)
-      for (const child of this.suite.children) {
+    // Parallelize child suite execution
+    await Promise.all(
+      this.suite.children.map(async (child) => {
         const childReport = await child.run();
         report.children.push(childReport);
-        if (!childReport.passed) {
-          report.passed = false;
-        }
-      }
+        if (!childReport.passed) report.passed = false;
+      })
+    );
 
-      // Execute afterAll hooks
-      await this.executeHooks("afterAll");
-
-      return report;
+    await this.executeHooks("afterAll");
+    return report;
   }
-
 }

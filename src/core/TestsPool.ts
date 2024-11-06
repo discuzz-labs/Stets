@@ -9,24 +9,28 @@ import { Isolated } from "../core/Isolated";
 import { Formatter } from "../utils/Formatter";
 import { Reporter } from "../reporters/Reporter";
 
-export class TestsPooler {
+export class TestsPool {
+  private loader: Loader;
+
   constructor(
     private reporters: string[],
     private outputDir: string,
     private files: string[],
-  ) {}
+  ) {
+    this.loader = new Loader();
+  }
 
   // Runs all tests in parallel
   public async runTests(): Promise<void> {
     await Promise.all(this.files.map((file) => this.runSingleTest(file)));
   }
 
-  // Runs a single test, with error handling and reporting
+  // Loads and runs a single test file, handling errors and reporting results
   private async runSingleTest(filename: string): Promise<void> {
     const startTime = Date.now();
 
     try {
-      const { code, loadedFile } = this.loadFile(filename);
+      const { code, filename: loadedFile } = this.loadFile(filename);
       const report = await this.executeIsolatedTest(code, loadedFile);
       this.processReport(report, filename, loadedFile, startTime);
     } catch (error: any) {
@@ -34,12 +38,13 @@ export class TestsPooler {
     }
   }
 
-  // Loads the file and retrieves the code to be tested
-  private loadFile(filename: string): { code: string; loadedFile: string } {
-    const { code, filename: loadedFile } = new Loader().require(filename);
-    if (!code || !loadedFile)
+  // Loads the test file and retrieves the transformed code
+  private loadFile(filename: string): { code: string; filename: string } {
+    const { code, filename: loadedFile } = this.loader.require(filename);
+    if (!code || !loadedFile) {
       throw new Error(`Failed to load file: ${filename}`);
-    return { code, loadedFile };
+    }
+    return { code, filename: loadedFile };
   }
 
   // Executes the isolated test in a sandboxed environment
@@ -50,24 +55,25 @@ export class TestsPooler {
     return await isolated.exec({ script, context });
   }
 
-  // Processes the report and logs the results
+  // Processes the test report and logs the results
   private processReport(
     report: any,
     filename: string,
     loadedFile: string,
-    startTime: number,
+    startTime: number
   ): void {
     const duration = Date.now() - startTime;
     Reporter.reportTestFile(filename, duration);
 
     if (report.status && !report.error && report.report) {
       Reporter.reportSuite(report.report, loadedFile, -1);
-      if (this.reporters.length !== 0) {
+
+      if (this.reporters.length > 0) {
         Reporter.writeReport(
           this.reporters,
           this.outputDir,
           loadedFile,
-          report.report,
+          report.report
         );
       }
     } else if (!report.status && !report.error && !report.report) {
@@ -77,12 +83,12 @@ export class TestsPooler {
         report.error.message,
         report.error.stack || "",
         20,
-        loadedFile,
+        loadedFile
       );
     }
   }
 
-  // Handles errors during test execution and logs them
+  // Handles and logs errors that occur during test execution
   private handleError(filename: string, error: any, startTime: number): void {
     const duration = Date.now() - startTime;
     Reporter.reportTestFile(filename, duration);
