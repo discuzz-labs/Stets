@@ -10,8 +10,6 @@ import config from "../veve.config";
 
 // Types
 export type Veve = {
-    outputDir: string;
-    reporters: string[];
     pattern: string[];
     exclude: string[];
 };

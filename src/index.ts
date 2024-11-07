@@ -4,4 +4,4 @@
  * See the LICENSE file in the project root for license information.
  */
 
-export {default} from "./framework/Suite";
+export {default} from "./framework/TestCase";

@@ -9,7 +9,6 @@ import { ArgsParser } from "../cli/ArgParser";
 import { Config } from "../config/Config";
 import { TestsPool } from "../core/TestsPool";
 import { Glob } from "../glob/Glob";
-import { Reporter } from "../reporters/Reporter";
 import COMMANDS from "./commands";
 
 (async () => {
@@ -35,15 +34,11 @@ import COMMANDS from "./commands";
   const config = new Config(args.get("config"));
 
   const exclude = args.get("exclude") || config.get("exclude");
-  const pattern = args.get("pattern") || config.get("pattern");
-  const reporters = args.get("reporters") || config.get("reporters");
-  const outputDir = args.get("outputDir") || config.get("outputDir");
+  const pattern = args.get("pattern") || config.get("pattern")
   const files = args.get("file");
 
   const testFiles = await new Glob(files, exclude, pattern).collect();
-  await new TestsPool(reporters, outputDir, testFiles).runTests();
+  await new TestsPool(testFiles).runTests();
   
-  Reporter.reportSummary();
-
   process.exit();
 })();

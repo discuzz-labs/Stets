@@ -12,86 +12,37 @@ import { Reporter } from "../reporters/Reporter";
 export class TestsPool {
   private loader: Loader;
 
-  constructor(
-    private reporters: string[],
-    private outputDir: string,
-    private files: string[],
-  ) {
+  constructor(private files: string[]) {
     this.loader = new Loader();
   }
 
   // Runs all tests in parallel
   public async runTests(): Promise<void> {
-    await Promise.all(this.files.map((file) => this.runSingleTest(file)));
-  }
+    await Promise.all(
+      this.files.map(async (file) => {
+        const start = Date.now();
 
-  // Loads and runs a single test file, handling errors and reporting results
-  private async runSingleTest(filename: string): Promise<void> {
-    const startTime = Date.now();
+        const { code, filename } = this.loader.require(file);
 
-    try {
-      const { code, filename: loadedFile } = this.loadFile(filename);
-      const report = await this.executeIsolatedTest(code, loadedFile);
-      this.processReport(report, filename, loadedFile, startTime);
-    } catch (error: any) {
-      this.handleError(filename, error, startTime);
-    }
-  }
+        if (code === null || filename === null)
+          throw new Error(`Could not load ${file}`);
 
-  // Loads the test file and retrieves the transformed code
-  private loadFile(filename: string): { code: string; filename: string } {
-    const { code, filename: loadedFile } = this.loader.require(filename);
-    if (!code || !loadedFile) {
-      throw new Error(`Failed to load file: ${filename}`);
-    }
-    return { code, filename: loadedFile };
-  }
+        const isolated = new Isolated(filename);
 
-  // Executes the isolated test in a sandboxed environment
-  private async executeIsolatedTest(code: string, loadedFile: string) {
-    const isolated = new Isolated(loadedFile);
-    const script = isolated.script(code);
-    const context = isolated.context();
-    return await isolated.exec({ script, context });
-  }
+        const script = isolated.script(code);
 
-  // Processes the test report and logs the results
-  private processReport(
-    report: any,
-    filename: string,
-    loadedFile: string,
-    startTime: number
-  ): void {
-    const duration = Date.now() - startTime;
-    Reporter.reportTestFile(filename, duration);
+        const context = isolated.context();
 
-    if (report.status && !report.error && report.report) {
-      Reporter.reportSuite(report.report, loadedFile, -1);
+        const execResult = await isolated.exec({ script, context });
+        
+        const end = Date.now();
 
-      if (this.reporters.length > 0) {
-        Reporter.writeReport(
-          this.reporters,
-          this.outputDir,
-          loadedFile,
-          report.report
-        );
-      }
-    } else if (!report.status && !report.error && !report.report) {
-      console.log(`File ${loadedFile} didn't call run() at all!`);
-    } else if (report.error) {
-      Formatter.formatError(
-        report.error.message,
-        report.error.stack || "",
-        20,
-        loadedFile
-      );
-    }
-  }
-
-  // Handles and logs errors that occur during test execution
-  private handleError(filename: string, error: any, startTime: number): void {
-    const duration = Date.now() - startTime;
-    Reporter.reportTestFile(filename, duration);
-    Formatter.formatError(error.message, error.stack || "", 20, filename);
+        if (execResult.status && execResult.report) {
+          Reporter.report(end - start, file, execResult.report);
+        } else {
+          Formatter.formatError(execResult.error?.message as string, execResult.error?.stack as string, 10, file)
+        }
+      }),
+    );
   }
 }

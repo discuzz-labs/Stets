@@ -4,71 +4,60 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import { TestReport } from "../framework/TestCase";
 import { Formatter } from "../utils/Formatter";
 import kleur from "../utils/kleur";
 import path from "path";
 
 export class BaseReporter {
-  static onStart(file: string) {
-    const directoryPath = path.dirname(file);
+  static start(file: string) {
+    const dirPath = path.dirname(file);
     const fileName = path.basename(file);
-
     console.log(
-      `${kleur.bgYellow(" RUNNING ")} ${kleur.gray(directoryPath)}${kleur.black(`/${fileName}`)}`,
+      kleur.bgYellow(" RUNNING ") +
+        kleur.gray(dirPath) +
+        kleur.black("" + fileName + "") +
+        "\n",
     );
   }
 
-  static onTestFileReport(file: string, duration: number) {
-    const fileName = path.basename(file);
-    const directoryPath = path.dirname(file);
+  static case(file: string, duration: number, report: TestReport) {
     console.log(
-      `\n${kleur.underline(kleur.bold(fileName))} at ${kleur.gray(directoryPath)} in ${kleur.gray(duration)} ms \n`,
+      kleur.underline(kleur.bold(report.description)) +
+        " at " +
+        kleur.gray(file) +
+        " in " +
+        kleur.gray(duration) +
+        " ms (" +
+        report.stats.total +
+        " / " +
+        report.stats.passed +
+        ")",
     );
   }
 
-  static onSuiteReport(
+  static fail(
     description: string,
-    passed: number,
-    failed: number,
-    indentation: number = 0,
-  ) {
-    const total = passed + failed;
-    const indent = indentation > -1 ? " ".repeat(indentation) : ""; // Add indentation
-
-    console.log(
-      `${indent}${kleur.bgWhite(kleur.black(kleur.bold(description)))} ${kleur.gray("---")} ${
-        failed === 0
-          ? kleur.green(`(${total} / ${passed})`)
-          : kleur.red(`(${total} / ${passed})`)
-      }`,
-    );
-  }
-
-  static onFail(
-    description: string,
-    error: {
-      message: string;
-      stack: string;
-    },
+    error: { message: string; stack: string },
     file: string,
-    indentation: number = 0,
   ) {
-    const indent = " ".repeat(indentation); // Add indentation
-
     console.log(
-      `\n${indent}${kleur.bgRed(kleur.bold(" FAILED "))} ${kleur.bgBlack(kleur.white(description))}\n`,
+      "\n" +
+        kleur.bgRed(kleur.bold(" FAILED ")) +
+        " " +
+        kleur.bgBlack(kleur.white("" + description + "")) +
+        "\n",
     );
     Formatter.formatError(error.message, error.stack, 10, file);
   }
 
-  static onSummary(passed: number, failed: number, duration: number) {
-    const total = passed + failed;
-
-    console.log(`
-Total: ${total} 
-Passed: ${kleur.green(passed)} 
-Duration: ${duration} 
-🧉 ${kleur.gray("Ran all test files")}
-`);
+  static success(description: string) {
+    console.log(
+      "\n" +
+        kleur.bgGreen(kleur.bold(" PASSED ")) +
+        " " +
+        kleur.bgBlack(kleur.white("" + description + "")) +
+        "\n",
+    );
   }
 }

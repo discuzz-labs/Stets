@@ -4,17 +4,16 @@
  * See the LICENSE file in the project root for license information.
  */
 
-
-import { Console } from './Console';
-import { createRequire } from 'module';
-import * as vm from 'vm';
-import * as path from 'path';
-import Suite, { SuiteReport } from '../framework/Suite';
+import { Console } from "./Console";
+import { createRequire } from "module";
+import * as vm from "vm";
+import * as path from "path";
+import TestCase, { TestReport } from "../framework/TestCase";
 
 interface ExecResult {
   status: boolean;
   error: Error | null;
-  report: SuiteReport | null;
+  report: TestReport | null;
 }
 
 interface ExecOptions {
@@ -23,29 +22,21 @@ interface ExecOptions {
 }
 
 export class Isolated {
-
   constructor(private readonly filename: string) {}
 
   context(context: any = {}): vm.Context {
-    const suite = new Suite()
-    
-    const globals = {
-      
-      
-      Describe: suite.Describe.bind(suite),
-      Only: suite.Only.bind(suite),
-      Skip: suite.Skip.bind(suite),
-      Each: suite.Each.bind(suite),
-      
-      it: suite.it.bind(suite),
-      only: suite.only.bind(suite),
-      skip: suite.skip.bind(suite),
-      each: suite.each.bind(suite),
-      beforeEach: suite.beforeEach.bind(suite),
-      beforeAll: suite.beforeAll.bind(suite),
-      run: suite.run.bind(suite),
+    const testCase = new TestCase();
 
-      console: new Console(),
+    const globals = {
+      it: testCase.it.bind(testCase),
+      only: testCase.only.bind(testCase),
+      skip: testCase.skip.bind(testCase),
+      each: testCase.each.bind(testCase),
+      beforeEach: testCase.beforeEach.bind(testCase),
+      beforeAll: testCase.beforeAll.bind(testCase),
+      run: testCase.run.bind(testCase),
+
+      console: console,
       require: createRequire(this.filename),
       exports: {},
       __filename: this.filename,
@@ -61,38 +52,37 @@ export class Isolated {
     });
   }
 
-  async exec({ script, context }: ExecOptions) : Promise<ExecResult> {
+  async exec({ script, context }: ExecOptions): Promise<ExecResult> {
     try {
       const report = await script.runInNewContext(context);
-      const isValid = this.isSuiteReport(report);
-
+      const isValid = this.isValidReport(report)
+      
       return {
         status: isValid,
         error: null,
-        report: isValid ? report : null
+        report: isValid ? report : null,
       };
     } catch (error: any) {
       return {
         status: false,
         error,
-        report: null
+        report: null,
       };
     }
   }
 
-  isSuiteReport(report: any): report is SuiteReport {
+  isValidReport(report: any): report is TestReport {
     return (
       report !== null &&
-      typeof report === 'object' &&
-      typeof report.passed === 'boolean' &&
-      typeof report.description === 'string' &&
-      typeof report.metrics === 'object' &&
-      typeof report.metrics.passed === 'number' &&
-      typeof report.metrics.failed === 'number' &&
-      typeof report.metrics.skipped === 'number' &&
+      typeof report === "object" &&
+      typeof report.passed === "boolean" &&
+      typeof report.stats === "object" &&
+      report.stats !== null &&
+      typeof report.stats.total === "number" &&
+      typeof report.stats.passed === "number" &&
+      typeof report.stats.failures === "number" &&
       Array.isArray(report.tests) &&
-      Array.isArray(report.hooks) &&
-      Array.isArray(report.children)
-    );
+      Array.isArray(report.hooks)
+    )
   }
 }

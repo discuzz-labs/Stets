@@ -33,18 +33,6 @@ const COMMANDS: Record<
     isArray: false,
     shortValue: "e",
   },
-  reporters: {
-    description: "Specify reporters to use for test results",
-    requiresValue: true,
-    isArray: true,
-    shortValue: "r",
-  },
-  outputDir: {
-    description: "Specify where reporter results must be omitted",
-    requiresValue: true,
-    isArray: false,
-    shortValue: "o",
-  },
   file: {
     description: "files to run.",
     requiresValue: true,
