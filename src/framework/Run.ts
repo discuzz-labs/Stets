@@ -15,11 +15,19 @@ class Run {
 
   // Execute a single test
   private async executeTest(test: Test): Promise<TestResult> {
+
+    if (test.skipped)
+      return {
+        description: test.description,
+        status: "skipped",
+      };
+
     const result: TestResult = {
       description: test.description,
       status: "passed",
     };
 
+    
     const controller = new AbortController();
     const timeoutId =
       test.timeout > 0
@@ -84,7 +92,12 @@ class Run {
   // Run all tests and hooks in the TestCase
   async run(): Promise<TestReport> {
     const report: TestReport = {
-      stats: { total: 0, passed: 0, failures: 0 },
+      stats: {
+        total: 0,
+        passed: 0,
+        failures: 0,
+        skipped: 0,
+      },
       passed: true,
       description: this.testCase.description,
       tests: [],
@@ -127,6 +140,8 @@ class Run {
         report.tests.push(result);
         if (result.status === "passed") {
           report.stats.passed++;
+        } else if (result.status === "skipped") {
+            report.stats.skipped++;
         } else {
           report.stats.failures++;
           report.passed = false;

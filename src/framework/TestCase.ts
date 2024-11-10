@@ -14,6 +14,7 @@ export interface Test {
   description: string;
   fn: TestFunction;
   timeout: number;
+  skipped: boolean;
 }
 
 export interface Hook {
@@ -24,19 +25,20 @@ export interface Hook {
 
 export type TestResult = {
   description: string;
-  status: "passed" | "failed";
+  status: "passed" | "failed" | "skipped";
   error?: { message: string; stack: string };
 };
 
 export type HookResult = {
   description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-  status: "passed" | "failed";
+  status: "passed" | "failed" | "skipped" ;
   error?: { message: string; stack: string };
 };
 
 export type TestReport = {
   stats: {
     total: number;
+    skipped: number,
     passed: number;
     failures: number;
   };
@@ -78,17 +80,18 @@ class TestCase {
 
   // Define a test
   public it(description: string, fn: TestFunction, timeout = 0): void {
-    this.tests.push({ description, fn, timeout });
+    this.tests.push({ description, fn, timeout, skipped: false });
   }
 
   // Define an 'only' test (executes only these tests)
   public only(description: string, fn: TestFunction, timeout = 0): void {
-    this.onlyTests.push({ description, fn, timeout });
+    this.onlyTests.push({ description, fn, timeout, skipped: false});
   }
 
   // Skip a test
   public skip(description: string, fn: TestFunction, timeout = 0): void {
-    return; // Skipped tests aren't added to the tests array
+     this.tests.push({ description, fn, timeout, skipped: true});
+    
   }
 
   // Define 'beforeAll' hook

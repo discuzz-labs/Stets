@@ -18,6 +18,8 @@ export class Reporter {
         BaseReporter.fail(t.description, t.error, file);
       } else if (t.status === "passed") {
         BaseReporter.success(t.description);
+      } else if(t.status === "skipped") {
+        BaseReporter.skipped(t.description);
       }
     });
     

@@ -28,11 +28,13 @@ export class BaseReporter {
         kleur.gray(file) +
         " in " +
         kleur.gray(duration) +
-        " ms (" +
-        report.stats.total +
-        " / " +
-        report.stats.passed +
-        ")",
+        " ms " +
+        "\n" +
+        kleur.yellow("Skipped: " + report.stats.skipped) +
+        " " +
+        kleur.green("Passed: " + report.stats.passed) +
+        " " +
+        kleur.red("Failed: " + report.stats.failures)
     );
   }
 
@@ -55,6 +57,16 @@ export class BaseReporter {
     console.log(
       "\n" +
         kleur.bgGreen(kleur.bold(" PASSED ")) +
+        " " +
+        kleur.bgBlack(kleur.white("" + description + "")) +
+        "\n",
+    );
+  }
+
+  static skipped(description: string) {
+    console.log(
+      "\n" +
+        kleur.bgYellow(kleur.bold(" SKIPPED ")) +
         " " +
         kleur.bgBlack(kleur.white("" + description + "")) +
         "\n",
