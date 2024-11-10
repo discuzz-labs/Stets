@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024 Discuzz Labs Organization
+ * Licensed under the MIT License.
+ * See the LICENSE file in the project root for license information.
+ */
+
 import type {
   Hook,
   HookResult,
@@ -13,69 +19,31 @@ class Run {
 
   constructor(private testCase: TestCase) {}
 
-  // Execute a single test
-  private async executeTest(test: Test): Promise<TestResult> {
+  // Define a common interface for Test and Hook
+  private async execute(
+    executable: Test | Hook,
+  ): Promise<TestResult | HookResult> {
+    const description = executable.description;
+    const fn = executable.fn;
+    const timeout = executable.options.timeout;
 
-    if (test.skipped)
-      return {
-        description: test.description,
-        status: "skipped",
-      };
-
-    const result: TestResult = {
-      description: test.description,
-      status: "passed",
+    const result: TestResult | HookResult = {
+      description,
+      status: executable.options.skipped ? "skipped" : "passed",
     };
 
-    
-    const controller = new AbortController();
-    const timeoutId =
-      test.timeout > 0
-        ? setTimeout(() => controller.abort(), test.timeout)
-        : null;
-
-    try {
-      await Promise.race([
-        test.fn(),
-        new Promise((_, reject) =>
-          controller.signal.addEventListener("abort", () =>
-            reject(
-              new Error(`${test.description} exceeded ${test.timeout} ms.`),
-            ),
-          ),
-        ),
-      ]);
-    } catch (error: any) {
-      result.status = "failed";
-      result.error = { message: error.message, stack: error.stack };
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
-    }
-
-    return result;
-  }
-
-  // Execute a single hook
-  private async executeHook(hook: Hook): Promise<HookResult> {
-    const result: HookResult = {
-      description: hook.description,
-      status: "passed",
-    };
+    if (executable.options.skipped) return result;
 
     const controller = new AbortController();
     const timeoutId =
-      hook.timeout > 0
-        ? setTimeout(() => controller.abort(), hook.timeout)
-        : null;
+      timeout > 0 ? setTimeout(() => controller.abort(), timeout) : null;
 
     try {
       await Promise.race([
-        hook.fn(),
+        fn(),
         new Promise((_, reject) =>
           controller.signal.addEventListener("abort", () =>
-            reject(
-              new Error(`${hook.description} exceeded ${hook.timeout} ms.`),
-            ),
+            reject(new Error(`${description} exceeded ${timeout} ms.`)),
           ),
         ),
       ]);
@@ -105,9 +73,10 @@ class Run {
     };
 
     // Run beforeAll hooks
-    this.testCase.hooks.beforeAll
-      ? await this.executeHook(this.testCase.hooks.beforeAll)
-      : null;
+    if (this.testCase.hooks.beforeAll) {
+      const beforeAllResult = await this.execute(this.testCase.hooks.beforeAll);
+      report.hooks.push(beforeAllResult as HookResult);
+    }
 
     // Determine which tests to run: onlyTests or all tests
     const testsToRun =
@@ -123,25 +92,34 @@ class Run {
 
       const results = await Promise.all(
         batch.map(async (test) => {
-          this.testCase.hooks.beforeEach
-            ? await this.executeHook(this.testCase.hooks.beforeEach)
-            : null;
+          // Run beforeEach hook
+          if (this.testCase.hooks.beforeEach) {
+            const beforeEachResult = await this.execute(
+              this.testCase.hooks.beforeEach,
+            );
+            report.hooks.push(beforeEachResult as HookResult);
+          }
 
-          const result = await this.executeTest(test);
-          this.testCase.hooks.afterEach
-            ? await this.executeHook(this.testCase.hooks.afterEach)
-            : null;
+          const result = (await this.execute(test)) as TestResult;
+          report.tests.push(result);
+
+          // Run afterEach hook
+          if (this.testCase.hooks.afterEach) {
+            const afterEachResult = await this.execute(
+              this.testCase.hooks.afterEach,
+            );
+            report.hooks.push(afterEachResult as HookResult);
+          }
 
           return result;
         }),
       );
 
       for (const result of results) {
-        report.tests.push(result);
         if (result.status === "passed") {
           report.stats.passed++;
         } else if (result.status === "skipped") {
-            report.stats.skipped++;
+          report.stats.skipped++;
         } else {
           report.stats.failures++;
           report.passed = false;
@@ -150,9 +128,10 @@ class Run {
     }
 
     // Run afterAll hooks
-    this.testCase.hooks.afterEach
-      ? await this.executeHook(this.testCase.hooks.afterEach)
-      : null;
+    if (this.testCase.hooks.afterAll) {
+      const afterAllResult = await this.execute(this.testCase.hooks.afterAll);
+      report.hooks.push(afterAllResult as HookResult);
+    }
 
     return report;
   }

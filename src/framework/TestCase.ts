@@ -10,17 +10,21 @@ import Run from "./Run";
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
 
+export interface Options {
+  timeout?: number;
+  skipped?: boolean;
+}
+
 export interface Test {
   description: string;
   fn: TestFunction;
-  timeout: number;
-  skipped: boolean;
+  options: Options;
 }
 
 export interface Hook {
   description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
   fn: HookFunction;
-  timeout: number;
+  options: Options;
 }
 
 export type TestResult = {
@@ -31,22 +35,28 @@ export type TestResult = {
 
 export type HookResult = {
   description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-  status: "passed" | "failed" | "skipped" ;
+  status: "passed" | "failed" | "skipped";
   error?: { message: string; stack: string };
 };
 
 export type TestReport = {
   stats: {
     total: number;
-    skipped: number,
+    skipped: number;
     passed: number;
     failures: number;
   };
-  description: string
+  description: string;
   passed: boolean;
   tests: TestResult[];
   hooks: HookResult[];
 };
+
+const DEFAULT_OPTIONS: Options = { timeout: 0, skipped: false };
+
+function mergeOptions(options?: Options): Options {
+  return { ...DEFAULT_OPTIONS, ...options };
+}
 
 class TestCase {
   public description: string;
@@ -70,51 +80,52 @@ class TestCase {
     table: any[],
     description: string,
     fn: (...args: any[]) => void | Promise<void>,
-    timeout = 0
+    options?: Options
   ): void {
+    const mergedOptions = mergeOptions(options);
     table.forEach((data) => {
       const formattedDescription = format(description, ...data);
-      this.it(formattedDescription, () => fn(...data), timeout);
+      this.it(formattedDescription, () => fn(...data), mergedOptions);
     });
   }
 
   // Define a test
-  public it(description: string, fn: TestFunction, timeout = 0): void {
-    this.tests.push({ description, fn, timeout, skipped: false });
+  public it(description: string, fn: TestFunction, options?: Options): void {
+    this.tests.push({ description, fn, options: mergeOptions(options) });
   }
 
   // Define an 'only' test (executes only these tests)
-  public only(description: string, fn: TestFunction, timeout = 0): void {
-    this.onlyTests.push({ description, fn, timeout, skipped: false});
+  public only(description: string, fn: TestFunction, options?: Options): void {
+    this.onlyTests.push({ description, fn, options: mergeOptions(options) });
   }
 
   // Skip a test
-  public skip(description: string, fn: TestFunction, timeout = 0): void {
-     this.tests.push({ description, fn, timeout, skipped: true});
-    
+  public skip(description: string, fn: TestFunction, options?: Options): void {
+    const mergedOptions = mergeOptions({ ...options, skipped: true });
+    this.tests.push({ description, fn, options: mergedOptions });
   }
 
   // Define 'beforeAll' hook
-  public beforeAll(fn: HookFunction, timeout = 0): void {
-    this.hooks.beforeAll = { description: "beforeAll", fn, timeout };
+  public beforeAll(fn: HookFunction, options?: Options): void {
+    this.hooks.beforeAll = { description: "beforeAll", fn, options: mergeOptions(options) };
   }
 
   // Define 'beforeEach' hook
-  public beforeEach(fn: HookFunction, timeout = 0): void {
-    this.hooks.beforeEach = { description: "beforeEach", fn, timeout };
+  public beforeEach(fn: HookFunction, options?: Options): void {
+    this.hooks.beforeEach = { description: "beforeEach", fn, options: mergeOptions(options) };
   }
 
   // Define 'afterAll' hook
-  public afterAll(fn: HookFunction, timeout = 0): void {
-    this.hooks.afterAll = { description: "afterAll", fn, timeout };
+  public afterAll(fn: HookFunction, options?: Options): void {
+    this.hooks.afterAll = { description: "afterAll", fn, options: mergeOptions(options) };
   }
 
   // Define 'afterEach' hook
-  public afterEach(fn: HookFunction, timeout = 0): void {
-    this.hooks.afterEach = { description: "afterEach", fn, timeout };
+  public afterEach(fn: HookFunction, options?: Options): void {
+    this.hooks.afterEach = { description: "afterEach", fn, options: mergeOptions(options) };
   }
 
-  async run() : Promise<TestReport> {
+  async run(): Promise<TestReport> {
     return await new Run(this).run();
   }
 }
