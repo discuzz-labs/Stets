@@ -29,10 +29,10 @@ class Run {
 
     const result: TestResult | HookResult = {
       description,
-      status: executable.options.skipped ? "skipped" : "passed",
+      status: executable.options.skip ? "skipped" : "passed",
     };
 
-    if (executable.options.skipped) return result;
+    if (executable.options.skip) return result;
 
     const controller = new AbortController();
     const timeoutId =
@@ -63,7 +63,7 @@ class Run {
       stats: {
         total: 0,
         passed: 0,
-        failures: 0,
+        failed: 0,
         skipped: 0,
       },
       passed: true,
@@ -121,7 +121,7 @@ class Run {
         } else if (result.status === "skipped") {
           report.stats.skipped++;
         } else {
-          report.stats.failures++;
+          report.stats.failed++;
           report.passed = false;
         }
       }
