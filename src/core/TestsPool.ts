@@ -8,6 +8,7 @@ import { Loader } from "../core/Loader";
 import { Isolated } from "../core/Isolated";
 import { Formatter } from "../utils/Formatter";
 import { Reporter } from "../reporters/Reporter";
+import { Console, replay } from "./Console"
 
 export class TestsPool {
   private loader: Loader;
@@ -20,18 +21,24 @@ export class TestsPool {
   public async runTests(): Promise<void> {
     await Promise.all(
       this.files.map(async (file) => {
-        const start = Date.now();
+        
+
+        const console = new Console()
 
         const { code, filename } = this.loader.require(file);
 
         if (code === null || filename === null)
           throw new Error(`Could not load ${file}`);
 
+        const start = Date.now();
+        
         const isolated = new Isolated(filename);
 
         const script = isolated.script(code);
 
-        const context = isolated.context();
+        const context = isolated.context({
+          console: console
+        });
 
         const execResult = await isolated.exec({ script, context });
         
@@ -42,6 +49,8 @@ export class TestsPool {
         } else {
           Formatter.formatError(execResult.error?.message as string, execResult.error?.stack as string, 10, file)
         }
+
+        replay(console.logs)
       }),
     );
   }

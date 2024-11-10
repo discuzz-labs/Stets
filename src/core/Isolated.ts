@@ -4,7 +4,6 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Console } from "./Console";
 import { createRequire } from "module";
 import * as vm from "vm";
 import * as path from "path";
@@ -36,7 +35,6 @@ export class Isolated {
       beforeAll: testCase.beforeAll.bind(testCase),
       run: testCase.run.bind(testCase),
 
-      console: console,
       require: createRequire(this.filename),
       exports: {},
       __filename: this.filename,
