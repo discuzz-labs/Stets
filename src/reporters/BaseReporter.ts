@@ -34,7 +34,7 @@ export class BaseReporter {
         " " +
         kleur.green("Passed: " + report.stats.passed) +
         " " +
-        kleur.red("Failed: " + report.stats.failures)
+        kleur.red("Failed: " + report.stats.failed)
     );
   }
 
