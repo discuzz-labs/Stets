@@ -28,6 +28,7 @@ export class Isolated {
 
     const globals = {
       it: testCase.it.bind(testCase),
+      itIf: testCase.itIf.bind(testCase),
       should: testCase.should.bind(testCase),
       only: testCase.only.bind(testCase),
       skip: testCase.skip.bind(testCase),

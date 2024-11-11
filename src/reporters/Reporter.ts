@@ -76,15 +76,24 @@ export class Reporter {
 
   static testCase({ name, file, duration, stats }: TestCaseArgs): string {
     return (
-      (stats.failed > 0
-        ? kleur.red(kleur.bold(name))
-        : kleur.green(kleur.bold(name))) +
-      ` (${stats.total} / ${stats.passed})` +
+      (stats.total === 0
+        ? kleur.gray(kleur.bold(name))
+        : stats.failed > 0
+          ? kleur.red(kleur.bold(name))
+          : stats.skipped > 0
+            ? kleur.yellow(kleur.bold(name))
+            : kleur.green(kleur.bold(name))) +
+      " (" +
+      (stats.failed > 0 ? kleur.red(" 🔴 " + stats.failed) : "") +
+      (stats.skipped > 0 ? kleur.yellow(" 🟡 " + stats.skipped) : "") +
+      (stats.passed > 0 ? kleur.green(" 🟢 " + stats.passed) : "") +
+      (stats.total > 0 ? kleur.gray(" 🔢 " + stats.total) : " Empty ") +
+      ") " +
       " at " +
       kleur.gray(path.dirname(file)) +
       " in " +
       kleur.gray(`${duration} ms`) +
-      "\n\n"
+      "\n"
     );
   }
 

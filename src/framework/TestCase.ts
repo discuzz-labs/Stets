@@ -107,6 +107,23 @@ class TestCase {
     this.tests.push({ description, fn, options: mergeOptions(options) });
   }
 
+  public itIf(
+    condition: boolean | (() => boolean | Promise<boolean> | null | undefined) | null | undefined,
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>
+  ): void {
+    // Determine the actual value of `shouldSkip`, defaulting to `false` if result is null or undefined
+    const shouldSkip = typeof condition === 'function'
+      ? (condition()) ?? false
+      : condition ?? false
+    
+    const mergedOptions = mergeOptions({ ...options, skip: !shouldSkip });
+    this.tests.push({ description, fn, options: mergedOptions });
+  }
+
+
+
   // Define an 'only' test (executes only these tests)
   public only(
     description: string,

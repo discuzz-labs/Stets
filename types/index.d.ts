@@ -25,6 +25,42 @@ declare global {
    * @since v1.0.0
    */
   function should(description: string): void;
+
+  /**
+   * Conditionally registers a test case based on the provided condition.
+   * If the condition evaluates to `false`, `null`, or `undefined`, the test case is skipped.
+   *
+   * @param {boolean | (() => boolean | Promise<boolean> | null | undefined)} condition - 
+   *   A boolean value or a function that returns a boolean (or a Promise that resolves to a boolean).
+   *   If `false`, `null`, or `undefined`, the test case is skipped.
+   * @param {string} description - The description of the test case.
+   * @param {TestFunction} fn - The test function to execute if the condition is `true`.
+   * @param {Partial<Options>} [options] - Optional settings for the test, like timeout or skip.
+   *
+   * @example
+   * // Basic usage with a boolean condition
+   * itIf(true, 'should run this test', () => {
+   *   // Test logic
+   * });
+   *
+   * // Using a function condition
+   * itIf(() => someDynamicCondition(), 'should run if the condition is true', async () => {
+   *   // Test logic
+   * });
+   *
+   * // Using an asynchronous condition
+   * itIf(async () => await someAsyncCheck(), 'should run if async check passes', () => {
+   *   // Test logic
+   * });
+   *
+   * @since v1.0.0
+   */
+  function itIf(
+    condition: boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined),
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
   
   /**
    * Registers an individual test case.
