@@ -34,11 +34,11 @@ import COMMANDS from "./commands";
   const config = new Config(args.get("config"));
 
   const exclude = args.get("exclude") || config.get("exclude");
-  const pattern = args.get("pattern") || config.get("pattern")
+  const pattern = args.get("pattern") || config.get("pattern");
   const files = args.get("file");
 
-  const testFiles = await new Glob(files, exclude, pattern).collect();
+  const testFiles = await new Glob({ files, exclude, pattern }).collect();
   await new TestsPool(testFiles).runTests();
-  
+
   process.exit();
 })();

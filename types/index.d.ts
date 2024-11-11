@@ -5,52 +5,27 @@
 
  */
 
-export type TestFunction = () => void | Promise<void>;
-export type HookFunction = () => void | Promise<void>;
-
-export interface Options {
-  timeout?: number;
-  skip?: boolean;
-}
-
-export interface Test {
-  description: string;
-  fn: TestFunction;
-  options: Options;
-}
-
-export interface Hook {
-  description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-  fn: HookFunction;
-  options: Options;
-}
-
-export type TestResult = {
-  description: string;
-  status: "passed" | "failed" | "skipped";
-  error?: { message: string; stack: string };
-};
-
-export type HookResult = {
-  description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-  status: "passed" | "failed" | "skipped";
-  error?: { message: string; stack: string };
-};
-
-export type TestReport = {
-  stats: {
-    total: number;
-    skipped: number;
-    passed: number;
-    failed: number;
-  };
-  description: string;
-  passed: boolean;
-  tests: TestResult[];
-  hooks: HookResult[];
-};
+import { TestReport, Options, TestFunction, HookFunction } from "./types";
 
 declare global {
+  /**
+   * Sets a custom description for a test case.
+   *
+   * This function allows you to specify a custom name or description for a test case. 
+   * It is useful for renaming the default test case description, making the tests more descriptive and readable.
+   *
+   * @param {string} description - A custom name or description for the test case.
+   * 
+   * @example
+   * should('Testing Auth')
+   * it('Login', () => {
+   *     // Test logic
+   *   });
+   *
+   * @since v1.0.0
+   */
+  function should(description: string): void;
+  
   /**
    * Registers an individual test case.
    *
@@ -61,6 +36,8 @@ declare global {
    * it('should test something', () => {
    *   // Test logic
    * }, { timeout: 1000 });
+   *
+   * @since v1.0.0
    */
   function it(
     description: string, 
@@ -78,6 +55,8 @@ declare global {
    * only('should only run this test', () => {
    *   // Test logic
    * }, { timeout: 1000 });
+   *
+   * @since v1.0.0
    */
   function only(
     description: string, 
@@ -95,6 +74,8 @@ declare global {
    * skip('should skip this test', () => {
    *   // Test logic
    * });
+   *
+   * @since v1.0.0
    */
   function skip(
     description: string, 
@@ -111,6 +92,8 @@ declare global {
    * beforeAll(() => {
    *   // Setup logic
    * });
+   *
+   * @since v1.0.0
    */
   function beforeAll(
     fn: HookFunction, 
@@ -126,6 +109,8 @@ declare global {
    * beforeEach(() => {
    *   // Reset state logic
    * });
+   *
+   * @since v1.0.0
    */
   function beforeEach(
     fn: HookFunction, 
@@ -147,6 +132,8 @@ declare global {
    * ], '.add(%i, %i)', (a, b, expected) => {
    *   expect(a + b).toBe(expected);
    * });
+   * 
+   * @since v1.0.0
    */
   function each(
     table: any[], 
@@ -161,6 +148,8 @@ declare global {
    * @returns {Promise<TestReport>} - The report of the test suite execution.
    * @example
    * run().then(report => console.log(report));
+   *
+   * @since v1.0.0
    */
   function run(): Promise<TestReport>;
 }

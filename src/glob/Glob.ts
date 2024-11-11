@@ -8,6 +8,13 @@ import { readdir, stat } from "fs/promises";
 import { resolve, join } from "path";
 import { GlobBuilder } from "./GlobBuilder";
 
+
+interface GlobOptions {
+    files: string[] | undefined;
+    exclude: string[];
+    pattern: string[];
+}
+
 export class Glob {
     private exclude: RegExp[];
     private pattern: RegExp[];
@@ -16,13 +23,13 @@ export class Glob {
     private maxFiles: number = 4000; // Default max file limit
     private fileCount: number = 0;
 
-    constructor(files: string[] | undefined, exclude: string[], pattern: string[]) {
+    constructor(options: GlobOptions) {
         // Convert exclude patterns and patterns to arrays of regex
         let globBuilder = new GlobBuilder();
-        this.exclude = exclude.map((p) => globBuilder.convert(p));
-        this.pattern = pattern.map((p) => globBuilder.convert(p));
-        this.rpattern = pattern;
-        this.files = files;
+        this.exclude = options.exclude.map((p) => globBuilder.convert(p));
+        this.pattern = options.pattern.map((p) => globBuilder.convert(p));
+        this.rpattern = options.pattern;
+        this.files = options.files;
     }
 
     /**

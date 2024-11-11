@@ -7,97 +7,89 @@
 import { Loader } from "../core/Loader";
 import { ExecResult, Isolated } from "../core/Isolated";
 import { ErrorParser } from "../utils/ErrorParser";
-import { Reporter } from "../reporters/Reporter";
 import { Console, LogEntry, replay } from "./Console";
 import draftLog from "draftlog";
 import path from "path";
+import { Reporter } from "../reporters/Reporter";
 
-// Define interfaces for better type safety
-interface TestDraft {
+interface TestStatusDraft {
   draft: (message: string) => void;
-  message: string;
-  report: string;
-  logs: LogEntry[];
+  initialMessage: string;
+  reportContent: string;
+  logEntries: LogEntry[];
 }
 
-// Initialize draftlog
 draftLog(console);
 
 export class TestsPool {
-  private readonly loader: Loader;
-  private readonly drafts: Map<string, TestDraft> = new Map();
-  private readonly MAX_ERROR_LINES = 10;
+  private readonly loader: Loader = new Loader();
+  private readonly drafts: Map<string, TestStatusDraft> = new Map();
 
-  constructor(private readonly files: string[]) {
-    this.loader = new Loader();
+  constructor(private readonly testFiles: string[]){}
+
+  private createDraft(testFile: string): void {
+    const message = Reporter.start({ file: testFile });
+    const draft = console.draft(message);
+    this.drafts.set(testFile, {
+      draft,
+      initialMessage: message,
+      reportContent: "",
+      logEntries: [],
+    });
   }
 
-  private start(file: string): void {
-    const initialMessage = Reporter.start(file);
-    const draft = console.draft(initialMessage);
-    this.drafts.set(file, { draft, message: initialMessage, report: "", logs:  [] });
+  private updateDraft(testFile: string, content: string): void {
+    const draft = this.drafts.get(testFile);
+    if (draft) draft.reportContent += content;
   }
 
-  private append(file: string, content: string): void {
-    const entry = this.drafts.get(file);
-    if (entry) {
-      entry.report += content;
-    }
+  private addLogs(testFile: string, logs: LogEntry[]): void {
+    const draft = this.drafts.get(testFile);
+    if (draft) draft.logEntries = logs;
   }
 
-  private addLogs(file: string, logs: LogEntry[]) {
-    const entry = this.drafts.get(file)
-    if(entry) entry.logs = logs
+  private finalizeDraft(testFile: string, status: "passed" | "failed"): void {
+    const draft = this.drafts.get(testFile);
+    if (draft) draft.draft(Reporter.finish({ file: testFile, status }));
   }
 
-  private finished(file: string, status: boolean): void {
-    const entry = this.drafts.get(file);
-    if (!entry) return;
-    entry.draft(Reporter.finish(file, status));
-  }
-
-  private async runSingleTest(file: string): Promise<void> {
+  private async runTest(testFile: string): Promise<void> {
     const logger = new Console();
-
     try {
-      this.start(file);
-      const { code, filename } = this.loader.require(file);
+      this.createDraft(testFile);
+      const { code, filename } = this.loader.require(testFile);
 
-      if (!code || !filename) {
-        throw new Error(`Failed to load test file: ${file}`);
-      }
+      if (!code || !filename)
+        throw new Error(`Unable to load test file: ${testFile}`);
 
-      const start = Date.now();
+      const startTime = Date.now();
       const isolated = new Isolated(filename);
       const execResult = await isolated.exec({
         script: isolated.script(code),
         context: isolated.context({ console: logger }),
       });
 
-      const duration = Date.now() - start;
-
-      this.addLogs(file, logger.logs)
-      this.handleTestResult(file, execResult, duration);
-      
+      this.addLogs(testFile, logger.logs);
+      this.testCaseResult(testFile, execResult, Date.now() - startTime);
     } catch (error) {
-      this.handleTestError(file, error as Error);
+      this.testCaseError(testFile, error as Error);
     }
   }
 
-  private handleTestResult(
-    file: string,
-    execResult: ExecResult,
+  private testCaseResult(
+    testFile: string,
+    testResult: ExecResult,
     duration: number,
   ): void {
-    const testCaseName = execResult.report?.description || path.basename(file);
+    const testName = testResult.report?.description || path.basename(testFile);
 
-    this.append(
-      file,
-      Reporter.case({
-        testCaseName,
-        file,
+    this.updateDraft(
+      testFile,
+      Reporter.testCase({
+        name: testName,
+        file: testFile,
         duration,
-        stats: execResult.report?.stats || {
+        stats: testResult.report?.stats || {
           total: 0,
           passed: 0,
           failed: 0,
@@ -106,64 +98,55 @@ export class TestsPool {
       }),
     );
 
-    if (execResult.status && execResult.report) {
-      this.finished(file, execResult.report.passed);
-      this.append(
-        file,
-        Reporter.report({
-          report: execResult.report,
-          file,
-        }),
+    if (testResult.status && testResult.report) {
+      this.finalizeDraft(testFile, testResult.report.status);
+      this.updateDraft(
+        testFile,
+        Reporter.report({ report: testResult.report, file: testFile }),
       );
-    } else if (execResult.error) {
-      this.finished(file, false);
-      const errorMessage = ErrorParser.format(
-        {
-          message: execResult.error.message,
-          stack: execResult.error.stack,
-        },
-        { filter: file, maxLines: this.MAX_ERROR_LINES },
-      );
-      this.append(file, errorMessage);
     } else {
-      this.finished(file, false);
-      this.append(
-        file,
-        "Invalid report received, use run() at the end of the file!",
-      );
+      this.invalidReport(testFile, testResult.error);
     }
   }
 
-  private handleTestError(file: string, error: Error): void {
-    this.finished(file, false);
-    const errorMessage = ErrorParser.format(
-      {
-        message: error.message,
-        stack: error.stack,
-      },
-      {
-        filter: file,
-        maxLines: this.MAX_ERROR_LINES,
-      },
-    );
-    this.append(file, errorMessage);
+  private invalidReport(testFile: string, error: Error | null): void {
+    this.finalizeDraft(testFile, "failed");
+    const errorMessage = error
+      ? ErrorParser.format({
+          error,
+          filter: testFile,
+          maxLines: 10,
+        })
+      : "Invalid report: ensure to use run() at the end of the file!";
+    this.updateDraft(testFile, errorMessage);
+  }
+
+  private testCaseError(testFile: string, error: Error): void {
+    this.finalizeDraft(testFile, "failed");
+    const errorMessage = ErrorParser.format({
+      error,
+      filter: testFile,
+      maxLines: 10,
+    });
+    this.updateDraft(testFile, errorMessage);
   }
 
   public async runTests(): Promise<void> {
     try {
-      await Promise.all(this.files.map((file) => this.runSingleTest(file)));
+      await Promise.all(this.testFiles.map((file) => this.runTest(file)));
     } finally {
-      // Clear console and print final reports
-      process.stdout.write("\x1Bc"); // ANSI clear screen
-      process.stdout.write("\x1B[2J\x1B[0f"); // Alternative ANSI clear
-      process.stdout.write("\x1B[H\x1B[2J"); // Yet another ANSI clear
-
-      this.drafts.forEach(({ report, logs }) => {
-        console.log(report);
-        replay(logs);
+      this.clearConsole();
+      this.drafts.forEach(({ reportContent, logEntries }) => {
+        console.log(reportContent);
+        replay(logEntries);
       });
-
       console.log(Reporter.summary());
     }
+  }
+
+  private clearConsole(): void {
+    process.stdout.write("\x1Bc");
+    process.stdout.write("\x1B[2J\x1B[0f");
+    process.stdout.write("\x1B[H\x1B[2J");
   }
 }

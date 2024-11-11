@@ -8,19 +8,25 @@ import kleur from "./kleur";
 interface ParsedStack {
   file?: string;
   methodName?: string;
-  arguments?: [];
+  arguments?: any[]; // Arguments can be any type
   lineNumber?: number;
   column?: number;
 }
 
+export interface ErrorMetadata {
+  message: string | undefined;
+  stack: string | undefined;
+}
+
 interface ErrorParserOptions {
+  error: ErrorMetadata | Error | undefined;
   maxLines?: number;
   filter?: string;
 }
 
 export class ErrorParser {
   private static errorRegex =
-    /^\s*at (?!new Script) ?(?:((?:\[object object\])?[^\\/]+(?: \[as \S+\])?) )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+    /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
 
   private static formatStackLine(parsed: ParsedStack): string {
     const file = parsed.file?.padEnd(30) || "<UNKNOWN>";
@@ -42,18 +48,14 @@ export class ErrorParser {
     if (!parts) return null;
 
     return {
-      file: parts[2],
       methodName: parts[1] || "<UNKNOWN>",
-      arguments: [],
+      file: parts[2],
       lineNumber: +parts[3],
-      column: parts[4] ? +parts[4] : undefined,
+      column: +parts[4],
     };
   }
 
-  static parseStack(
-    stack: string,
-    options: ErrorParserOptions = {},
-  ): ParsedStack[] {
+  static parseStack(stack: string, options: ErrorParserOptions): ParsedStack[] {
     const { maxLines = 5, filter } = options;
     const lines = stack.split("\n").slice(0, maxLines);
 
@@ -63,7 +65,6 @@ export class ErrorParser {
       )
       .filter((parsed): parsed is ParsedStack => parsed !== null);
 
-    // If no lines match the filter, return the entire stack (if a filter was provided)
     if (filter && parsedLines.length === 0) {
       return stack
         .split("\n")
@@ -76,25 +77,22 @@ export class ErrorParser {
 
   static displayParsedStack(
     stack: string,
-    options: ErrorParserOptions = {},
+    options: ErrorParserOptions,
   ): string {
     return this.parseStack(stack, options)
       .map((parsed) => this.formatStackLine(parsed))
       .join("\n");
   }
 
-  static format(
-    error: { message: string | undefined; stack: string | undefined },
-    options: ErrorParserOptions = {},
-  ): string {
+  static format(options: ErrorParserOptions): string {
     const separator = kleur.gray("-".repeat(process.stdout.columns));
     let result = "";
 
-    if (error.message) {
-      result += error.message + "\n";
+    if (options.error?.message) {
+      result += options.error.message + "\n";
     }
-    if (error.stack) {
-      result += this.displayParsedStack(error.stack, options);
+    if (options.error?.stack) {
+      result += this.displayParsedStack(options.error.stack, options);
     } else {
       result += kleur.red("No stack trace available!");
     }

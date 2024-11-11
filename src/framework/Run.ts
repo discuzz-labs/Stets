@@ -65,7 +65,7 @@ class Run {
         failed: 0,
         skipped: 0,
       },
-      passed: true,
+      status: "passed",
       description: this.testCase.description,
       tests: [],
       hooks: [],
@@ -121,7 +121,7 @@ class Run {
           report.stats.skipped++;
         } else {
           report.stats.failed++;
-          report.passed = false;
+          report.status = "failed";
         }
       }
     }

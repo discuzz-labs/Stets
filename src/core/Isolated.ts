@@ -24,11 +24,11 @@ export class Isolated {
   constructor(private readonly filename: string) {}
 
   context(context: any = {}): vm.Context {
-    const testCase = new TestCase();
+    const testCase = new TestCase(path.basename(this.filename));
 
     const globals = {
-      TestCase: testCase.new.bind(testCase),
       it: testCase.it.bind(testCase),
+      should: testCase.should.bind(testCase),
       only: testCase.only.bind(testCase),
       skip: testCase.skip.bind(testCase),
       each: testCase.each.bind(testCase),
@@ -81,7 +81,7 @@ export class Isolated {
     return (
       report !== null &&
       typeof report === "object" &&
-      typeof report.passed === "boolean" &&
+      typeof report.status === "string" &&
       typeof report.stats === "object" &&
       report.stats !== null &&
       typeof report.stats.total === "number" &&
