@@ -9,6 +9,7 @@ export interface ErrorMetadata {
 export interface Options {
   timeout?: number;
   skip?: boolean;
+  if?: boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined);
 }
 
 export interface Test {

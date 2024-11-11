@@ -14,6 +14,11 @@ export type HookFunction = () => void | Promise<void>;
 export interface Options {
   timeout: number;
   skip: boolean;
+  if?:
+    | boolean
+    | undefined
+    | null
+    | (() => boolean | Promise<boolean> | null | undefined);
 }
 
 export interface Test {
@@ -31,13 +36,13 @@ export interface Hook {
 export type TestResult = {
   description: string;
   status: "passed" | "failed" | "skipped";
-  error?: ErrorMetadata
+  error?: ErrorMetadata;
 };
 
 export type HookResult = {
   description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
   status: "passed" | "failed" | "skipped";
-  error?: ErrorMetadata
+  error?: ErrorMetadata;
 };
 
 export interface Stats {
@@ -53,7 +58,7 @@ export interface TestReport {
   status: "passed" | "failed";
   tests: TestResult[];
   hooks: HookResult[];
-};
+}
 
 const DEFAULT_OPTIONS: Options = { timeout: 0, skip: false };
 
@@ -108,21 +113,17 @@ class TestCase {
   }
 
   public itIf(
-    condition: boolean | (() => boolean | Promise<boolean> | null | undefined) | null | undefined,
+    condition:
+      | boolean
+      | undefined
+      | null
+      | (() => boolean | Promise<boolean> | null | undefined),
     description: string,
     fn: TestFunction,
-    options?: Partial<Options>
+    options?: Partial<Options>,
   ): void {
-    // Determine the actual value of `shouldSkip`, defaulting to `false` if result is null or undefined
-    const shouldSkip = typeof condition === 'function'
-      ? (condition()) ?? false
-      : condition ?? false
-    
-    const mergedOptions = mergeOptions({ ...options, skip: !shouldSkip });
-    this.tests.push({ description, fn, options: mergedOptions });
+    this.it(description, fn, { ...options, if: condition });
   }
-
-
 
   // Define an 'only' test (executes only these tests)
   public only(

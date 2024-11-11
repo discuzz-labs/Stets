@@ -23,28 +23,35 @@ class Run {
   private async execute(
     executable: Test | Hook,
   ): Promise<TestResult | HookResult> {
-    const description = executable.description;
-    const fn = executable.fn;
-    const timeout = executable.options.timeout;
+    const { description, fn, options } = executable;
+    const { timeout, skip, if: condition } = options;
 
     const result: TestResult | HookResult = {
       description,
-      status: executable.options.skip ? "skipped" : "passed",
+      status: skip ? "skipped" : "passed",
     };
 
-    if (executable.options.skip) return result;
+    // Check if the test or hook should be skipped based on `skip` or `condition`
+    if (condition === undefined || condition === null) {
+      result.status = "skipped";
+      return result;
+    }
+    if (skip || !(await this.evaluateCondition(condition))) {
+      result.status = "skipped";
+      return result;
+    }
 
     try {
-      if(timeout > 0) {
-      await Promise.race([
-        fn(),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`${description} exceeded ${timeout} ms.`)),
-            timeout
-          )
-        ),
-      ]);
+      if (timeout > 0) {
+        await Promise.race([
+          fn(),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error(`${description} exceeded ${timeout} ms.`)),
+              timeout,
+            ),
+          ),
+        ]);
       } else {
         await fn();
       }
@@ -54,6 +61,15 @@ class Run {
     }
 
     return result;
+  }
+
+  private async evaluateCondition(
+    condition: boolean | (() => boolean | Promise<boolean> | null | undefined),
+  ): Promise<boolean> {
+    if (typeof condition === "function") {
+      return (await condition()) ?? false;
+    }
+    return condition ?? true;
   }
 
   // Run all tests and hooks in the TestCase
