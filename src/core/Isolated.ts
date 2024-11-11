@@ -9,7 +9,7 @@ import * as vm from "vm";
 import * as path from "path";
 import TestCase, { TestReport } from "../framework/TestCase";
 
-interface ExecResult {
+export interface ExecResult {
   status: boolean;
   error: Error | null;
   report: TestReport | null;
@@ -27,6 +27,7 @@ export class Isolated {
     const testCase = new TestCase();
 
     const globals = {
+      TestCase: testCase.new.bind(testCase),
       it: testCase.it.bind(testCase),
       only: testCase.only.bind(testCase),
       skip: testCase.skip.bind(testCase),
@@ -34,6 +35,13 @@ export class Isolated {
       beforeEach: testCase.beforeEach.bind(testCase),
       beforeAll: testCase.beforeAll.bind(testCase),
       run: testCase.run.bind(testCase),
+
+      setTimeout,
+      setInterval,
+      clearInterval,
+      clearTimeout,
+      clearImmediate,
+      setImmediate,
 
       require: createRequire(this.filename),
       exports: {},
@@ -78,7 +86,8 @@ export class Isolated {
       report.stats !== null &&
       typeof report.stats.total === "number" &&
       typeof report.stats.passed === "number" &&
-      typeof report.stats.failures === "number" &&
+      typeof report.stats.failed === "number" &&
+      typeof report.stats.skipped === "number" &&
       Array.isArray(report.tests) &&
       Array.isArray(report.hooks)
     )

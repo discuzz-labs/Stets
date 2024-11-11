@@ -5,36 +5,47 @@
  */
 
 import { TestReport } from "../framework/TestCase";
-import { Formatter } from "../utils/Formatter";
+import { ErrorParser } from "../utils/ErrorParser";
 import kleur from "../utils/kleur";
 import path from "path";
 
 export class BaseReporter {
-  static start(file: string) {
+  static start(file: string): string {
     const dirPath = path.dirname(file);
     const fileName = path.basename(file);
-    console.log(
+    return (
       kleur.bgYellow(" RUNNING ") +
-        kleur.gray(dirPath) +
-        kleur.black("" + fileName + "") +
-        "\n",
+      " " +
+      kleur.gray(dirPath) +
+      "/" +
+      kleur.white(fileName)
     );
   }
 
-  static case(file: string, duration: number, report: TestReport) {
-    console.log(
-      kleur.underline(kleur.bold(report.description)) +
-        " at " +
-        kleur.gray(file) +
-        " in " +
-        kleur.gray(duration) +
-        " ms " +
-        "\n" +
-        kleur.yellow("Skipped: " + report.stats.skipped) +
-        " " +
-        kleur.green("Passed: " + report.stats.passed) +
-        " " +
-        kleur.red("Failed: " + report.stats.failed)
+  static case(
+    testCaseName: string,
+    file: string,
+    duration: number,
+    stats: {
+      total: number;
+      passed: number;
+      failed: number;
+      skipped: number;
+    },
+  ): string {
+    // Determine the color of testCaseName based on test results
+    const name = stats.failed > 0
+    ? kleur.red(kleur.bold(testCaseName))
+    : kleur.green(kleur.bold(testCaseName));
+
+    return (
+      name+
+      ` (${stats.total} / ${stats.passed})` + // Display stats as (total / passed)
+      " at " +
+      kleur.gray(path.dirname(file)) +
+      " in " +
+      kleur.gray(`${duration} ms`) +
+      "\n\n"
     );
   }
 
@@ -42,34 +53,70 @@ export class BaseReporter {
     description: string,
     error: { message: string; stack: string },
     file: string,
-  ) {
-    console.log(
+  ): string {
+    const errorDetails = ErrorParser.format(error, {
+      filter: file,
+      maxLines: 10,
+    });
+    return (
+      kleur.bgRed(kleur.bold(" FAILED ")) +
+      " " +
+      kleur.bgBlack(kleur.white(description)) +
       "\n" +
-        kleur.bgRed(kleur.bold(" FAILED ")) +
-        " " +
-        kleur.bgBlack(kleur.white("" + description + "")) +
-        "\n",
-    );
-    Formatter.formatError(error.message, error.stack, 10, file);
-  }
-
-  static success(description: string) {
-    console.log(
-      "\n" +
-        kleur.bgGreen(kleur.bold(" PASSED ")) +
-        " " +
-        kleur.bgBlack(kleur.white("" + description + "")) +
-        "\n",
+      errorDetails +
+      "\n"
     );
   }
 
-  static skipped(description: string) {
-    console.log(
+  static skipped(description: string): string {
+    return (
+      kleur.bgYellow(kleur.bold(" SKIPPED ")) +
+      " " +
+      kleur.bgBlack(kleur.white(description)) +
+      "\n"
+    );
+  }
+
+  static finish(file: string, status: boolean): string {
+    const dirPath = path.dirname(file);
+    const fileName = path.basename(file);
+    return (
+      (status ? kleur.bgGreen(" PASSED ") : kleur.bgRed(" FAILED ")) +
+      " " +
+      kleur.gray(dirPath) +
+      "/" +
+      kleur.white(fileName)
+    );
+  }
+
+  static summary(stats: {
+    total: number;
+    passed: number;
+    failed: number;
+    skipped: number;
+  }): string {
+    const { total, passed, failed, skipped } = stats;
+    const passedPercentage =
+      total > 0 ? ((passed / total) * 100).toFixed(2) : "0.00";
+    const failedPercentage =
+      total > 0 ? ((failed / total) * 100).toFixed(2) : "0.00";
+    const skippedPercentage =
+      total > 0 ? ((skipped / total) * 100).toFixed(2) : "0.00";
+
+    return (
       "\n" +
-        kleur.bgYellow(kleur.bold(" SKIPPED ")) +
-        " " +
-        kleur.bgBlack(kleur.white("" + description + "")) +
-        "\n",
+      kleur.white("Total: ") +
+      `${total}` +
+      "\n" +
+      kleur.green("Passed: ") +
+      `${passed} (${kleur.bold(passedPercentage)}%)` +
+      "\n" +
+      kleur.red("Failed: ") +
+      `${failed} (${kleur.bold(failedPercentage)}%)` +
+      "\n" +
+      kleur.yellow("Skipped: ") +
+      `${skipped} (${kleur.bold(skippedPercentage)}%)` +
+      kleur.gray("\n\n🍾 ⚡️ All Tests ran!")
     );
   }
 }

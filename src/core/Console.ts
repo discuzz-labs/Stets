@@ -6,7 +6,7 @@
 
 import kleur from "../utils/kleur";
 
-type LogEntry = {
+export interface LogEntry {
     type: string;
     args: any[];
 };

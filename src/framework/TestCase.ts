@@ -77,6 +77,11 @@ class TestCase {
     this.hooks = {};
   }
 
+  new(description: string = "Root") {
+    this.description = description;
+    return this
+  }
+
   each(
     table: any[],
     description: string,

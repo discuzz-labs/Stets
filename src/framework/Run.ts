@@ -34,24 +34,23 @@ class Run {
 
     if (executable.options.skip) return result;
 
-    const controller = new AbortController();
-    const timeoutId =
-      timeout > 0 ? setTimeout(() => controller.abort(), timeout) : null;
-
     try {
+      if(timeout > 0) {
       await Promise.race([
         fn(),
-        new Promise((_, reject) =>
-          controller.signal.addEventListener("abort", () =>
-            reject(new Error(`${description} exceeded ${timeout} ms.`)),
-          ),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`${description} exceeded ${timeout} ms.`)),
+            timeout
+          )
         ),
       ]);
+      } else {
+        await fn();
+      }
     } catch (error: any) {
       result.status = "failed";
       result.error = { message: error.message, stack: error.stack };
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
     }
 
     return result;

@@ -26,6 +26,11 @@ export default class kleur {
     return `\x1b[${code}m${text}\x1b[0m`;
   }
 
+  //cyan colors
+  public static cyan(text: string | number): string {
+    return this.apply("36", text);
+  }
+
   // Red colors
   public static red(text: string | number): string {
     return this.apply("31", text);
