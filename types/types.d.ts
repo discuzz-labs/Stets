@@ -27,7 +27,7 @@ export interface Options {
   softFail?: boolean;
 
   /** Number of retries for a test*/
-  retry: number;
+  retry?: number;
 }
 
 

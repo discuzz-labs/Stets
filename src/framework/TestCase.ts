@@ -133,6 +133,24 @@ class TestCase {
     this.tests.push({ description, fn, options: mergedOptions });
   }
 
+  public timeout(
+    timeout: number = 0,
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void {
+    const mergedOptions = mergeOptions({ ...options, timeout });
+    this.tests.push({ description, fn, options: mergedOptions });
+  }
+
+  public todo(description: string, options?: Partial<Options>): void {
+    this.tests.push({
+      description,
+      fn: () => {},
+      options: mergeOptions(options),
+    });
+  }
+
   public itIf(
     condition:
       | boolean
