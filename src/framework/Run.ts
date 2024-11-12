@@ -24,11 +24,12 @@ class Run {
     executable: Test | Hook,
   ): Promise<TestResult | HookResult> {
     const { description, fn, options } = executable;
-    const { timeout, skip, if: condition, softFail } = options;
+    const { timeout, skip, if: condition, softFail, retry } = options;
 
     const result: TestResult | HookResult = {
       description,
-      status: skip ? "skipped" : "passed",
+      retries: 0,
+      status: "passed",
     };
 
     if (
@@ -41,32 +42,48 @@ class Run {
       return result;
     }
 
-    try {
-      if (timeout > 0) {
-        await Promise.race([
-          fn(),
-          new Promise<never>((_, reject) =>
-            setTimeout(
-              () => reject(new Error(`${description} exceeded ${timeout} ms.`)),
-              timeout,
-            ),
-          ),
-        ]);
-      } else {
-        await fn();
-      }
+    let lastError: any;
 
-    } catch (error: any) {
-      // If softFail is set, mark as "soft-fail"
-      if (softFail) {
-        result.status = "soft-fail";
-        result.error = {
-          message: `Soft failure: ${error.message}`,
-          stack: error.stack,
-        };
-      } else {
-        result.status = "failed";
-        result.error = { message: error.message, stack: error.stack };
+    while (result.retries <= retry) {
+      try {
+        if (timeout > 0) {
+          await Promise.race([
+            fn(),
+            new Promise<never>((_, reject) =>
+              setTimeout(
+                () =>
+                  reject(new Error(`${description} exceeded ${timeout} ms.`)),
+                timeout,
+              ),
+            ),
+          ]);
+        } else {
+          await fn();
+        }
+
+        // If it succeeds, we exit the loop with a passed result
+        return result;
+      } catch (error: any) {
+        lastError = error; // Keep track of the last error
+        result.retries++;
+
+        // If softFail is set and this was the last attempt, mark as "soft-fail"
+        if (result.retries > retry) {
+          if (softFail) {
+            result.status = "soft-fail";
+            result.error = {
+              message: `Soft failure: ${lastError.message}`,
+              stack: lastError.stack,
+            };
+          } else {
+            result.status = "failed";
+            result.error = {
+              message: lastError.message,
+              stack: lastError.stack,
+            };
+          }
+          return result;
+        }
       }
     }
 

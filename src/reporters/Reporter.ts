@@ -34,6 +34,8 @@ interface FailArgs {
   description: string;
   error: ErrorMetadata | undefined;
   file: string;
+  retries: number;
+  softFail: boolean;
 }
 
 interface SkipArgs {
@@ -99,16 +101,26 @@ export class Reporter {
     );
   }
 
-  static fail({ file, description, error }: FailArgs): string {
+  static fail({
+    file,
+    description,
+    error,
+    retries,
+    softFail,
+  }: FailArgs): string {
     const errorDetails = ErrorParser.format({
       error,
       filter: file,
       maxLines: 10,
     });
     return (
-      kleur.bgRed(kleur.bold(" FAILED ")) +
+      (softFail
+        ? kleur.bgLightRed(kleur.bold(" SOFT FAIL "))
+        : kleur.bgRed(kleur.bold(" FAILED "))) +
       " " +
       kleur.bgBlack(kleur.white(description)) +
+      " " +
+      kleur.gray("retries: " + retries) +
       "\n" +
       errorDetails +
       "\n"
@@ -124,45 +136,47 @@ export class Reporter {
     );
   }
 
-  static softFail({ description, error, file }: FailArgs) {
-    const errorDetails = ErrorParser.format({
-      error,
-      filter: file,
-      maxLines: 10,
-    });
-    return (
-      kleur.bgLightRed(kleur.bold(" SOFT FAIL ")) +
-      " " +
-      kleur.bgBlack(kleur.white(description)) +
-      "\n" +
-      errorDetails +
-      "\n"
-    );
-  }
+  static report({ file, report }: ReportOptions) {
+    const output = [];
+    const items = [...report.tests, ...report.hooks];
 
-  static report({ file, report }: ReportOptions): string {
-    const output = [],
-      f = [...report.tests, ...report.hooks];
-    f.filter((t) => t.status === "failed").forEach((t) => {
-      this.stats.failed++;
-      output.push(
-        this.fail({ description: t.description, error: t.error, file }),
-      );
-    });
-    f.filter((t) => t.status === "skipped").forEach((t) => {
-      this.stats.skipped++;
-      output.push(this.skip({ description: t.description }));
-    });
-    f.filter((t) => t.status === "soft-fail").forEach((t) => {
-      this.stats.softFailed++;
-      output.push(
-        this.softFail({ description: t.description, error: t.error, file }),
-      );
+    items.forEach((t) => {
+      switch (t.status) {
+        case "failed":
+          this.stats.failed++;
+          output.push(
+            this.fail({
+              description: t.description,
+              error: t.error,
+              file,
+              retries: t.retries,
+              softFail: false,
+            }),
+          );
+          break;
+        case "skipped":
+          this.stats.skipped++;
+          output.push(this.skip({ description: t.description }));
+          break;
+        case "soft-fail":
+          this.stats.softFailed++;
+          output.push(
+            this.fail({
+              description: t.description,
+              error: t.error,
+              file,
+              retries: t.retries,
+              softFail: true,
+            }),
+          );
+          break;
+        default:
+          this.stats.passed++;
+      }
     });
 
-    this.stats.total += f.length;
-    this.stats.passed += f.length - (this.stats.failed + this.stats.skipped);
-    if (!f.length) output.push(`${report.description} is empty!`);
+    this.stats.total += items.length;
+    if (items.length === 0) output.push(`${report.description} is empty!`);
     return output.join("\n");
   }
 

@@ -25,6 +25,9 @@ export interface Options {
 
   /** If true, allows the test to "soft-fail," marking it as failed without affecting the entire test suite's status. */
   softFail?: boolean;
+
+  /** Number of retries for a test*/
+  retry: number;
 }
 
 

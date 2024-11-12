@@ -104,6 +104,23 @@ declare global {
   ): void;
 
   /**
+   * Retries the provided function a specified number of times in case of failure.
+   *
+   * @param {number} retry - The number of retry attempts.
+   * @param {string} description - A description of the retry operation for logging or reporting purposes.
+   * @param {TestFunction} fn - The function to be executed, which will be retried if it fails.
+   * @param {Partial<Options>} [options] - Optional configuration for the retry behavior (e.g., delay between retries).
+   * 
+   * @since v1.0.0
+   */
+  function retry(
+    retry: number,
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
+
+  /**
    * Registers a test case to be executed exclusively.
    *
    * @param {string} description - The description of the exclusive test case.

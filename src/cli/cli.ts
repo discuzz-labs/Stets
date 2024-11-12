@@ -13,24 +13,6 @@ import { Glob } from "../glob/Glob";
 import COMMANDS from "./commands";
 
 (async () => {
-  if (process.argv.includes("--help") || process.argv.includes("-h")) {
-    console.info(
-      `${name}  ${description}\nUsage: <command> [options]\n\nOptions:\n\t--version\n` +
-        Object.entries(COMMANDS)
-          .map(
-            ([key, { shortValue, requiresValue, description }]) =>
-              `\t${shortValue ? `-${shortValue},` : ""}--${key} ${requiresValue ? "=<value>" : ""}\t${description}`,
-          )
-          .join("\n"),
-    );
-    return;
-  }
-
-  if (process.argv.includes("--version")) {
-    console.info(`Version: ${version}`);
-    return;
-  }
-
   const args = new ArgsParser();
   const config = new Config(args.get("config"));
   

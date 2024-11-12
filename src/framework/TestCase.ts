@@ -19,6 +19,7 @@ export interface Options {
     | undefined
     | null
     | (() => boolean | Promise<boolean> | null | undefined);
+  retry: number;
   softFail: boolean;
 }
 
@@ -37,12 +38,14 @@ export interface Hook {
 export type TestResult = {
   description: string;
   status: "passed" | "failed" | "soft-fail" | "skipped";
+  retries: number;
   error?: ErrorMetadata;
 };
 
 export type HookResult = {
   description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
   status: "passed" | "failed" | "soft-fail" | "skipped";
+  retries: number;
   error?: ErrorMetadata;
 };
 
@@ -62,7 +65,13 @@ export interface TestReport {
   hooks: HookResult[];
 }
 
-const DEFAULT_OPTIONS: Options = { timeout: 0, skip: false, softFail: false, if: true };
+const DEFAULT_OPTIONS: Options = {
+  timeout: 0,
+  skip: false,
+  softFail: false,
+  if: true,
+  retry: 0,
+};
 
 // Merge the provided options with the default options
 function mergeOptions(options?: Partial<Options>): Options {
@@ -112,6 +121,16 @@ class TestCase {
     options?: Partial<Options>,
   ): void {
     this.tests.push({ description, fn, options: mergeOptions(options) });
+  }
+
+  public retry(
+    retry: number = 0,
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void {
+    const mergedOptions = mergeOptions({ ...options, retry });
+    this.tests.push({ description, fn, options: mergedOptions });
   }
 
   public itIf(
