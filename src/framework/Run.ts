@@ -24,19 +24,19 @@ class Run {
     executable: Test | Hook,
   ): Promise<TestResult | HookResult> {
     const { description, fn, options } = executable;
-    const { timeout, skip, if: condition } = options;
+    const { timeout, skip, if: condition, softFail } = options;
 
     const result: TestResult | HookResult = {
       description,
       status: skip ? "skipped" : "passed",
     };
 
-    // Check if the test or hook should be skipped based on `skip` or `condition`
-    if (condition === undefined || condition === null) {
-      result.status = "skipped";
-      return result;
-    }
-    if (skip || !(await this.evaluateCondition(condition))) {
+    if (
+      skip ||
+      condition === undefined ||
+      condition === null ||
+      !(await this.evaluateCondition(condition))
+    ) {
       result.status = "skipped";
       return result;
     }
@@ -55,9 +55,19 @@ class Run {
       } else {
         await fn();
       }
+
     } catch (error: any) {
-      result.status = "failed";
-      result.error = { message: error.message, stack: error.stack };
+      // If softFail is set, mark as "soft-fail"
+      if (softFail) {
+        result.status = "soft-fail";
+        result.error = {
+          message: `Soft failure: ${error.message}`,
+          stack: error.stack,
+        };
+      } else {
+        result.status = "failed";
+        result.error = { message: error.message, stack: error.stack };
+      }
     }
 
     return result;
@@ -80,6 +90,7 @@ class Run {
         passed: 0,
         failed: 0,
         skipped: 0,
+        softFailed: 0,
       },
       status: "passed",
       description: this.testCase.description,
@@ -135,6 +146,8 @@ class Run {
           report.stats.passed++;
         } else if (result.status === "skipped") {
           report.stats.skipped++;
+        } else if (result.status === "soft-fail") {
+          report.stats.softFailed++;
         } else {
           report.stats.failed++;
           report.status = "failed";

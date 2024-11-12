@@ -94,6 +94,7 @@ export class TestsPool {
           passed: 0,
           failed: 0,
           skipped: 0,
+          softFailed: 0,
         },
       }),
     );

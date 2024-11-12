@@ -28,12 +28,20 @@ export default class kleur {
 
   //cyan colors
   public static cyan(text: string | number): string {
-    return this.apply("36", text);
+    return this.apply("31", text);
   }
 
   // Red colors
   public static red(text: string | number): string {
     return this.apply("31", text);
+  }
+
+  public static lightRed(text: string | number): string {
+    return this.apply("91", text);
+  }
+
+  public static bgLightRed(text: string | number): string {
+    return this.apply("101", text);
   }
 
   public static bgRed(text: string | number): string {

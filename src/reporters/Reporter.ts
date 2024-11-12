@@ -46,6 +46,7 @@ export class Reporter {
     passed: 0,
     failed: 0,
     skipped: 0,
+    softFailed: 0,
   };
 
   static start({ file }: StartArgs): string {
@@ -87,6 +88,7 @@ export class Reporter {
       (stats.failed > 0 ? kleur.red(" 🔴 " + stats.failed) : "") +
       (stats.skipped > 0 ? kleur.yellow(" 🟡 " + stats.skipped) : "") +
       (stats.passed > 0 ? kleur.green(" 🟢 " + stats.passed) : "") +
+      (stats.softFailed > 0 ? kleur.lightRed(" 🟠 " + stats.softFailed) : "") +
       (stats.total > 0 ? kleur.gray(" 🔢 " + stats.total) : " Empty ") +
       ") " +
       " at " +
@@ -122,8 +124,20 @@ export class Reporter {
     );
   }
 
-  static pass() {
-    this.stats.passed++;
+  static softFail({ description, error, file }: FailArgs) {
+    const errorDetails = ErrorParser.format({
+      error,
+      filter: file,
+      maxLines: 10,
+    });
+    return (
+      kleur.bgLightRed(kleur.bold(" SOFT FAIL ")) +
+      " " +
+      kleur.bgBlack(kleur.white(description)) +
+      "\n" +
+      errorDetails +
+      "\n"
+    );
   }
 
   static report({ file, report }: ReportOptions): string {
@@ -139,6 +153,13 @@ export class Reporter {
       this.stats.skipped++;
       output.push(this.skip({ description: t.description }));
     });
+    f.filter((t) => t.status === "soft-fail").forEach((t) => {
+      this.stats.softFailed++;
+      output.push(
+        this.softFail({ description: t.description, error: t.error, file }),
+      );
+    });
+
     this.stats.total += f.length;
     this.stats.passed += f.length - (this.stats.failed + this.stats.skipped);
     if (!f.length) output.push(`${report.description} is empty!`);
@@ -146,13 +167,15 @@ export class Reporter {
   }
 
   static summary(): string {
-    const { total, passed, failed, skipped } = this.stats;
+    const { total, passed, failed, skipped, softFailed } = this.stats;
     const passedPercentage =
       total > 0 ? ((passed / total) * 100).toFixed(2) : "0.00";
     const failedPercentage =
       total > 0 ? ((failed / total) * 100).toFixed(2) : "0.00";
     const skippedPercentage =
       total > 0 ? ((skipped / total) * 100).toFixed(2) : "0.00";
+    const softFailedPercentage =
+      total > 0 ? ((softFailed / total) * 100).toFixed(2) : "0.00";
 
     return (
       "\n" +
@@ -167,6 +190,10 @@ export class Reporter {
       "\n" +
       kleur.yellow("Skipped: ") +
       `${skipped} (${kleur.bold(skippedPercentage)}%)` +
+      "\n" +
+      kleur.lightRed("Soft failed: ") +
+      `${softFailed} (${kleur.bold(softFailedPercentage)}%)` +
+      "\n" +
       kleur.gray("\n\n🍾 ⚡️ All Tests ran!")
     );
   }

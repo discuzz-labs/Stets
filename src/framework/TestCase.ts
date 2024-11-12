@@ -14,11 +14,12 @@ export type HookFunction = () => void | Promise<void>;
 export interface Options {
   timeout: number;
   skip: boolean;
-  if?:
+  if:
     | boolean
     | undefined
     | null
     | (() => boolean | Promise<boolean> | null | undefined);
+  softFail: boolean;
 }
 
 export interface Test {
@@ -35,13 +36,13 @@ export interface Hook {
 
 export type TestResult = {
   description: string;
-  status: "passed" | "failed" | "skipped";
+  status: "passed" | "failed" | "soft-fail" | "skipped";
   error?: ErrorMetadata;
 };
 
 export type HookResult = {
   description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-  status: "passed" | "failed" | "skipped";
+  status: "passed" | "failed" | "soft-fail" | "skipped";
   error?: ErrorMetadata;
 };
 
@@ -50,6 +51,7 @@ export interface Stats {
   skipped: number;
   passed: number;
   failed: number;
+  softFailed: number;
 }
 
 export interface TestReport {
@@ -60,7 +62,7 @@ export interface TestReport {
   hooks: HookResult[];
 }
 
-const DEFAULT_OPTIONS: Options = { timeout: 0, skip: false };
+const DEFAULT_OPTIONS: Options = { timeout: 0, skip: false, softFail: false, if: true };
 
 // Merge the provided options with the default options
 function mergeOptions(options?: Partial<Options>): Options {
@@ -123,6 +125,15 @@ class TestCase {
     options?: Partial<Options>,
   ): void {
     this.it(description, fn, { ...options, if: condition });
+  }
+
+  public fail(
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void {
+    const mergedOptions = mergeOptions({ ...options, softFail: true });
+    this.tests.push({ description, fn, options: mergedOptions });
   }
 
   // Define an 'only' test (executes only these tests)

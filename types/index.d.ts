@@ -82,6 +82,28 @@ declare global {
   ): void;
 
   /**
+   * Marks a test case to expect success when no error is thrown, and to be marked as "soft-failed" if an error is thrown during execution.
+   *
+   * 
+   * @example
+   * fail('should handle failure scenario gracefully', () => {
+   *   // Test logic that is expected to pass or be marked as soft-failed if it throws an error
+   * });
+   *
+   *
+   * @param {string} description - The description of the test case with expected soft-failure handling.
+   * @param {TestFunction} fn - The test function expected to pass or be marked as soft-failed if an error occurs.
+   * @param {Options} [options] - Optional configuration for the test (timeout, skipped).
+   *
+   * @since v1.0.0
+   */
+  function fail(
+    description: string, 
+    fn: TestFunction, 
+    options?: Options
+  ): void;
+
+  /**
    * Registers a test case to be executed exclusively.
    *
    * @param {string} description - The description of the exclusive test case.
