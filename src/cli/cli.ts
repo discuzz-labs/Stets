@@ -33,11 +33,13 @@ import COMMANDS from "./commands";
 
   const args = new ArgsParser();
   const config = new Config(args.get("config"));
-  const env = new Env().load()
   
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
+  const envs = args.get("envs") || config.get("envs");
   const files = args.get("file");
+
+  new Env(envs).load()
 
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
   await new TestsPool(testFiles).runTests();

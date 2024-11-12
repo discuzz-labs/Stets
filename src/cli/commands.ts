@@ -21,6 +21,12 @@ const COMMANDS: Record<
     isArray: false,
     shortValue: "c",
   },
+  envs: {
+    description: "Path to .env file relative to cwd()",
+    requiresValue: true,
+    isArray: false,
+    shortValue: "env",
+  },
   pattern: {
     description: "Set a file pattern to search for tests",
     requiresValue: true,

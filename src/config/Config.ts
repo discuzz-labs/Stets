@@ -8,10 +8,10 @@ import { join } from "path";
 import { existsSync } from "fs";
 import config from "../veve.config";
 
-// Types
 export type Veve = {
     pattern: string[];
     exclude: string[];
+    envs: string[];
 };
 
 export class Config {
