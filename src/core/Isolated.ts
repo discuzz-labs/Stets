@@ -6,8 +6,8 @@
 
 import { createRequire } from "module";
 import * as vm from "vm";
-import * as path from "path";
-import TestCase, { TestReport } from "../framework/TestCase";
+import { TestReport } from "../framework/TestCase";
+import path from "path";
 
 export interface ExecResult {
   status: boolean;
@@ -24,34 +24,12 @@ export class Isolated {
   constructor(private readonly filename: string) {}
 
   context(context: any = {}): vm.Context {
-    const testCase = new TestCase(path.basename(this.filename));
-
-    const globals = {
-      it: testCase.it.bind(testCase),
-      fail: testCase.fail.bind(testCase),
-      itIf: testCase.itIf.bind(testCase),
-      should: testCase.should.bind(testCase),
-      only: testCase.only.bind(testCase),
-      skip: testCase.skip.bind(testCase),
-      each: testCase.each.bind(testCase),
-      beforeEach: testCase.beforeEach.bind(testCase),
-      beforeAll: testCase.beforeAll.bind(testCase),
-      run: testCase.run.bind(testCase),
-
-      setTimeout,
-      setInterval,
-      clearInterval,
-      clearTimeout,
-      clearImmediate,
-      setImmediate,
-
-      require: createRequire(this.filename),
-      exports: {},
-      __filename: this.filename,
-      __dirname: path.dirname(this.filename),
+    return vm.createContext({
       ...context,
-    };
-    return vm.createContext(globals);
+      require: createRequire(this.filename),
+      __filename: path.basename(this.filename),
+      __dirname: path.dirname(this.filename),
+    });
   }
 
   script(code: string) {
@@ -63,8 +41,8 @@ export class Isolated {
   async exec({ script, context }: ExecOptions): Promise<ExecResult> {
     try {
       const report = await script.runInNewContext(context);
-      const isValid = this.isValidReport(report)
-      
+      const isValid = this.isValidReport(report);
+
       return {
         status: isValid,
         error: null,
@@ -92,6 +70,6 @@ export class Isolated {
       typeof report.stats.skipped === "number" &&
       Array.isArray(report.tests) &&
       Array.isArray(report.hooks)
-    )
+    );
   }
 }

@@ -7,6 +7,7 @@
 import { version, name, description } from "../../package.json";
 import { ArgsParser } from "../cli/ArgParser";
 import { Config } from "../config/Config";
+import { Env } from "../core/Env";
 import { TestsPool } from "../core/TestsPool";
 import { Glob } from "../glob/Glob";
 import COMMANDS from "./commands";
@@ -32,7 +33,8 @@ import COMMANDS from "./commands";
 
   const args = new ArgsParser();
   const config = new Config(args.get("config"));
-
+  const env = new Env().load()
+  
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
   const files = args.get("file");

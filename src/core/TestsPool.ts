@@ -4,12 +4,13 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Loader } from "../core/Loader";
-import { ExecResult, Isolated } from "../core/Isolated";
-import { ErrorParser } from "../utils/ErrorParser";
-import { Console, LogEntry, replay } from "./Console";
 import draftLog from "draftlog";
 import path from "path";
+import { Loader } from "./Loader";
+import { Process } from "./Process";
+import { ExecResult, Isolated } from "./Isolated";
+import { ErrorParser } from "../utils/ErrorParser";
+import { Console, LogEntry, replay } from "./Console";
 import { Reporter } from "../reporters/Reporter";
 
 interface TestStatusDraft {
@@ -23,9 +24,10 @@ draftLog(console);
 
 export class TestsPool {
   private readonly loader: Loader = new Loader();
+  private readonly context = new Process().context();
   private readonly drafts: Map<string, TestStatusDraft> = new Map();
 
-  constructor(private readonly testFiles: string[]){}
+  constructor(private readonly testFiles: string[]) {}
 
   private createDraft(testFile: string): void {
     const message = Reporter.start({ file: testFile });
@@ -66,7 +68,7 @@ export class TestsPool {
       const isolated = new Isolated(filename);
       const execResult = await isolated.exec({
         script: isolated.script(code),
-        context: isolated.context({ console: logger }),
+        context: isolated.context({ console: logger, ...this.context }),
       });
 
       this.addLogs(testFile, logger.logs);
