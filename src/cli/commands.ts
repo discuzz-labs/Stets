@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import type { CLIOptions } from "../cli/ArgParser";
+import type { CLIOptions } from "../cli/ArgParser.js";
 
 const COMMANDS: Record<
   keyof CLIOptions,

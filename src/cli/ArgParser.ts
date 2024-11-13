@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import COMMANDS from "./commands";
+import COMMANDS from "./commands.js";
 
 ////types
 export type CLIOptions = {

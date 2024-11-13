@@ -5,7 +5,7 @@
  */
 
 import { EventEmitter } from "events";
-import TestCase from "../framework/TestCase";
+import TestCase from "../framework/TestCase.js";
 
 export class Process extends EventEmitter {
   private process: any;

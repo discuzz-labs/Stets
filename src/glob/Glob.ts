@@ -6,7 +6,7 @@
 
 import { readdir, stat } from "fs/promises";
 import { resolve, join } from "path";
-import { GlobBuilder } from "./GlobBuilder";
+import { GlobBuilder } from "./GlobBuilder.js";
 
 
 interface GlobOptions {

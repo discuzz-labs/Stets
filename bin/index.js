@@ -4,4 +4,4 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-require("../dist/cli/cli.js")
+import "../dist/cli/cli.js"

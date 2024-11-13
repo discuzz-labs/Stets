@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Veve - Run tests with ease.",
   "main": "dist/index.js",
+  "type": "module",
   "bin": {
     "veve": "./bin/index.js"
   },

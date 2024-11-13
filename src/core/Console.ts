@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import kleur from "../utils/kleur";
+import kleur from "../utils/kleur.js";
 
 export interface LogEntry {
     type: string;

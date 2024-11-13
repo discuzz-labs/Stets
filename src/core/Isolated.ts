@@ -6,7 +6,7 @@
 
 import { createRequire } from "module";
 import * as vm from "vm";
-import { TestReport } from "../framework/TestCase";
+import { TestReport } from "../framework/TestCase.js";
 import path from "path";
 
 export interface ExecResult {

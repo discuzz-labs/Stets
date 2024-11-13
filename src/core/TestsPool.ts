@@ -6,13 +6,13 @@
 
 import draftLog from "draftlog";
 import path from "path";
-import { Loader } from "./Loader";
-import { Process } from "./Process";
-import { ExecResult, Isolated } from "./Isolated";
-import { ErrorParser } from "../utils/ErrorParser";
-import { Console, LogEntry, replay } from "./Console";
-import { Reporter } from "../reporters/Reporter";
-import { Status } from "../framework/TestCase";
+import { Loader } from "./Loader.js";
+import { Process } from "./Process.js";
+import { ExecResult, Isolated } from "./Isolated.js";
+import { ErrorParser } from "../utils/ErrorParser.js";
+import { Console, LogEntry, replay } from "./Console.js";
+import { Reporter } from "../reporters/Reporter.js";
+import { Status } from "../framework/TestCase.js";
 
 interface TestStatusDraft {
   draft: (message: string) => void;

@@ -7,8 +7,8 @@
     "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
-    "module": "commonjs",
-    "target": "es6",
+    "module": "esnext",
+    "target": "esnext",
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },

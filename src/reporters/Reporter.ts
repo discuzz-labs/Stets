@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Stats, Status, TestReport } from "../framework/TestCase";
-import { ErrorMetadata, ErrorParser } from "../utils/ErrorParser";
-import kleur from "../utils/kleur";
+import { Stats, Status, TestReport } from "../framework/TestCase.js";
+import { ErrorMetadata, ErrorParser } from "../utils/ErrorParser.js";
+import kleur from "../utils/kleur.js";
 import path from "path";
 
 interface ReportOptions {

@@ -6,7 +6,7 @@
 
 import { join } from "path";
 import { existsSync } from "fs";
-import config from "../veve.config";
+import config from "../veve.config.js";
 
 export type Veve = {
     pattern: string[];

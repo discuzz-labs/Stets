@@ -12,8 +12,8 @@ import type {
   TestReport,
   Status,
   Stats
-} from "./TestCase";
-import TestCase from "./TestCase";
+} from "./TestCase.js";
+import TestCase from "./TestCase.js";
 import { cpus } from "os";
 
 class RunTime {

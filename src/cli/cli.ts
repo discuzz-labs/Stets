@@ -5,12 +5,12 @@
  */
 
 import { version, name, description } from "../../package.json";
-import { ArgsParser } from "../cli/ArgParser";
-import { Config } from "../config/Config";
-import { Env } from "../core/Env";
-import { TestsPool } from "../core/TestsPool";
-import { Glob } from "../glob/Glob";
-import COMMANDS from "./commands";
+import { ArgsParser } from "../cli/ArgParser.js";
+import { Config } from "../config/Config.js";
+import { Env } from "../core/Env.js";
+import { TestsPool } from "../core/TestsPool.js";
+import { Glob } from "../glob/Glob.js";
+import COMMANDS from "./commands.js";
 
 (async () => {
   const args = new ArgsParser();
