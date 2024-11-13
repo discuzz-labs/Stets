@@ -43,7 +43,7 @@ export class TestsPool {
     });
   }
 
-  private updateDraft(testFile: string, content: string): void {
+  private updateReport(testFile: string, content: string): void {
     const draft = this.drafts.get(testFile);
     if (draft) draft.reportContent += content;
   }
@@ -53,23 +53,24 @@ export class TestsPool {
     if (draft) draft.logEntries = logs;
   }
 
-  private finalizeDraft(testFile: string, status: Status): void {
+  private finishDraft(testFile: string, status: Status): void {
     const draft = this.drafts.get(testFile);
     if (draft) draft.draft(Reporter.finish({ file: testFile, status }));
   }
 
   private async runTest(testFile: string): Promise<void> {
     const logger = new Console();
-
+    this.createDraft(testFile);
     try {
-      this.createDraft(testFile);
-      const { code, filename } = this.loader.require(testFile);
+      const code = this.loader.require(testFile);
 
-      if (!code || !filename)
-        throw new Error(`Unable to load test file: ${testFile}`);
+      if (!code)
+        throw new Error(
+          `Unable to load test file: ${testFile}. Code or filename`,
+        );
 
       const startTime = Date.now();
-      const isolated = new Isolated(filename);
+      const isolated = new Isolated(testFile);
       const execResult = await isolated.exec({
         script: isolated.script(code),
         context: isolated.context({ console: logger, ...this.context }),
@@ -90,7 +91,7 @@ export class TestsPool {
   ): void {
     const testName = testResult.report?.description || path.basename(testFile);
 
-    this.updateDraft(
+    this.updateReport(
       testFile,
       Reporter.testCase({
         name: testName,
@@ -108,8 +109,8 @@ export class TestsPool {
     );
 
     if (testResult.status && testResult.report) {
-      this.finalizeDraft(testFile, testResult.report.status);
-      this.updateDraft(
+      this.finishDraft(testFile, testResult.report.status);
+      this.updateReport(
         testFile,
         Reporter.report({ report: testResult.report, file: testFile }),
       );
@@ -119,7 +120,7 @@ export class TestsPool {
   }
 
   private invalidReport(testFile: string, error: Error | null): void {
-    this.finalizeDraft(testFile, "failed");
+    this.finishDraft(testFile, "failed");
     const errorMessage = error
       ? ErrorParser.format({
           error,
@@ -127,17 +128,21 @@ export class TestsPool {
           maxLines: 10,
         })
       : "Invalid report: ensure to use run() at the end of the file!";
-    this.updateDraft(testFile, errorMessage);
+    this.updateReport(testFile, errorMessage);
   }
 
   private testCaseError(testFile: string, error: Error): void {
-    this.finalizeDraft(testFile, "failed");
     const errorMessage = ErrorParser.format({
       error,
       filter: testFile,
       maxLines: 10,
     });
-    this.updateDraft(testFile, errorMessage);
+    this.updateReport(
+      testFile,
+      Reporter.finish({ file: testFile, status: "failed" }) + "\n",
+    );
+    this.updateReport(testFile, errorMessage);
+    this.finishDraft(testFile, "failed");
   }
 
   public async runTests(): Promise<void> {

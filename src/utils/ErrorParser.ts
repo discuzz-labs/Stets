@@ -4,6 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 import kleur from "./kleur.js";
+import esbuild from "esbuild";
 
 interface ParsedStack {
   file?: string;
@@ -88,13 +89,32 @@ export class ErrorParser {
     const separator = kleur.gray("-".repeat(process.stdout.columns));
     let result = "";
 
-    if (options.error?.message) {
-      result += options.error.message + "\n";
-    }
-    if (options.error?.stack) {
-      result += this.displayParsedStack(options.error.stack, options);
+    if (options.error?.hasOwnProperty("errors")) {
+      result += esbuild
+        .formatMessagesSync((options.error as any).errors, {
+          kind: "error",
+          terminalWidth: process.stdout.columns,
+          color: true
+        })
+        .join("\n").trim()
+    } else if (options.error?.hasOwnProperty("warning")) {
+      result += esbuild
+        .formatMessagesSync((options.error as any).errors, {
+          kind: "warning",
+          terminalWidth: process.stdout.columns,
+          color: true
+        })
+        .join("\n").trim()
     } else {
-      result += kleur.red("No stack trace available!");
+      if (options.error?.message) {
+        result += options.error.message + "\n";
+      }
+
+      if (options.error?.stack) {
+        result += this.displayParsedStack(options.error.stack, options);
+      } else {
+        result += kleur.red("No stack trace available!");
+      }
     }
 
     return separator + "\n" + result + "\n" + separator;
