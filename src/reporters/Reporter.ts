@@ -175,7 +175,7 @@ export class Reporter {
       }
     });
 
-    this.stats.total += items.length;
+    this.stats.total = report.stats.total
     if (items.length === 0) output.push(`${report.description} is empty!`);
     return output.join("\n");
   }

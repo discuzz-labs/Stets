@@ -105,11 +105,7 @@ class Run {
   async run(): Promise<TestReport> {
     const report: TestReport = {
       stats: {
-        total:
-          this.testCase.tests.length +
-          this.testCase.sequenceTests.length +
-          this.testCase.onlyTests.length +
-          this.testCase.sequenceOnlyTests.length,
+        total: 0,
         passed: 0,
         failed: 0,
         skipped: 0,
@@ -127,24 +123,45 @@ class Run {
       report.hooks.push(beforeAllResult as HookResult);
     }
 
-    // Determine tests to run in parallel
-    const testsToRun =
-      this.testCase.onlyTests.length > 0
-        ? this.testCase.onlyTests
-        : this.testCase.tests;
+    // Determine if there are any `only` tests
+    const hasOnlyTests =
+      this.testCase.onlyTests.length > 0 ||
+      this.testCase.sequenceOnlyTests.length > 0;
 
-    // Determine sequential tests to run
-    const sequenceTestsToRun =
-      this.testCase.sequenceOnlyTests.length > 0
-        ? this.testCase.sequenceOnlyTests
-        : this.testCase.sequenceTests;
+    // Set the tests to run based on `only` or regular tests
+    const testsToRun = hasOnlyTests
+      ? this.testCase.onlyTests
+      : this.testCase.tests;
 
-    // Run tests in batches for parallelization
+    const sequenceTestsToRun = hasOnlyTests
+      ? this.testCase.sequenceOnlyTests
+      : this.testCase.sequenceTests;
+
+    // Update total count to include all tests, including those that will be skipped
+    report.stats.total =
+      this.testCase.tests.length +
+      this.testCase.sequenceTests.length +
+      this.testCase.onlyTests.length +
+      this.testCase.sequenceOnlyTests.length;
+
+    // Mark tests as skipped if they are not part of the `only` group
+    const allTests = [...this.testCase.tests, ...this.testCase.sequenceTests];
+    for (const test of allTests) {
+      if (!testsToRun.includes(test) && !sequenceTestsToRun.includes(test)) {
+        report.tests.push({
+          description: test.description,
+          status: "skipped",
+        } as TestResult);
+        report.stats.skipped++;
+      }
+    }
+
+    // Run tests in parallel batches
     for (let i = 0; i < testsToRun.length; i += this.MAX_PARALLEL_TESTS) {
       const batch = testsToRun.slice(i, i + this.MAX_PARALLEL_TESTS);
+
       const results = await Promise.all(
         batch.map(async (test) => {
-          // Run beforeEach hook
           if (this.testCase.hooks.beforeEach) {
             const beforeEachResult = await this.execute(
               this.testCase.hooks.beforeEach,
@@ -155,7 +172,6 @@ class Run {
           const result = (await this.execute(test)) as TestResult;
           report.tests.push(result);
 
-          // Run afterEach hook
           if (this.testCase.hooks.afterEach) {
             const afterEachResult = await this.execute(
               this.testCase.hooks.afterEach,
@@ -167,24 +183,20 @@ class Run {
         }),
       );
 
-      // Update report stats based on test results
       for (const result of results) {
         if (result.status === "passed") {
           report.stats.passed++;
-        } else if (result.status === "skipped") {
-          report.stats.skipped++;
         } else if (result.status === "soft-fail") {
           report.stats.softFailed++;
-        } else {
+        } else if (result.status === "failed") {
           report.stats.failed++;
           report.status = "failed";
         }
       }
     }
 
-    // Run sequence-only tests sequentially
+    // Run sequential tests
     for (const test of sequenceTestsToRun) {
-      // Run beforeEach hook
       if (this.testCase.hooks.beforeEach) {
         const beforeEachResult = await this.execute(
           this.testCase.hooks.beforeEach,
@@ -195,19 +207,15 @@ class Run {
       const result = (await this.execute(test)) as TestResult;
       report.tests.push(result);
 
-      // Update report stats for each sequential test
       if (result.status === "passed") {
         report.stats.passed++;
-      } else if (result.status === "skipped") {
-        report.stats.skipped++;
       } else if (result.status === "soft-fail") {
         report.stats.softFailed++;
-      } else {
+      } else if (result.status === "failed") {
         report.stats.failed++;
         report.status = "failed";
       }
 
-      // Run afterEach hook
       if (this.testCase.hooks.afterEach) {
         const afterEachResult = await this.execute(
           this.testCase.hooks.afterEach,
