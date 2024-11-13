@@ -14,6 +14,7 @@ export type CLIOptions = {
   pattern?: string[];
   exclude?: string[];
   envs?: string[];
+  timeout?: number;
 };
 ////
 

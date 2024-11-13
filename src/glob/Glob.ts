@@ -16,20 +16,12 @@ interface GlobOptions {
 }
 
 export class Glob {
-    private exclude: RegExp[];
-    private pattern: RegExp[];
-    private rpattern; 
     private files: string[] | undefined;
     private maxFiles: number = 4000; // Default max file limit
     private fileCount: number = 0;
+    private globBuilder = new GlobBuilder();
 
-    constructor(options: GlobOptions) {
-        // Convert exclude patterns and patterns to arrays of regex
-        let globBuilder = new GlobBuilder();
-        this.exclude = options.exclude.map((p) => globBuilder.convert(p));
-        this.pattern = options.pattern.map((p) => globBuilder.convert(p));
-        this.rpattern = options.pattern;
-        this.files = options.files;
+    constructor(private readonly options: GlobOptions) {
     }
 
     /**
@@ -38,13 +30,16 @@ export class Glob {
      */
     async collect(): Promise<string[]> {
         const absoluteDir = process.cwd();
+        const regexPattern = this.options.pattern.map(p => this.globBuilder.convert(p))
+        const regexExclude = this.options.exclude.map(p => this.globBuilder.convert(p))
+        
         const collected =
             this.files?.map((file) => resolve(file)) ||
-            (await this.collectFiles(absoluteDir, this.pattern));
+            (await this.collectFiles(absoluteDir, regexPattern, regexExclude));
     
         if (collected.length === 0) {
             console.log(
-                `No suites were found applying the following pattern(s): ${this.rpattern} in the directory: ${process.cwd()} \n`,
+                `No suites were found applying the following pattern(s): ${this.options.pattern} in the directory: ${process.cwd()} \n`,
             );
             process.exit(1);
         }
@@ -62,6 +57,7 @@ export class Glob {
     private async collectFiles(
         dir: string,
         pattern: RegExp[],
+        exclude: RegExp[],
     ): Promise<string[]> {
         let results: string[] = [];
         const entries = await readdir(dir);
@@ -73,7 +69,7 @@ export class Glob {
                 const filePath = join(dir, entry);
 
                 // Check if file should be excluded (including dotfiles/directories)
-                if (this.shouldExclude(entry)) return;
+                if (this.shouldExclude(exclude, entry)) return;
                 
                 const stats = await stat(filePath);
 
@@ -81,6 +77,7 @@ export class Glob {
                     const nestedFiles = await this.collectFiles(
                         filePath,
                         pattern,
+                        exclude
                     );
                     results.push(...nestedFiles);
                 } else if (pattern.some((p) => p.test(entry))) {
@@ -101,11 +98,11 @@ export class Glob {
      * @param entry - The file name.
      * @returns true if the file matches any excluded pattern or is a dotfile/directory.
      */
-    private shouldExclude(entry: string): boolean {
+    private shouldExclude(exclude: RegExp[], entry: string): boolean {
         // Ignore dotfiles and dot directories
         if (entry.startsWith(".") || entry === "node_modules") return true
 
         // Check if the entry matches the exclude pattern
-        return this.exclude.some((pattern) => pattern.test(entry));
+        return exclude.some((pattern) => pattern.test(entry));
     }
 }

@@ -28,7 +28,9 @@ export class TestsPool {
   private readonly context = new Process().context();
   private readonly drafts: Map<string, TestStatusDraft> = new Map();
 
-  constructor(private readonly testFiles: string[]) {}
+  constructor(
+    private readonly options: { testFiles: string[]; timeout: number },
+  ) {}
 
   private createDraft(testFile: string): void {
     const message = Reporter.start({ file: testFile });
@@ -71,6 +73,7 @@ export class TestsPool {
       const execResult = await isolated.exec({
         script: isolated.script(code),
         context: isolated.context({ console: logger, ...this.context }),
+        timeout: this.options.timeout,
       });
 
       this.addLogs(testFile, logger.logs);
@@ -139,7 +142,9 @@ export class TestsPool {
 
   public async runTests(): Promise<void> {
     try {
-      await Promise.all(this.testFiles.map((file) => this.runTest(file)));
+      await Promise.all(
+        this.options.testFiles.map((file) => this.runTest(file)),
+      );
     } finally {
       this.clearConsole();
       this.drafts.forEach(({ reportContent, logEntries }) => {

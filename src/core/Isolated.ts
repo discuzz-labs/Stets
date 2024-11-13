@@ -18,6 +18,7 @@ export interface ExecResult {
 interface ExecOptions {
   script: vm.Script;
   context: vm.Context;
+  timeout: number;
 }
 
 export class Isolated {
@@ -38,9 +39,11 @@ export class Isolated {
     });
   }
 
-  async exec({ script, context }: ExecOptions): Promise<ExecResult> {
+  async exec({ script, context , timeout }: ExecOptions): Promise<ExecResult> {
     try {
-      const report = await script.runInNewContext(context);
+      const report = await script.runInNewContext(context, {
+        timeout
+      });
       const isValid = this.isValidReport(report);
 
       return {

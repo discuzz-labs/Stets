@@ -12,6 +12,7 @@ export type Veve = {
     pattern: string[];
     exclude: string[];
     envs: string[];
+    timeout: number;
 };
 
 export class Config {

@@ -21,6 +21,12 @@ const COMMANDS: Record<
     isArray: false,
     shortValue: "c",
   },
+  timeout: {
+    description: "Timeout for single test file.",
+    requiresValue: true,
+    isArray: false,
+    shortValue: "t",
+  },
   envs: {
     description: "Path to .env file relative to cwd()",
     requiresValue: true,
@@ -44,7 +50,7 @@ const COMMANDS: Record<
     requiresValue: true,
     isArray: true,
     shortValue: "f",
-  }
+  },
 };
 
 export default COMMANDS;
