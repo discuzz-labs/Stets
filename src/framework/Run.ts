@@ -16,6 +16,7 @@ import { cpus } from "os";
 
 class Run {
   private readonly MAX_PARALLEL_TESTS = cpus().length || 4;
+  private readonly MAX_TIMEOUT = 300_000 // 5 minutes
 
   constructor(private testCase: TestCase) {}
 
@@ -43,23 +44,22 @@ class Run {
     }
 
     let lastError: any;
+    const fallbackTimeout = timeout === 0 ? this.MAX_TIMEOUT : timeout
 
     while (result.retries <= retry) {
       try {
-        if (timeout > 0) {
+        
           await Promise.race([
             fn(),
             new Promise<never>((_, reject) =>
               setTimeout(
                 () =>
-                  reject(new Error(`${description} exceeded ${timeout} ms.`)),
-                timeout,
+                  reject(new Error(`${description} exceeded ${fallbackTimeout} ms. ${fallbackTimeout === this.MAX_TIMEOUT ? "Fallback timeout was used. This test took 5 minutes to finish. Make sure you donot have any dead promises! Finding dead promises: https://swizec.com/blog/finding-unresolved-promises-in-javascript/" : "" } `)),
+                fallbackTimeout
               ),
             ),
           ]);
-        } else {
-          await fn();
-        }
+        
 
         // If it succeeds, we exit the loop with a passed result
         return result;

@@ -57,12 +57,15 @@ export class TestsPool {
 
   private async runTest(testFile: string): Promise<void> {
     const logger = new Console();
+    
     try {
+      
       this.createDraft(testFile);
       const { code, filename } = this.loader.require(testFile);
 
       if (!code || !filename)
         throw new Error(`Unable to load test file: ${testFile}`);
+      
 
       const startTime = Date.now();
       const isolated = new Isolated(filename);
@@ -71,9 +74,12 @@ export class TestsPool {
         context: isolated.context({ console: logger, ...this.context }),
       });
 
+      
       this.addLogs(testFile, logger.logs);
       this.testCaseResult(testFile, execResult, Date.now() - startTime);
+      
     } catch (error) {
+  
       this.testCaseError(testFile, error as Error);
     }
   }
@@ -138,7 +144,7 @@ export class TestsPool {
     try {
       await Promise.all(this.testFiles.map((file) => this.runTest(file)));
     } finally {
-      this.clearConsole();
+      //this.clearConsole();
       this.drafts.forEach(({ reportContent, logEntries }) => {
         console.log(reportContent);
         replay(logEntries);

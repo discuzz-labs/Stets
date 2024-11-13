@@ -21,6 +21,7 @@ export interface Options {
     | (() => boolean | Promise<boolean> | null | undefined);
   retry: number;
   softFail: boolean;
+  sequence: boolean;
 }
 
 export interface Test {
@@ -71,6 +72,7 @@ const DEFAULT_OPTIONS: Options = {
   softFail: false,
   if: true,
   retry: 0,
+  sequence: false,
 };
 
 // Merge the provided options with the default options
@@ -121,6 +123,15 @@ class TestCase {
     options?: Partial<Options>,
   ): void {
     this.tests.push({ description, fn, options: mergeOptions(options) });
+  }
+
+  public sequence(
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void {
+    const mergedOptions = mergeOptions({ ...options, sequence: true });
+    this.tests.push({ description, fn, options: mergedOptions });
   }
 
   public retry(

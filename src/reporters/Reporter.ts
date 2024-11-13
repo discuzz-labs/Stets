@@ -208,7 +208,7 @@ export class Reporter {
       kleur.lightRed("Soft failed: ") +
       `${softFailed} (${kleur.bold(softFailedPercentage)}%)` +
       "\n" +
-      kleur.gray("\n\n🍾 ⚡️ All Tests ran!")
+      kleur.gray("\n🍾 ⚡️ All Tests ran!")
     );
   }
 }

@@ -10,7 +10,9 @@ export interface ErrorMetadata {
 }
 
 export interface Options {
-  /** The maximum duration in milliseconds to allow for a test or hook to complete. */
+  /** The maximum duration in milliseconds to allow for a test or hook to complete. 
+  @default 300_000ms or 5 minutes
+  */
   timeout?: number;
 
   /** If true, the test or hook is skipped. */

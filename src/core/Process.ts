@@ -22,6 +22,7 @@ export class Process extends EventEmitter {
 
       it: testCase.it.bind(testCase),
       fail: testCase.fail.bind(testCase),
+      sequence: testCase.sequence.bind(testCase),
       timeout: testCase.timeout.bind(testCase),
       todo: testCase.todo.bind(testCase),
       retry: testCase.retry.bind(testCase),
