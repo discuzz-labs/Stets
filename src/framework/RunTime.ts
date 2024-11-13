@@ -14,7 +14,7 @@ import type {
 import TestCase from "./TestCase";
 import { cpus } from "os";
 
-class Run {
+class RunTime {
   private readonly MAX_PARALLEL_TESTS = cpus().length || 4;
   private readonly MAX_TIMEOUT = 300_000; // 5 minutes
 
@@ -103,9 +103,26 @@ class Run {
 
   // Run all tests and hooks in the TestCase
   async run(): Promise<TestReport> {
-    const report: TestReport = {
+    const report: TestReport = this.initializeReport();
+
+    await this.runHook(this.testCase.hooks.beforeAll, report);
+
+    const { testsToRun, sequenceTestsToRun } = this.determineTestsToRun(report);
+
+    await this.markSkippedTests(report, testsToRun, sequenceTestsToRun);
+
+    await this.runTestsInParallel(testsToRun, report);
+    await this.runTestsInSequence(sequenceTestsToRun, report);
+
+    await this.runHook(this.testCase.hooks.afterAll, report);
+
+    return report;
+  }
+
+  private initializeReport(): TestReport {
+    return {
       stats: {
-        total: 0,
+        total: this.calculateTotalTests(),
         passed: 0,
         failed: 0,
         skipped: 0,
@@ -116,35 +133,47 @@ class Run {
       tests: [],
       hooks: [],
     };
+  }
 
-    // Run beforeAll hooks
-    if (this.testCase.hooks.beforeAll) {
-      const beforeAllResult = await this.execute(this.testCase.hooks.beforeAll);
-      report.hooks.push(beforeAllResult as HookResult);
+  private calculateTotalTests(): number {
+    return (
+      this.testCase.tests.length +
+      this.testCase.sequenceTests.length +
+      this.testCase.onlyTests.length +
+      this.testCase.sequenceOnlyTests.length
+    );
+  }
+
+  private async runHook(
+    hook: Hook | undefined,
+    report: TestReport,
+  ): Promise<void> {
+    if (hook) {
+      const result = await this.execute(hook);
+      report.hooks.push(result as HookResult);
     }
+  }
 
-    // Determine if there are any `only` tests
+  private determineTestsToRun(report: TestReport) {
     const hasOnlyTests =
       this.testCase.onlyTests.length > 0 ||
       this.testCase.sequenceOnlyTests.length > 0;
 
-    // Set the tests to run based on `only` or regular tests
     const testsToRun = hasOnlyTests
       ? this.testCase.onlyTests
       : this.testCase.tests;
-
     const sequenceTestsToRun = hasOnlyTests
       ? this.testCase.sequenceOnlyTests
       : this.testCase.sequenceTests;
 
-    // Update total count to include all tests, including those that will be skipped
-    report.stats.total =
-      this.testCase.tests.length +
-      this.testCase.sequenceTests.length +
-      this.testCase.onlyTests.length +
-      this.testCase.sequenceOnlyTests.length;
+    return { testsToRun, sequenceTestsToRun };
+  }
 
-    // Mark tests as skipped if they are not part of the `only` group
+  private async markSkippedTests(
+    report: TestReport,
+    testsToRun: Test[],
+    sequenceTestsToRun: Test[],
+  ): Promise<void> {
     const allTests = [...this.testCase.tests, ...this.testCase.sequenceTests];
     for (const test of allTests) {
       if (!testsToRun.includes(test) && !sequenceTestsToRun.includes(test)) {
@@ -155,58 +184,50 @@ class Run {
         report.stats.skipped++;
       }
     }
+  }
 
-    // Run tests in parallel batches
+  private async runTestsInParallel(
+    testsToRun: Test[],
+    report: TestReport,
+  ): Promise<void> {
     for (let i = 0; i < testsToRun.length; i += this.MAX_PARALLEL_TESTS) {
       const batch = testsToRun.slice(i, i + this.MAX_PARALLEL_TESTS);
-
       const results = await Promise.all(
-        batch.map(async (test) => {
-          if (this.testCase.hooks.beforeEach) {
-            const beforeEachResult = await this.execute(
-              this.testCase.hooks.beforeEach,
-            );
-            report.hooks.push(beforeEachResult as HookResult);
-          }
-
-          const result = (await this.execute(test)) as TestResult;
-          report.tests.push(result);
-
-          if (this.testCase.hooks.afterEach) {
-            const afterEachResult = await this.execute(
-              this.testCase.hooks.afterEach,
-            );
-            report.hooks.push(afterEachResult as HookResult);
-          }
-
-          return result;
-        }),
+        batch.map((test) => this.runSingleTest(test, report)),
       );
-
-      for (const result of results) {
-        if (result.status === "passed") {
-          report.stats.passed++;
-        } else if (result.status === "soft-fail") {
-          report.stats.softFailed++;
-        } else if (result.status === "failed") {
-          report.stats.failed++;
-          report.status = "failed";
-        }
-      }
+      this.updateStatsFromResults(results, report);
     }
+  }
 
-    // Run sequential tests
-    for (const test of sequenceTestsToRun) {
-      if (this.testCase.hooks.beforeEach) {
-        const beforeEachResult = await this.execute(
-          this.testCase.hooks.beforeEach,
-        );
-        report.hooks.push(beforeEachResult as HookResult);
-      }
+  private async runTestsInSequence(
+    testsToRun: Test[],
+    report: TestReport,
+  ): Promise<void> {
+    for (const test of testsToRun) {
+      const result = await this.runSingleTest(test, report);
+      this.updateStatsFromResults([result], report);
+    }
+  }
 
-      const result = (await this.execute(test)) as TestResult;
-      report.tests.push(result);
+  private async runSingleTest(
+    test: Test,
+    report: TestReport,
+  ): Promise<TestResult> {
+    await this.runHook(this.testCase.hooks.beforeEach, report);
 
+    const result = (await this.execute(test)) as TestResult;
+    report.tests.push(result);
+
+    await this.runHook(this.testCase.hooks.afterEach, report);
+
+    return result;
+  }
+
+  private updateStatsFromResults(
+    results: TestResult[],
+    report: TestReport,
+  ): void {
+    for (const result of results) {
       if (result.status === "passed") {
         report.stats.passed++;
       } else if (result.status === "soft-fail") {
@@ -215,22 +236,7 @@ class Run {
         report.stats.failed++;
         report.status = "failed";
       }
-
-      if (this.testCase.hooks.afterEach) {
-        const afterEachResult = await this.execute(
-          this.testCase.hooks.afterEach,
-        );
-        report.hooks.push(afterEachResult as HookResult);
-      }
     }
-
-    // Run afterAll hooks
-    if (this.testCase.hooks.afterAll) {
-      const afterAllResult = await this.execute(this.testCase.hooks.afterAll);
-      report.hooks.push(afterAllResult as HookResult);
-    }
-
-    return report;
   }
 }
 

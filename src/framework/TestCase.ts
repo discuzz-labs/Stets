@@ -5,7 +5,7 @@
  */
 
 import { format } from "util";
-import Run from "./Run";
+import RunTime from "./RunTime";
 import { ErrorMetadata } from "../utils/ErrorParser";
 
 export type TestFunction = () => void | Promise<void>;
@@ -251,7 +251,7 @@ class TestCase {
   }
 
   async run(): Promise<TestReport> {
-    return await new Run(this).run();
+    return await new RunTime(this).run();
   }
 }
 
