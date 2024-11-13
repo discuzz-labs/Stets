@@ -10,6 +10,8 @@ import type {
   Test,
   TestResult,
   TestReport,
+  Status,
+  Stats
 } from "./TestCase";
 import TestCase from "./TestCase";
 import { cpus } from "os";
@@ -72,7 +74,7 @@ class RunTime {
         // If softFail is set and this was the last attempt, mark as "soft-fail"
         if (result.retries > retry) {
           if (softFail) {
-            result.status = "soft-fail";
+            result.status = "soft-failed";
             result.error = {
               message: `Soft failure: ${lastError.message}`,
               stack: lastError.stack,
@@ -107,7 +109,7 @@ class RunTime {
 
     await this.runHook(this.testCase.hooks.beforeAll, report);
 
-    const { testsToRun, sequenceTestsToRun } = this.determineTestsToRun(report);
+    const { testsToRun, sequenceTestsToRun } = this.determineTestsToRun();
 
     await this.markSkippedTests(report, testsToRun, sequenceTestsToRun);
 
@@ -116,7 +118,18 @@ class RunTime {
 
     await this.runHook(this.testCase.hooks.afterAll, report);
 
+    report.status = this.status(report.stats);
+
     return report;
+  }
+
+  private status(stats: Stats): Status {
+    if(stats.total === 0) return "empty"
+    if(stats.failed > 0) return "failed"
+    if(stats.softFailed > 0) return "soft-failed"
+    if(stats.skipped > 0) return "skipped"
+    
+    return "passed"
   }
 
   private initializeReport(): TestReport {
@@ -154,7 +167,7 @@ class RunTime {
     }
   }
 
-  private determineTestsToRun(report: TestReport) {
+  private determineTestsToRun() {
     const hasOnlyTests =
       this.testCase.onlyTests.length > 0 ||
       this.testCase.sequenceOnlyTests.length > 0;
@@ -230,14 +243,13 @@ class RunTime {
     for (const result of results) {
       if (result.status === "passed") {
         report.stats.passed++;
-      } else if (result.status === "soft-fail") {
+      } else if (result.status === "soft-failed") {
         report.stats.softFailed++;
       } else if (result.status === "failed") {
         report.stats.failed++;
-        report.status = "failed";
       }
     }
   }
 }
 
-export default Run;
+export default RunTime;

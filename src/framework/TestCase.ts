@@ -10,6 +10,8 @@ import { ErrorMetadata } from "../utils/ErrorParser";
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
+export type Status = "passed" | "failed" | "soft-failed" | "skipped" | "empty"
+export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach"
 
 export interface Options {
   timeout: number;
@@ -23,7 +25,7 @@ export interface Options {
   softFail: boolean;
   sequencial: boolean;
 }
-
+  
 export interface Test {
   description: string;
   fn: TestFunction;
@@ -31,21 +33,21 @@ export interface Test {
 }
 
 export interface Hook {
-  description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
+  description: HookTypes;
   fn: HookFunction;
   options: Options;
 }
 
 export type TestResult = {
   description: string;
-  status: "passed" | "failed" | "soft-fail" | "skipped";
+  status: Status ;
   retries: number;
   error?: ErrorMetadata;
 };
 
 export type HookResult = {
-  description: "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-  status: "passed" | "failed" | "soft-fail" | "skipped";
+  description: HookTypes;
+  status: Status;
   retries: number;
   error?: ErrorMetadata;
 };
@@ -61,7 +63,7 @@ export interface Stats {
 export interface TestReport {
   stats: Stats;
   description: string;
-  status: "passed" | "failed";
+  status: Status;
   tests: TestResult[];
   hooks: HookResult[];
 }

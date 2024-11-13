@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Stats, TestReport } from "../framework/TestCase";
+import { Stats, Status, TestReport } from "../framework/TestCase";
 import { ErrorMetadata, ErrorParser } from "../utils/ErrorParser";
 import kleur from "../utils/kleur";
 import path from "path";
@@ -20,13 +20,14 @@ interface StartArgs {
 
 interface FinishArgs {
   file: string;
-  status: "passed" | "failed";
+  status: Status;
 }
 
 interface TestCaseArgs {
   name: string;
   file: string;
   duration: number;
+  status: Status;
   stats: Stats;
 }
 
@@ -64,12 +65,21 @@ export class Reporter {
     );
   }
 
+  static colored(name: string, status: Status): string {
+    if (status === "empty") return kleur.gray(kleur.bold(name));
+    if (status === "failed") return kleur.red(kleur.bold(name));
+    if (status === "soft-failed") return kleur.lightRed(kleur.bold(name));
+    if (status === "skipped") return kleur.yellow(kleur.bold(name));
+
+    return kleur.green(kleur.bold(name));
+  }
+
   static finish({ file, status }: FinishArgs): string {
     const dirPath = path.dirname(file);
     const fileName = path.basename(file);
 
     return (
-      (status ? kleur.bgGreen(" PASSED ") : kleur.bgRed(" FAILED ")) +
+      this.colored(fileName, status) +
       " " +
       kleur.gray(dirPath) +
       "/" +
@@ -77,15 +87,15 @@ export class Reporter {
     );
   }
 
-  static testCase({ name, file, duration, stats }: TestCaseArgs): string {
+  static testCase({
+    name,
+    file,
+    duration,
+    status,
+    stats,
+  }: TestCaseArgs): string {
     return (
-      (stats.total === 0
-        ? kleur.gray(kleur.bold(name))
-        : stats.failed > 0
-          ? kleur.red(kleur.bold(name))
-          : stats.skipped > 0
-            ? kleur.yellow(kleur.bold(name))
-            : kleur.green(kleur.bold(name))) +
+      this.colored(name, status) +
       " (" +
       (stats.failed > 0 ? kleur.red(" 🔴 " + stats.failed) : "") +
       (stats.skipped > 0 ? kleur.yellow(" 🟡 " + stats.skipped) : "") +
@@ -158,7 +168,7 @@ export class Reporter {
           this.stats.skipped++;
           output.push(this.skip({ description: t.description }));
           break;
-        case "soft-fail":
+        case "soft-failed":
           this.stats.softFailed++;
           output.push(
             this.fail({
@@ -175,7 +185,7 @@ export class Reporter {
       }
     });
 
-    this.stats.total = report.stats.total
+    this.stats.total = report.stats.total;
     if (items.length === 0) output.push(`${report.description} is empty!`);
     return output.join("\n");
   }
