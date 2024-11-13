@@ -67,6 +67,28 @@ declare global {
   ): void;
 
   /**
+   * Adds a test to be run sequentially, ensuring it executes in the order it was added,
+   * after all concurrent tests have completed.
+   *
+   * @param {string} description - A description of the test case for reporting purposes.
+   * @param {TestFunction} fn - The function containing the test logic to be executed.
+   * @param {Partial<Options>} [options] - Optional configuration options for the test, such as timeout and retry settings.
+   * 
+   * @example
+   * testCase.sequence("Sequential Test Example", async () => {
+   *   // Test logic here
+   * });
+   *
+   * @since v1.0.0
+   */
+  function sequence(
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
+
+
+  /**
    * Registers an individual test case.
    *
    * @param {string} description - The description of the test case.

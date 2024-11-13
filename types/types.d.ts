@@ -30,6 +30,9 @@ export interface Options {
 
   /** Number of retries for a test*/
   retry?: number;
+
+  /** Marks a test as sequencial to be runned in the order it was added */
+  sequencial?: number;
 }
 
 
