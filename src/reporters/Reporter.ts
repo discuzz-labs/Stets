@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Stats, Status, TestCaseStatus, TestReport } from "../framework/TestCase.js";
+import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
 import { ErrorMetadata, ErrorParser } from "../utils/ErrorParser.js";
 import kleur from "../utils/kleur.js";
 import path from "path";

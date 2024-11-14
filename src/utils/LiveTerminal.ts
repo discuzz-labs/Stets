@@ -1,4 +1,4 @@
-import { Status } from "../framework/TestCase.js";
+import { TestCaseStatus } from "../framework/TestCase.js";
 import { Reporter } from "../reporters/Reporter.js";
 
 /*
@@ -7,7 +7,7 @@ import { Reporter } from "../reporters/Reporter.js";
  * See the LICENSE file in the project root for license information.
  */
 export class LiveTerminal {
-  renderMap = new Map<string, Status>();
+  renderMap = new Map<string, TestCaseStatus>();
 
   // Function to render the current file statuses in the console
   render() {
@@ -18,7 +18,7 @@ export class LiveTerminal {
   }
 
   // Function to update a file’s status and re-render the console
-  update(file: string, status: Status) {
+  update(file: string, status: TestCaseStatus) {
     const currentStatus = this.renderMap.get(file);
     if (currentStatus !== status) {
       this.renderMap.set(file, status);
@@ -26,7 +26,7 @@ export class LiveTerminal {
     }
   }
 
-  set(file: string, status: Status) {
+  set(file: string, status: TestCaseStatus) {
     this.renderMap.set(file, status);
   }
 }

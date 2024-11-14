@@ -2,18 +2,11 @@ export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
 export type Status = "passed" | "failed" | "soft-failed" | "skipped" | "empty"
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach"
+export type TestCaseStatus = "passed" | "failed" | "pending" |"empty"
 
-export interface Options {
-  timeout: number;
-  skip: boolean;
-  if:
-    | boolean
-    | undefined
-    | null
-    | (() => boolean | Promise<boolean> | null | undefined);
-  retry: number;
-  softFail: boolean;
-  sequencial: boolean;
+export interface ErrorMetadata {
+  message: string | undefined;
+  stack: string | undefined;
 }
 
 export interface Test {
@@ -53,7 +46,7 @@ export interface Stats {
 export interface TestReport {
   stats: Stats;
   description: string;
-  status: Status;
+  status: TestCaseStatus;
   tests: TestResult[];
   hooks: HookResult[];
 }
