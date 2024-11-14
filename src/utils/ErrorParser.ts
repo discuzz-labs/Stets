@@ -22,7 +22,7 @@ export interface ErrorMetadata {
 interface ErrorParserOptions {
   error: ErrorMetadata | Error | undefined;
   maxLines?: number;
-  filter?: string;
+  file?: string;
 }
 
 export class ErrorParser {
@@ -57,16 +57,16 @@ export class ErrorParser {
   }
 
   static parseStack(stack: string, options: ErrorParserOptions): ParsedStack[] {
-    const { maxLines = 5, filter } = options;
+    const { maxLines = 5, file } = options;
     const lines = stack.split("\n").slice(0, maxLines);
 
     const parsedLines = lines
       .map((line) =>
-        filter && !line.includes(filter) ? null : this.parseStackLine(line),
+        file && !line.includes(file) ? null : this.parseStackLine(line),
       )
       .filter((parsed): parsed is ParsedStack => parsed !== null);
 
-    if (filter && parsedLines.length === 0) {
+    if (file && parsedLines.length === 0) {
       return stack
         .split("\n")
         .map((line) => this.parseStackLine(line))
@@ -89,34 +89,33 @@ export class ErrorParser {
     const separator = kleur.gray("-".repeat(process.stdout.columns));
     let result = "";
 
-    if (options.error?.hasOwnProperty("errors")) {
-      result += esbuild
-        .formatMessagesSync((options.error as any).errors, {
-          kind: "error",
+    // Check if error has an 'errors' or 'warning' property, format accordingly
+    if (
+      options.error?.hasOwnProperty("errors") ||
+      options.error?.hasOwnProperty("warning")
+    ) {
+      const kind = options.error.hasOwnProperty("errors") ? "error" : "warning";
+      const messages = esbuild.formatMessagesSync(
+        (options.error as any).errors,
+        {
+          kind,
           terminalWidth: process.stdout.columns,
-          color: true
-        })
-        .join("\n").trim()
-    } else if (options.error?.hasOwnProperty("warning")) {
-      result += esbuild
-        .formatMessagesSync((options.error as any).errors, {
-          kind: "warning",
-          terminalWidth: process.stdout.columns,
-          color: true
-        })
-        .join("\n").trim()
-    } else {
+          color: true,
+        },
+      );
+
+      result += messages.join("\n").trim();
+    }
+    // If neither 'errors' nor 'warning' property, use message and stack if available
+    else {
       if (options.error?.message) {
         result += options.error.message + "\n";
       }
-
-      if (options.error?.stack) {
-        result += this.displayParsedStack(options.error.stack, options);
-      } else {
-        result += kleur.red("No stack trace available!");
-      }
+      result += options.error?.stack
+        ? this.displayParsedStack(options.error.stack, options)
+        : kleur.red("No stack trace available!");
     }
 
-    return separator + "\n" + result + "\n" + separator;
+    return `${separator}\n${result}\n${separator}`;
   }
 }

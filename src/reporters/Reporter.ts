@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Stats, Status, TestReport } from "../framework/TestCase.js";
+import { Stats, Status, TestCaseStatus, TestReport } from "../framework/TestCase.js";
 import { ErrorMetadata, ErrorParser } from "../utils/ErrorParser.js";
 import kleur from "../utils/kleur.js";
 import path from "path";
@@ -14,20 +14,16 @@ interface ReportOptions {
   report: TestReport;
 }
 
-interface StartArgs {
+interface DraftArgs {
   file: string;
-}
-
-interface FinishArgs {
-  file: string;
-  status: Status;
+  status: TestCaseStatus;
 }
 
 interface TestCaseArgs {
-  name: string;
+  description: string;
   file: string;
   duration: number;
-  status: Status;
+  status: TestCaseStatus;
   stats: Stats;
 }
 
@@ -52,66 +48,45 @@ export class Reporter {
     softFailed: 0,
   };
 
-  static start({ file }: StartArgs): string {
-    const dirPath = path.dirname(file);
-    const fileName = path.basename(file);
-
-    return (
-      kleur.bgYellow(" RUNNING ") +
-      " " +
-      kleur.gray(dirPath) +
-      "/" +
-      kleur.white(fileName)
-    );
+  private static details(stats: Stats): string {
+    let statusText = "";
+    switch (true) {
+      case stats.failed > 0:
+        statusText += kleur.red(" 🔴 " + stats.failed);
+        break;
+      case stats.skipped > 0:
+        statusText += kleur.yellow(" 🟡 " + stats.skipped);
+        break;
+      case stats.passed > 0:
+        statusText += kleur.green(" 🟢 " + stats.passed);
+        break;
+      case stats.softFailed > 0:
+        statusText += kleur.lightRed(" 🟠 " + stats.softFailed);
+        break;
+      default:
+        statusText = " Empty ";
+        break;
+    }
+    if (stats.total > 0) {
+      statusText += kleur.gray(" 🔢 " + stats.total);
+    }
+    return statusText;
   }
 
-  static colored(name: string, status: Status): string {
-    if (status === "empty") return kleur.gray(kleur.bold(name));
-    if (status === "failed") return kleur.red(kleur.bold(name));
-    if (status === "soft-failed") return kleur.lightRed(kleur.bold(name));
-    if (status === "skipped") return kleur.yellow(kleur.bold(name));
-
-    return kleur.green(kleur.bold(name));
+  private static status(name: string, status: TestCaseStatus): string {
+    switch (status) {
+      case "pending":
+        return kleur.bgYellow(" RUNNING ");
+      case "empty":
+        return kleur.bgGray(name);
+      case "failed":
+        return kleur.bgRed(name);
+      default:
+        return kleur.bgGreen(name);
+    }
   }
 
-  static finish({ file, status }: FinishArgs): string {
-    const dirPath = path.dirname(file);
-    const fileName = path.basename(file);
-
-    return (
-      this.colored(fileName, status) +
-      " " +
-      kleur.gray(dirPath) +
-      "/" +
-      kleur.white(fileName)
-    );
-  }
-
-  static testCase({
-    name,
-    file,
-    duration,
-    status,
-    stats,
-  }: TestCaseArgs): string {
-    return (
-      this.colored(name, status) +
-      " (" +
-      (stats.failed > 0 ? kleur.red(" 🔴 " + stats.failed) : "") +
-      (stats.skipped > 0 ? kleur.yellow(" 🟡 " + stats.skipped) : "") +
-      (stats.passed > 0 ? kleur.green(" 🟢 " + stats.passed) : "") +
-      (stats.softFailed > 0 ? kleur.lightRed(" 🟠 " + stats.softFailed) : "") +
-      (stats.total > 0 ? kleur.gray(" 🔢 " + stats.total) : " Empty ") +
-      ") " +
-      " at " +
-      kleur.gray(path.dirname(file)) +
-      " in " +
-      kleur.gray(`${duration} ms`) +
-      "\n"
-    );
-  }
-
-  static fail({
+  private static fail({
     file,
     description,
     error,
@@ -120,7 +95,7 @@ export class Reporter {
   }: FailArgs): string {
     const errorDetails = ErrorParser.format({
       error,
-      filter: file,
+      file,
       maxLines: 10,
     });
     return (
@@ -137,11 +112,44 @@ export class Reporter {
     );
   }
 
-  static skip({ description }: SkipArgs): string {
+  private static skip({ description }: SkipArgs): string {
     return (
       kleur.bgYellow(kleur.bold(" SKIPPED ")) +
       " " +
       kleur.bgBlack(kleur.white(description)) +
+      "\n"
+    );
+  }
+
+  static draft({ file, status }: DraftArgs): string {
+    const dirPath = path.dirname(file);
+    const fileName = path.basename(file);
+
+    return (
+      this.status(fileName, status) +
+      " " +
+      kleur.gray(dirPath) +
+      "/" +
+      kleur.white(fileName)
+    );
+  }
+
+  static header({
+    description,
+    file,
+    duration,
+    status,
+    stats,
+  }: TestCaseArgs): string {
+    return (
+      this.status(description, status) +
+      " (" +
+      this.details(stats) +
+      ") " +
+      " at " +
+      kleur.gray(path.dirname(file)) +
+      " in " +
+      kleur.gray(`${duration} s`) +
       "\n"
     );
   }
@@ -185,7 +193,7 @@ export class Reporter {
       }
     });
 
-    this.stats.total = report.stats.total;
+    this.stats.total += report.stats.total;
     if (items.length === 0) output.push(`${report.description} is empty!`);
     return output.join("\n");
   }
@@ -218,7 +226,8 @@ export class Reporter {
       kleur.lightRed("Soft failed: ") +
       `${softFailed} (${kleur.bold(softFailedPercentage)}%)` +
       "\n" +
-      kleur.gray("\n🍾 ⚡️ All Tests ran!")
+      kleur.gray("\n🍾 ⚡️ All Tests ran!") +
+      "\n"
     );
   }
 }

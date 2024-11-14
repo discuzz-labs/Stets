@@ -94,6 +94,10 @@ export default class kleur {
     return this.apply("90", text);
   }
 
+  public static bgGray(text: string | number): string {
+    return this.apply("100", text);
+  }
+
   // Formatting
   public static bold(text: string | number): string {
     return this.apply("1", text);

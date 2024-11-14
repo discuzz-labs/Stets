@@ -11,7 +11,8 @@ import type {
   TestResult,
   TestReport,
   Status,
-  Stats
+  Stats,
+  TestCaseStatus
 } from "./TestCase.js";
 import TestCase from "./TestCase.js";
 import { cpus } from "os";
@@ -123,11 +124,9 @@ class RunTime {
     return report;
   }
 
-  private status(stats: Stats): Status {
+  private status(stats: Stats): TestCaseStatus {
     if(stats.total === 0) return "empty"
     if(stats.failed > 0) return "failed"
-    if(stats.softFailed > 0) return "soft-failed"
-    if(stats.skipped > 0) return "skipped"
     
     return "passed"
   }

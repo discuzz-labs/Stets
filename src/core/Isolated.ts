@@ -6,7 +6,7 @@
 
 import { createRequire } from "module";
 import * as vm from "vm";
-import { TestReport } from "../framework/TestCase.js";
+import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
 
 export interface ExecResult {
@@ -25,8 +25,25 @@ export class Isolated {
   constructor(private readonly filename: string) {}
 
   context(context: any = {}): vm.Context {
+    const testCase = new TestCase("Unnamed test");
+
     return vm.createContext({
       ...context,
+      it: testCase.it.bind(testCase),
+      fail: testCase.fail.bind(testCase),
+      sequence: testCase.sequence.bind(testCase),
+      timeout: testCase.timeout.bind(testCase),
+      todo: testCase.todo.bind(testCase),
+      retry: testCase.retry.bind(testCase),
+      itIf: testCase.itIf.bind(testCase),
+      should: testCase.should.bind(testCase),
+      only: testCase.only.bind(testCase),
+      skip: testCase.skip.bind(testCase),
+      each: testCase.each.bind(testCase),
+      beforeEach: testCase.beforeEach.bind(testCase),
+      beforeAll: testCase.beforeAll.bind(testCase),
+      run: testCase.run.bind(testCase),
+
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),
       __dirname: path.dirname(this.filename),
@@ -39,10 +56,10 @@ export class Isolated {
     });
   }
 
-  async exec({ script, context , timeout }: ExecOptions): Promise<ExecResult> {
+  async exec({ script, context, timeout }: ExecOptions): Promise<ExecResult> {
     try {
       const report = await script.runInNewContext(context, {
-        timeout
+        timeout,
       });
       const isValid = this.isValidReport(report);
 

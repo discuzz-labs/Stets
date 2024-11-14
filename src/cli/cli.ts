@@ -9,7 +9,7 @@ import { version, name, description } from "../../package.json";
 import { ArgsParser } from "../cli/ArgParser.js";
 import { Config } from "../config/Config.js";
 import { Env } from "../core/Env.js";
-import { TestsPool } from "../core/TestsPool.js";
+import { Pool } from "../core/Pool.js";
 import { Glob } from "../glob/Glob.js";
 import COMMANDS from "./commands.js";
 
@@ -31,10 +31,13 @@ import COMMANDS from "./commands.js";
   new Env(envs).load();
 
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
-  await new TestsPool({
+  const pool = new Pool({
     testFiles,
     timeout: parseInt(timeout as unknown as string),
-  }).runTests();
+  });
+
+  await pool.run();
+  pool.report()
 
   process.exit();
 })();

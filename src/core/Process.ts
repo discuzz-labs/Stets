@@ -5,35 +5,17 @@
  */
 
 import { EventEmitter } from "events";
-import TestCase from "../framework/TestCase.js";
 
 export class Process extends EventEmitter {
   private process: any;
-  
+
   constructor() {
     super();
 
-    const testCase = new TestCase("Unnamed test");
-    
-    this.process ={
+    this.process = {
       process: this.clone(),
 
       Buffer,
-
-      it: testCase.it.bind(testCase),
-      fail: testCase.fail.bind(testCase),
-      sequence: testCase.sequence.bind(testCase),
-      timeout: testCase.timeout.bind(testCase),
-      todo: testCase.todo.bind(testCase),
-      retry: testCase.retry.bind(testCase),
-      itIf: testCase.itIf.bind(testCase),
-      should: testCase.should.bind(testCase),
-      only: testCase.only.bind(testCase),
-      skip: testCase.skip.bind(testCase),
-      each: testCase.each.bind(testCase),
-      beforeEach: testCase.beforeEach.bind(testCase),
-      beforeAll: testCase.beforeAll.bind(testCase),
-      run: testCase.run.bind(testCase),
 
       setTimeout,
       setInterval,
@@ -43,7 +25,7 @@ export class Process extends EventEmitter {
       setImmediate,
 
       exports: {},
-    }
+    };
   }
 
   // Clone current process properties into a new object for VM context
@@ -59,6 +41,6 @@ export class Process extends EventEmitter {
   }
 
   context() {
-    return this.process
+    return this.process;
   }
 }
