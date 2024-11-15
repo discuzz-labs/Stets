@@ -122,13 +122,11 @@ export function replay(logs: LogEntry[]) {
         if (type === "warn") header = kleur.yellow("Console.warn()");
         if (type === "error") header = kleur.red("Console.error()");
 
-        console.log(header + "\n");
+        console.log(header);
 
         if (type === "timeEnd")
             console.log(kleur.gray(args[0] + " took " + args[1]));
         else if (type === "clear") console.log("Clear was called");
         else (console as any)[type](...args);
-
-        console.log("\n");
     }
 }

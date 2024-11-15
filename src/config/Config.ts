@@ -7,11 +7,13 @@
 import { join } from "path";
 import { existsSync } from "fs";
 import config from "../veve.config.js";
+import { Plugin } from "esbuild"
 
 export type Veve = {
     pattern: string[];
     exclude: string[];
     envs: string[];
+    plugins: Plugin[];
     timeout: number;
 };
 

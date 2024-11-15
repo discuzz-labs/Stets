@@ -21,6 +21,7 @@ import COMMANDS from "./commands.js";
   const pattern = args.get("pattern") || config.get("pattern");
   const envs = args.get("envs") || config.get("envs");
   const timeout = args.get("timeout") || config.get("timeout");
+  const plugins = config.get("plugins")
   const files = args.get("file");
 
   if (isNaN(timeout)) {
@@ -33,11 +34,12 @@ import COMMANDS from "./commands.js";
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
   const pool = new Pool({
     testFiles,
+    plugins,
     timeout: parseInt(timeout as unknown as string),
   });
 
-  await pool.run();
+  const exitCode = await pool.run();
   pool.report()
 
-  process.exit();
+  process.exit(exitCode);
 })();

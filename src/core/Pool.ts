@@ -8,10 +8,11 @@ import { Console, LogEntry, replay } from "./Console.js";
 import { TestReport } from "../framework/TestCase";
 import { Isolated } from "./Isolated.js";
 import { Process } from "./Process.js";
-import { Loader } from "./Loader.js";
+import { Transform } from "./Transform.js";
 import { LiveTerminal } from "../utils/LiveTerminal.js";
 import { Reporter } from "../reporters/Reporter.js";
 import { ErrorParser } from "../utils/ErrorParser.js";
+import { Plugin } from "esbuild";
 import path from "path";
 
 export interface PoolResult {
@@ -24,15 +25,18 @@ export interface PoolResult {
 export class Pool {
   private readonly terminal = new LiveTerminal();
   private readonly processClone = new Process();
-  private readonly loader = new Loader();
+  private transformer;
   private reports = new Map<string, PoolResult>();
 
   constructor(
     private readonly options: {
       testFiles: string[];
       timeout: number;
+      plugins: Plugin[];
     },
-  ) {}
+  ) {
+    this.transformer = new Transform(options.plugins);
+  }
 
   async run(): Promise<number> {
     let exitCode = 0;
@@ -58,11 +62,11 @@ export class Pool {
             const logger = new Console();
 
             // Load the test code
-            const code = this.loader.require(file);
-            if (!code) throw new Error("No code was found!");
+            const code = await this.transformer.transform(file)
 
             // Create isolated environment and context
             const isolated = new Isolated(file);
+
             const context = isolated.context({
               console: logger,
               ...this.processClone.context(),

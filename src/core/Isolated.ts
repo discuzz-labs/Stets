@@ -61,6 +61,7 @@ export class Isolated {
       const report = await script.runInNewContext(context, {
         timeout,
       });
+      
       const isValid = this.isValidReport(report);
 
       return {

@@ -31,6 +31,6 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "esbuild-register": "^3.6.0"
+    "esbuild": "^0.24.0"
   }
 }
