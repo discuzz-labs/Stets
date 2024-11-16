@@ -1,24 +1,9 @@
 import diff from "deep-diff";
 
 // More specific type definitions
-type DiffKind = "N" | "D" | "E" | "A";
 type Path = (string | number)[];
 
-interface BasicDiff<T> {
-  kind: "N" | "D" | "E";
-  path?: Path;
-  lhs?: T;
-  rhs?: T;
-}
-
-interface ArrayDiff<T> {
-  kind: "A";
-  path?: Path;
-  index: number;
-  item: BasicDiff<T>;
-}
-
-type Diff<T> = BasicDiff<T> | ArrayDiff<T>;
+type Diff<T> = diff.Diff<T, T>;
 
 // Maximum depth for recursive operations
 const MAX_DEPTH = 100;
@@ -38,19 +23,7 @@ class MaxDepthError extends Error {
 }
 
 function getType(value: unknown): string {
-  if (value === undefined) return "undefined";
-  if (value === null) return "null";
-  if (Array.isArray(value)) return "array";
-
-  const typeOfValue = typeof value;
-  if (typeOfValue !== "object") return typeOfValue;
-
-  if (value instanceof RegExp) return "regexp";
-  if (value instanceof Map) return "map";
-  if (value instanceof Set) return "set";
-  if (value instanceof Date) return "date";
-
-  return "object";
+  return {}.toString.call(value).split(" ")[1].slice(0, -1).toLowerCase();
 }
 
 function isPrimitive(value: unknown): boolean {
@@ -130,24 +103,41 @@ function deepEqual(value1: any, value2: any, cache = new WeakMap()): boolean {
   return false;
 }
 
+// Helper function to convert Map and Set to comparable structures
+function convertToComparable(value: any): any {
+  if (getType(value) === "map") {
+    // Convert Map to a plain object
+    const obj: Record<string, any> = {};
+    (value as Map<any, any>).forEach((v, k) => {
+      obj[String(k)] = v; // Ensure the key is a string for object compatibility
+    });
+    return obj;
+  }
+  if (getType(value) === "set") {
+    // Convert Set to an array
+    return Array.from(value);
+  }
+  return value; // Return as is for other types
+}
+
 // Function to pretty format any value, handling types like Map, Set, Date, RegExp, etc.
 function prettyFormat(
   value: unknown,
   depth: number = 0,
   space: string = "\t",
-  seen: WeakSet<object> = new WeakSet()
+  seen: WeakSet<object> = new WeakSet(),
 ): string {
   // Prevent circular references by checking if the value has been seen
-  if (typeof value === 'object' && value !== null) {
+  if (typeof value === "object" && value !== null) {
     if (seen.has(value)) {
-      return '[Circular]'; // Handle circular reference here
+      return "[Circular]"; // Handle circular reference here
     }
     seen.add(value);
   }
 
   // Handle primitive values directly
   if (isPrimitive(value)) {
-    return String(value);
+    return formatPrimitive(value);
   }
 
   const type = getType(value);
@@ -160,11 +150,12 @@ function prettyFormat(
   // Handle Set
   if (type === "set") {
     const setValue = value as Set<unknown>;
-    if (setValue.size === 0) return 'Set {}';
-    let result = 'Set {\n';
-    for (const item of setValue) {
-      result += `${space.repeat(depth + 1)}${prettyFormat(item, depth + 1 , space, seen)}\n`;
+    if (setValue.size === 0) return "Set {}";
+    let result = "Set {\n";
+    for (const [index, item] of Array.from(setValue).entries()) {
+      result += `${space.repeat(depth + 1)}[${index}]: ${prettyFormat(item, depth + 1, space, seen)}\n`;
     }
+
     result += `${space.repeat(depth)}}`;
     return result;
   }
@@ -172,10 +163,10 @@ function prettyFormat(
   // Handle Map
   if (type === "map") {
     const mapValue = value as Map<unknown, unknown>;
-    if (mapValue.size === 0) return 'Map {}';
-    let result = 'Map {\n';
+    if (mapValue.size === 0) return "Map {}";
+    let result = "Map {\n";
     for (const [key, val] of mapValue) {
-      result += `${space.repeat(depth + 1)}[${prettyFormat(key, depth + 1 , space, seen)}]: ${prettyFormat(val, depth + 1 , space, seen)}\n`;
+      result += `${space.repeat(depth + 1)}[${key}] => ${prettyFormat(val, depth + 1, space, seen)}\n`;
     }
     result += `${space.repeat(depth)}}`;
     return result;
@@ -189,14 +180,14 @@ function prettyFormat(
   // Handle Arrays
   if (type === "array") {
     const arrayValue = value as unknown[];
-    if (arrayValue.length === 0) return 'Array []';
-    let result = 'Array [\n';
+    if (arrayValue.length === 0) return "Array []";
+    let result = "Array [\n";
     for (let i = 0; i < arrayValue.length; i++) {
-      result += `${space.repeat(depth + 1)}${prettyFormat(arrayValue[i], depth + 1 , space, seen)}`;
+      result += `${space.repeat(depth + 1)}[${i}]: ${prettyFormat(arrayValue[i], depth + 1, space, seen)}`;
       if (i < arrayValue.length - 1) {
-        result += ',';
+        result += ",";
       }
-      result += '\n';
+      result += "\n";
     }
     result += `${space.repeat(depth)}]`;
     return result;
@@ -205,15 +196,15 @@ function prettyFormat(
   // Handle Objects (plain objects or arrays)
   if (type === "object") {
     const objectValue = value as Record<string, unknown>;
-    let result = 'Object {\n';
+    let result = "Object {\n";
     const keys = Object.keys(objectValue);
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       result += `${space.repeat(depth + 1)}"${key}": ${prettyFormat(objectValue[key], depth + 1, space, seen)}`;
       if (i < keys.length - 1) {
-        result += ',';
+        result += ",";
       }
-      result += '\n';
+      result += "\n";
     }
     result += `${space.repeat(depth)}}`;
     return result;
@@ -223,7 +214,15 @@ function prettyFormat(
   return String(value);
 }
 
+function formatPrimitive(value: unknown): string {
+  if (typeof value === "string") {
+    return `"${value}"`; // Wrap strings in double quotes
+  }
+  return String(value); // For other primitives, return their string representation
+}
+
 function diffObject(
+  type: string,
   expected: Record<string, unknown>,
   received: Record<string, unknown>,
   differences: Array<Diff<unknown>>,
@@ -233,8 +232,8 @@ function diffObject(
   if (depth > MAX_DEPTH) {
     throw new MaxDepthError(`Maximum diff depth of ${MAX_DEPTH} exceeded`);
   }
-
-  let output = "Object {\n";
+  
+  let output = `${type} {\n`;
   const indent = "  ".repeat(depth + 1);
 
   const keys = [
@@ -260,11 +259,13 @@ function diffObject(
 
       switch (currentDiff.kind) {
         case "N": // New key
-          output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs, depth)}\n`;
+          output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs, depth)},\n`;
           break;
         case "D": // Deleted key
-          output += `${indent}- ${pathStr}: ${
-            prettyFormat(currentDiff.lhs, depth)}\n`;
+          output += `${indent}- ${pathStr}: ${prettyFormat(
+            currentDiff.lhs,
+            depth,
+          )},\n`;
           break;
         case "E": // Edited key
           const nestedDiff = formatDiff(
@@ -272,20 +273,27 @@ function diffObject(
             currentDiff.rhs,
             depth + 1,
           );
+          
           if (nestedDiff) {
-            output += `${indent}${pathStr}: ${nestedDiff}\n`;
+            output += `${indent}${pathStr}: ${nestedDiff},\n`;
           }
           break;
         case "A": // Array modification
-          if (Array.isArray(expectedValue) && Array.isArray(receivedValue)) {
+          if (
+            ((getType(expectedValue) === "array" ||
+              getType(expectedValue) === "set") &&
+              getType(receivedValue) === "array") ||
+            getType(receivedValue) === "set"
+          ) {
             const arrayDiff = diffArray(
-              expectedValue,
-              receivedValue,
+              getType(expectedValue),
+              convertToComparable(expected),
+              convertToComparable(received),
               differences,
               path,
               depth + 1,
             );
-            output += `${indent}${pathStr}: ${arrayDiff}\n`;
+            output += `${indent}${pathStr}: ${arrayDiff},\n`;
           }
           break;
       }
@@ -293,20 +301,22 @@ function diffObject(
       // Handle cases where no direct diff exists (e.g., nested objects/arrays)
       if (deepEqual(expectedValue, receivedValue)) {
         // Use deepEqual here
-        output += `${indent}${pathStr}: ${prettyFormat(expectedValue, depth + 1)}\n`;
+        output += `${indent}${pathStr}: ${prettyFormat(expectedValue, depth + 1)},\n`;
       } else if (
         isPrimitive(expectedValue) &&
         isPrimitive(receivedValue) &&
         expectedValue !== receivedValue
       ) {
+        
         // Handle primitive differences
-        output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue, depth)}\n`;
-        output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue, depth)}\n`;
+        output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue, depth)},\n`;
+        output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue, depth)},\n`;
       } else if (!isPrimitive(expectedValue) && !isPrimitive(receivedValue)) {
         // Optionally include unchanged values
         const nestedDiff = formatDiff(expectedValue, receivedValue, depth + 1);
+        
         if (nestedDiff) {
-          output += `${indent}${pathStr}: ${nestedDiff}\n`;
+          output += `${indent}${pathStr}: ${nestedDiff},\n`;
         }
       }
     }
@@ -317,6 +327,7 @@ function diffObject(
 }
 
 function diffArray(
+  type: string,
   expected: unknown[],
   received: unknown[],
   differences: Array<Diff<unknown>>,
@@ -327,7 +338,8 @@ function diffArray(
     throw new MaxDepthError(`Maximum diff depth of ${MAX_DEPTH} exceeded`);
   }
 
-  let output = "Array [\n";
+
+  let output = `${type} [\n`;
   const indent = "  ".repeat(depth + 1);
 
   const maxLength = Math.max(expected.length, received.length);
@@ -354,18 +366,18 @@ function diffArray(
         const item = currentDiff.item;
         switch (item.kind) {
           case "N":
-            output += `${indent}+ ${pathStr}: ${prettyFormat(item.rhs,depth)}\n`;
+            output += `${indent}+ ${pathStr}: ${prettyFormat(item.rhs, depth)},\n`;
             break;
           case "D":
-            output += `${indent}- ${pathStr}: ${prettyFormat(item.lhs,depth)}\n`;
+            output += `${indent}- ${pathStr}: ${prettyFormat(item.lhs, depth)},\n`;
             break;
           case "E":
             const nestedDiff = formatDiff(item.lhs, item.rhs, depth + 1);
             if (nestedDiff) {
-              output += `${indent}${pathStr}: ${nestedDiff}\n`;
+              output += `${indent}${pathStr}: ${nestedDiff},\n`;
             } else {
-              output += `${indent}- ${pathStr}: ${prettyFormat(item.lhs,depth)}\n`;
-              output += `${indent}+ ${pathStr}: ${prettyFormat(item.rhs,depth)}\n`;
+              output += `${indent}- ${pathStr}: ${prettyFormat(item.lhs, depth)},\n`;
+              output += `${indent}+ ${pathStr}: ${prettyFormat(item.rhs, depth)},\n`;
             }
             break;
         }
@@ -373,10 +385,10 @@ function diffArray(
         // Handle direct array element changes (kind: "N", "D", "E")
         switch (currentDiff.kind) {
           case "N":
-            output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs,depth)}\n`;
+            output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs, depth)},\n`;
             break;
           case "D":
-            output += `${indent}- ${pathStr}: ${prettyFormat(currentDiff.lhs,depth)}\n`;
+            output += `${indent}- ${pathStr}: ${prettyFormat(currentDiff.lhs, depth)},\n`;
             break;
           case "E":
             const nestedDiff = formatDiff(
@@ -384,11 +396,11 @@ function diffArray(
               currentDiff.rhs,
               depth + 1,
             );
+      
             if (nestedDiff) {
-              output += `${indent}${pathStr}: ${nestedDiff}\n`;
+              output += `${indent}${pathStr}: ${nestedDiff},\n`;
             } else {
-              output += `${indent}- ${pathStr}: ${prettyFormat(currentDiff.lhs,depth)}\n`;
-              output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs,depth)}\n`;
+              output += `${indent}- ${pathStr}: ${prettyFormat(currentDiff.lhs, depth)} + ${prettyFormat(currentDiff.rhs, depth)},\n`;
             }
             break;
         }
@@ -396,23 +408,22 @@ function diffArray(
     } else if (i < expected.length && i < received.length) {
       // No diff detected, compare nested structures or show values
       if (deepEqual(expectedValue, receivedValue)) {
-        // Use deepEqual here
-        output += `${indent}${pathStr}: ${prettyFormat(expectedValue,depth)}\n`;
+        output += `${indent}${pathStr}: ${prettyFormat(expectedValue, depth)},\n`;
       } else {
         const nestedDiff = formatDiff(expectedValue, receivedValue, depth + 1);
         if (nestedDiff) {
-          output += `${indent}${pathStr}: ${nestedDiff}\n`;
+          output += `${indent}${pathStr}: ${nestedDiff},\n`;
         } else {
-          output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue,depth)}\n`;
-          output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue,depth)}\n`;
+          output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue, depth)},\n`;
+          output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue, depth)},\n`;
         }
       }
     } else if (i >= expected.length) {
-      // Handle added elements in the `received` array
-      output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue,depth)}\n`;
+      // Handle added elements in the received array
+      output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue, depth)},\n`;
     } else {
-      // Handle removed elements from the `expected` array
-      output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue,depth)}\n`;
+      // Handle removed elements from the expected array
+      output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue, depth)},\n`;
     }
   }
 
@@ -424,11 +435,8 @@ function diffPrimitive(
   expected: unknown,
   received: unknown,
 ): string | undefined {
-  const expectedStr = String(expected);
-  const receivedStr = String(received);
-
-  if (expectedStr !== receivedStr) {
-    return `-${prettyFormat(expectedStr)} +${prettyFormat(receivedStr)}`;
+  if (expected !== received) {
+    return `- ${prettyFormat(expected)} + ${prettyFormat(received)}`;
   }
   return undefined;
 }
@@ -443,7 +451,12 @@ function formatDiff(
     throw new CircularReferenceError("Circular reference detected in input");
   }
 
-  const differences = diff(expected, received);
+  // Convert Map and Set to objects or arrays before diffing
+  const expectedConverted = convertToComparable(expected);
+  const receivedConverted = convertToComparable(received);
+
+  const differences = diff(expectedConverted, receivedConverted);
+
   if (!differences) return undefined;
 
   const expectedType = getType(expected);
@@ -451,50 +464,55 @@ function formatDiff(
 
   // If types are different, show the complete change
   if (expectedType !== receivedType) {
-    return `- ${prettyFormat(expected,depth)}\n+ ${prettyFormat(received,depth)}`;
+    return `- ${prettyFormat(expected, depth)} + ${prettyFormat(received, depth)}`;
   }
 
   try {
     switch (expectedType) {
       case "object":
         return diffObject(
-          expected as Record<string, unknown>,
-          received as Record<string, unknown>,
-          differences,
-          [],
-          depth,
-        );
-      case "array":
-        return diffArray(
-          expected as unknown[],
-          received as unknown[],
+          "Object",
+          expectedConverted as Record<string, unknown>,
+          receivedConverted as Record<string, unknown>,
           differences,
           [],
           depth,
         );
       case "map":
         return diffObject(
-          Object.fromEntries(expected as Map<unknown, unknown>),
-          Object.fromEntries(received as Map<unknown, unknown>),
+          "Map",
+          expectedConverted as Record<string, unknown>,
+          receivedConverted as Record<string, unknown>,
+          differences,
+          [],
+          depth,
+        );
+      case "array":
+        return diffArray(
+          "Array",
+          expectedConverted as unknown[],
+          receivedConverted as unknown[],
           differences,
           [],
           depth,
         );
       case "set":
         return diffArray(
-          Array.from(expected as Set<unknown>),
-          Array.from(received as Set<unknown>),
+          "Set",
+          expectedConverted as unknown[],
+          receivedConverted as unknown[],
           differences,
           [],
           depth,
         );
+
       case "date":
         return diffPrimitive(
-          (expected as Date).toISOString(),
-          (received as Date).toISOString(),
+          (expectedConverted as Date).toISOString(),
+          (receivedConverted as Date).toISOString(),
         );
       default:
-        return diffPrimitive(expected, received);
+        return diffPrimitive(expectedConverted, receivedConverted);
     }
   } catch (error: any) {
     if (
