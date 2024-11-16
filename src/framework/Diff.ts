@@ -7,6 +7,10 @@
 import diff from "deep-diff";
 import kleur from "../utils/kleur.js";
 
+function capitalize (str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 class DiffFormatter {
   private formatRemovedString(str: string): string {
     if (str.includes("\n")) {
@@ -29,7 +33,6 @@ class DiffFormatter {
   }
 
   public formatDiffString(str: string, isRemoved: boolean): string {
-    
     return isRemoved
       ? this.formatRemovedString(str)
       : this.formatAddedString(str);
@@ -320,19 +323,20 @@ export class Difference {
             break;
           case "A": // Array modification
             if (
-              ((this.getType(expectedValue) === "array" ||
+              (this.getType(expectedValue) === "array" ||
                 this.getType(expectedValue) === "set") &&
-                this.getType(receivedValue) === "array") ||
-              this.getType(receivedValue) === "set"
+              (this.getType(receivedValue) === "array" ||
+                this.getType(receivedValue) === "set")
             ) {
               const arrayDiff = this.diffArray(
-                this.getType(expectedValue),
-                this.convertToComparable(expected),
-                this.convertToComparable(received),
+                capitalize(this.getType(expectedValue)),
+                expectedValue as unknown[],
+                receivedValue as unknown[],
                 differences,
                 path,
                 depth + 1,
               );
+
               output += `${indent}${pathStr}: ${arrayDiff},\n`;
             }
             break;
@@ -474,10 +478,7 @@ export class Difference {
     return output;
   }
 
-  private diffPrimitive(
-    expected: any,
-    received: any,
-  ): string | undefined {
+  private diffPrimitive(expected: any, received: any): string | undefined {
     const formatter = new DiffFormatter();
     if (expected !== received) {
       return `${formatter.formatDiffString(this.prettyFormat(expected), true)} ${formatter.formatDiffString(this.prettyFormat(received), false)}`;
