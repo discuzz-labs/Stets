@@ -8,6 +8,7 @@ import { createRequire } from "module";
 import * as vm from "vm";
 import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
+import { expect } from "../framework/Assertion.js";
 
 export interface ExecResult {
   status: boolean;
@@ -43,6 +44,8 @@ export class Isolated {
       beforeEach: testCase.beforeEach.bind(testCase),
       beforeAll: testCase.beforeAll.bind(testCase),
       run: testCase.run.bind(testCase),
+
+      expect,
 
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),

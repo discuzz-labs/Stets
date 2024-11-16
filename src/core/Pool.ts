@@ -109,7 +109,7 @@ export class Pool {
   }
 
   report() {
-    console.clear();
+   // console.clear();
 
     for (const [file, { logs, error, duration, report }] of this.reports) {
       const status = report ? report.status : "failed";
