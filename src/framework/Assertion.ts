@@ -65,7 +65,6 @@ function isPrimitive(value: unknown): boolean {
   );
 }
 
-
 function createPathString(path: Path): string {
   return path
     .map((segment) =>
@@ -89,6 +88,46 @@ function detectCircular(obj: unknown, seen = new WeakSet()): boolean {
   }
 
   return Object.values(obj).some((value) => detectCircular(value, seen));
+}
+
+function deepEqual(value1: any, value2: any, cache = new WeakMap()): boolean {
+  // Check if both values are strictly equal (handles primitives and identical references)
+  if (value1 === value2) return true;
+
+  // Check if either is null or not an object (at this point we know they're not strictly equal)
+  if (
+    value1 === null ||
+    value2 === null ||
+    typeof value1 !== "object" ||
+    typeof value2 !== "object"
+  ) {
+    return false;
+  }
+
+  // Use cache to avoid redundant comparisons
+  if (cache.has(value1) && cache.get(value1) === value2) return true;
+  cache.set(value1, value2);
+
+  // Check if both are arrays
+  if (Array.isArray(value1) && Array.isArray(value2)) {
+    if (value1.length !== value2.length) return false; // Different lengths
+    // Compare each element
+    return value1.every((item, index) => deepEqual(item, value2[index], cache));
+  }
+
+  // Check if both are plain objects
+  if (!Array.isArray(value1) && !Array.isArray(value2)) {
+    const keys1 = Object.keys(value1);
+    const keys2 = Object.keys(value2);
+
+    if (keys1.length !== keys2.length) return false; // Different number of keys
+
+    // Compare each key-value pair
+    return keys1.every((key) => deepEqual(value1[key], value2[key], cache));
+  }
+
+  // If one is an array and the other is not, they are not equal
+  return false;
 }
 
 function diffObject(
@@ -134,7 +173,11 @@ function diffObject(
           output += `${indent}- ${pathStr}: ${JSON.stringify(currentDiff.lhs)}\n`;
           break;
         case "E": // Edited key
-          const nestedDiff = formatDiff(currentDiff.lhs, currentDiff.rhs, depth + 1);
+          const nestedDiff = formatDiff(
+            currentDiff.lhs,
+            currentDiff.rhs,
+            depth + 1,
+          );
           if (nestedDiff) {
             output += `${indent}${pathStr}: ${nestedDiff}\n`;
           }
@@ -153,15 +196,19 @@ function diffObject(
           break;
       }
     } else {
-      
       // Handle cases where no direct diff exists (e.g., nested objects/arrays)
-      if (JSON.stringify(expected) === JSON.stringify(received) ) {
+      if (deepEqual(expectedValue, receivedValue)) {
+        // Use deepEqual here
         output += `${indent}${pathStr}: ${JSON.stringify(expectedValue)}\n`;
-      } else if (isPrimitive(expectedValue) && isPrimitive(receivedValue) && (expectedValue !== receivedValue)) {
+      } else if (
+        isPrimitive(expectedValue) &&
+        isPrimitive(receivedValue) &&
+        expectedValue !== receivedValue
+      ) {
         // Handle primitive differences
         output += `${indent}- ${pathStr}: ${JSON.stringify(expectedValue)}\n`;
         output += `${indent}+ ${pathStr}: ${JSON.stringify(receivedValue)}\n`;
-      } else if (!isPrimitive(expectedValue) && !isPrimitive(receivedValue) ) {
+      } else if (!isPrimitive(expectedValue) && !isPrimitive(receivedValue)) {
         // Optionally include unchanged values
         const nestedDiff = formatDiff(expectedValue, receivedValue, depth + 1);
         if (nestedDiff) {
@@ -254,7 +301,10 @@ function diffArray(
       }
     } else if (i < expected.length && i < received.length) {
       // No diff detected, compare nested structures or show values
-      if (expectedValue !== receivedValue) {
+      if (deepEqual(expectedValue, receivedValue)) {
+        // Use deepEqual here
+        output += `${indent}${pathStr}: ${JSON.stringify(expectedValue)}\n`;
+      } else {
         const nestedDiff = formatDiff(expectedValue, receivedValue, depth + 1);
         if (nestedDiff) {
           output += `${indent}${pathStr}: ${nestedDiff}\n`;
@@ -262,8 +312,6 @@ function diffArray(
           output += `${indent}- ${pathStr}: ${JSON.stringify(expectedValue)}\n`;
           output += `${indent}+ ${pathStr}: ${JSON.stringify(receivedValue)}\n`;
         }
-      } else {
-        output += `${indent}${pathStr}: ${JSON.stringify(expectedValue)}\n`;
       }
     } else if (i >= expected.length) {
       // Handle added elements in the `received` array
