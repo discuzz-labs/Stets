@@ -6,10 +6,12 @@
 
 import diff from "deep-diff";
 import kleur from "../utils/kleur.js";
+import { getType, deepEqual, isPrimitive } from "../utils/index.js";
+import { prettyFormat } from "../utils/PrettyFormat.js";
 
-function capitalize (str: string) {
+function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
-};
+}
 
 class DiffFormatter {
   private formatRemovedString(str: string): string {
@@ -62,22 +64,6 @@ export class Difference {
   // Maximum depth for recursive operations
   MAX_DEPTH = 100;
 
-  private getType(value: unknown): string {
-    return {}.toString.call(value).split(" ")[1].slice(0, -1).toLowerCase();
-  }
-
-  private isPrimitive(value: unknown): boolean {
-    return (
-      value === null || // `null` is a primitive
-      value === undefined || // `undefined` is a primitive
-      typeof value === "string" ||
-      typeof value === "number" ||
-      typeof value === "boolean" ||
-      typeof value === "symbol" ||
-      typeof value === "bigint"
-    );
-  }
-
   private createPathString(path: Path): string {
     return path
       .map((segment) =>
@@ -103,53 +89,9 @@ export class Difference {
     return Object.values(obj).some((value) => this.detectCircular(value, seen));
   }
 
-  deepEqual(value1: any, value2: any, cache = new WeakMap()): boolean {
-    // Check if both values are strictly equal (handles primitives and identical references)
-    if (value1 === value2) return true;
-
-    // Check if either is null or not an object (at this point we know they're not strictly equal)
-    if (
-      value1 === null ||
-      value2 === null ||
-      typeof value1 !== "object" ||
-      typeof value2 !== "object"
-    ) {
-      return false;
-    }
-
-    // Use cache to avoid redundant comparisons
-    if (cache.has(value1) && cache.get(value1) === value2) return true;
-    cache.set(value1, value2);
-
-    // Check if both are arrays
-    if (Array.isArray(value1) && Array.isArray(value2)) {
-      if (value1.length !== value2.length) return false; // Different lengths
-      // Compare each element
-      return value1.every((item, index) =>
-        this.deepEqual(item, value2[index], cache),
-      );
-    }
-
-    // Check if both are plain objects
-    if (!Array.isArray(value1) && !Array.isArray(value2)) {
-      const keys1 = Object.keys(value1);
-      const keys2 = Object.keys(value2);
-
-      if (keys1.length !== keys2.length) return false; // Different number of keys
-
-      // Compare each key-value pair
-      return keys1.every((key) =>
-        this.deepEqual(value1[key], value2[key], cache),
-      );
-    }
-
-    // If one is an array and the other is not, they are not equal
-    return false;
-  }
-
   // Helper function to convert Map and Set to comparable structures
   private convertToComparable(value: any): any {
-    if (this.getType(value) === "map") {
+    if (getType(value) === "map") {
       // Convert Map to a plain object
       const obj: Record<string, any> = {};
       (value as Map<any, any>).forEach((v, k) => {
@@ -157,112 +99,11 @@ export class Difference {
       });
       return obj;
     }
-    if (this.getType(value) === "set") {
+    if (getType(value) === "set") {
       // Convert Set to an array
       return Array.from(value);
     }
     return value; // Return as is for other types
-  }
-
-  // Function to pretty format any value, handling types like Map, Set, Date, RegExp, etc.
-  private prettyFormat(
-    value: unknown,
-    depth: number = 0,
-    space: string = "\t",
-    seen: WeakSet<object> = new WeakSet(),
-  ): string {
-    // Prevent circular references by checking if the value has been seen
-    if (typeof value === "object" && value !== null) {
-      if (seen.has(value)) {
-        return "[Circular]"; // Handle circular reference here
-      }
-      seen.add(value);
-    }
-
-    // Handle primitive values directly
-    if (this.isPrimitive(value)) {
-      return this.formatPrimitive(value);
-    }
-
-    const type = this.getType(value);
-
-    // Handle Date objects
-    if (type === "date") {
-      return `Date("${(value as Date).toISOString()}")`;
-    }
-
-    // Handle Set
-    if (type === "set") {
-      const setValue = value as Set<unknown>;
-      if (setValue.size === 0) return "Set {}";
-      let result = "Set {\n";
-      for (const [index, item] of Array.from(setValue).entries()) {
-        result += `${space.repeat(depth + 1)}[${index}]: ${this.prettyFormat(item, depth + 1, space, seen)}\n`;
-      }
-
-      result += `${space.repeat(depth)}}`;
-      return result;
-    }
-
-    // Handle Map
-    if (type === "map") {
-      const mapValue = value as Map<unknown, unknown>;
-      if (mapValue.size === 0) return "Map {}";
-      let result = "Map {\n";
-      for (const [key, val] of mapValue) {
-        result += `${space.repeat(depth + 1)}[${key}] => ${this.prettyFormat(val, depth + 1, space, seen)}\n`;
-      }
-      result += `${space.repeat(depth)}}`;
-      return result;
-    }
-
-    // Handle RegExp
-    if (type === "regexp") {
-      return `RegExp("${(value as RegExp).source}", "${(value as RegExp).flags}")`;
-    }
-
-    // Handle Arrays
-    if (type === "array") {
-      const arrayValue = value as unknown[];
-      if (arrayValue.length === 0) return "Array []";
-      let result = "Array [\n";
-      for (let i = 0; i < arrayValue.length; i++) {
-        result += `${space.repeat(depth + 1)}[${i}]: ${this.prettyFormat(arrayValue[i], depth + 1, space, seen)}`;
-        if (i < arrayValue.length - 1) {
-          result += ",";
-        }
-        result += "\n";
-      }
-      result += `${space.repeat(depth)}]`;
-      return result;
-    }
-
-    // Handle Objects (plain objects or arrays)
-    if (type === "object") {
-      const objectValue = value as Record<string, unknown>;
-      let result = "Object {\n";
-      const keys = Object.keys(objectValue);
-      for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        result += `${space.repeat(depth + 1)}"${key}": ${this.prettyFormat(objectValue[key], depth + 1, space, seen)}`;
-        if (i < keys.length - 1) {
-          result += ",";
-        }
-        result += "\n";
-      }
-      result += `${space.repeat(depth)}}`;
-      return result;
-    }
-
-    // Default to string representation for unsupported types
-    return String(value);
-  }
-
-  private formatPrimitive(value: unknown): string {
-    if (typeof value === "string") {
-      return `"${value}"`; // Wrap strings in double quotes
-    }
-    return String(value); // For other primitives, return their string representation
   }
 
   private diffObject(
@@ -305,10 +146,10 @@ export class Difference {
 
         switch (currentDiff.kind) {
           case "N": // New key
-            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(currentDiff.rhs, depth)}`, false)},\n`;
+            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(currentDiff.rhs, depth)}`, false)},\n`;
             break;
           case "D": // Deleted key
-            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(currentDiff.lhs, depth)}`, true)},\n`;
+            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(currentDiff.lhs, depth)}`, true)},\n`;
             break;
           case "E": // Edited key
             const nestedDiff = this.formatDiff(
@@ -323,13 +164,13 @@ export class Difference {
             break;
           case "A": // Array modification
             if (
-              (this.getType(expectedValue) === "array" ||
-                this.getType(expectedValue) === "set") &&
-              (this.getType(receivedValue) === "array" ||
-                this.getType(receivedValue) === "set")
+              (getType(expectedValue) === "array" ||
+                getType(expectedValue) === "set") &&
+              (getType(receivedValue) === "array" ||
+                getType(receivedValue) === "set")
             ) {
               const arrayDiff = this.diffArray(
-                capitalize(this.getType(expectedValue)),
+                capitalize(getType(expectedValue)),
                 expectedValue as unknown[],
                 receivedValue as unknown[],
                 differences,
@@ -342,19 +183,16 @@ export class Difference {
             break;
         }
       } else {
-        if (this.deepEqual(expectedValue, receivedValue)) {
-          output += `${indent}${pathStr}: ${this.prettyFormat(expectedValue, depth + 1)},\n`;
+        if (deepEqual(expectedValue, receivedValue)) {
+          output += `${indent}${pathStr}: ${prettyFormat(expectedValue, depth + 1)},\n`;
         } else if (
-          this.isPrimitive(expectedValue) &&
-          this.isPrimitive(receivedValue) &&
+          isPrimitive(expectedValue) &&
+          isPrimitive(receivedValue) &&
           expectedValue !== receivedValue
         ) {
-          output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(expectedValue, depth)}`, true)},\n`;
-          output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(receivedValue, depth)}`, false)},\n`;
-        } else if (
-          !this.isPrimitive(expectedValue) &&
-          !this.isPrimitive(receivedValue)
-        ) {
+          output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(expectedValue, depth)}`, true)},\n`;
+          output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(receivedValue, depth)}`, false)},\n`;
+        } else if (!isPrimitive(expectedValue) && !isPrimitive(receivedValue)) {
           const nestedDiff = this.formatDiff(
             expectedValue,
             receivedValue,
@@ -413,28 +251,28 @@ export class Difference {
           const item = currentDiff.item;
           switch (item.kind) {
             case "N":
-              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(item.rhs, depth)}`, false)},\n`;
+              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(item.rhs, depth)}`, false)},\n`;
               break;
             case "D":
-              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(item.lhs, depth)}`, true)},\n`;
+              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(item.lhs, depth)}`, true)},\n`;
               break;
             case "E":
               const nestedDiff = this.formatDiff(item.lhs, item.rhs, depth + 1);
               if (nestedDiff) {
                 output += `${indent}${pathStr}: ${nestedDiff},\n`;
               } else {
-                output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(item.lhs, depth)}`, true)},\n`;
-                output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(item.rhs, depth)}`, false)},\n`;
+                output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(item.lhs, depth)}`, true)},\n`;
+                output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(item.rhs, depth)}`, false)},\n`;
               }
               break;
           }
         } else {
           switch (currentDiff.kind) {
             case "N":
-              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(currentDiff.rhs, depth)}`, false)},\n`;
+              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(currentDiff.rhs, depth)}`, false)},\n`;
               break;
             case "D":
-              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(currentDiff.lhs, depth)}`, true)},\n`;
+              output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(currentDiff.lhs, depth)}`, true)},\n`;
               break;
             case "E":
               const nestedDiff = this.formatDiff(
@@ -446,14 +284,14 @@ export class Difference {
               if (nestedDiff) {
                 output += `${indent}${pathStr}: ${nestedDiff},\n`;
               } else {
-                output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(currentDiff.lhs, depth)}`, true)} ${formatter.formatDiffString(`${this.prettyFormat(currentDiff.rhs, depth)}`, false)},\n`;
+                output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(currentDiff.lhs, depth)}`, true)} ${formatter.formatDiffString(`${prettyFormat(currentDiff.rhs, depth)}`, false)},\n`;
               }
               break;
           }
         }
       } else if (i < expected.length && i < received.length) {
-        if (this.deepEqual(expectedValue, receivedValue)) {
-          output += `${indent}${pathStr}: ${this.prettyFormat(expectedValue, depth)},\n`;
+        if (deepEqual(expectedValue, receivedValue)) {
+          output += `${indent}${pathStr}: ${prettyFormat(expectedValue, depth)},\n`;
         } else {
           const nestedDiff = this.formatDiff(
             expectedValue,
@@ -463,14 +301,14 @@ export class Difference {
           if (nestedDiff) {
             output += `${indent}${pathStr}: ${nestedDiff},\n`;
           } else {
-            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(expectedValue, depth)}`, true)},\n`;
-            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(receivedValue, depth)}`, false)},\n`;
+            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(expectedValue, depth)}`, true)},\n`;
+            output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(receivedValue, depth)}`, false)},\n`;
           }
         }
       } else if (i >= expected.length) {
-        output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(receivedValue, depth)}`, false)},\n`;
+        output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(receivedValue, depth)}`, false)},\n`;
       } else {
-        output += `${indent}${formatter.formatDiffString(`${pathStr}: ${this.prettyFormat(expectedValue, depth)}`, true)},\n`;
+        output += `${indent}${formatter.formatDiffString(`${pathStr}: ${prettyFormat(expectedValue, depth)}`, true)},\n`;
       }
     }
 
@@ -481,7 +319,7 @@ export class Difference {
   private diffPrimitive(expected: any, received: any): string | undefined {
     const formatter = new DiffFormatter();
     if (expected !== received) {
-      return `${formatter.formatDiffString(this.prettyFormat(expected), true)} ${formatter.formatDiffString(this.prettyFormat(received), false)}`;
+      return `${formatter.formatDiffString(prettyFormat(expected), true)} ${formatter.formatDiffString(prettyFormat(received), false)}`;
     }
     return undefined;
   }
@@ -505,12 +343,12 @@ export class Difference {
 
     if (!differences) return undefined;
 
-    const expectedType = this.getType(expected);
-    const receivedType = this.getType(received);
+    const expectedType = getType(expected);
+    const receivedType = getType(received);
 
     // If types are different, show the complete change
     if (expectedType !== receivedType) {
-      return `${formatter.formatDiffString(this.prettyFormat(expected, depth), true)} ${formatter.formatDiffString(this.prettyFormat(received, depth), false)}`;
+      return `${formatter.formatDiffString(prettyFormat(expected, depth), true)} ${formatter.formatDiffString(prettyFormat(received, depth), false)}`;
     }
 
     try {
