@@ -130,6 +130,99 @@ function deepEqual(value1: any, value2: any, cache = new WeakMap()): boolean {
   return false;
 }
 
+// Function to pretty format any value, handling types like Map, Set, Date, RegExp, etc.
+function prettyFormat(
+  value: unknown,
+  depth: number = 0,
+  space: string = "\t",
+  seen: WeakSet<object> = new WeakSet()
+): string {
+  // Prevent circular references by checking if the value has been seen
+  if (typeof value === 'object' && value !== null) {
+    if (seen.has(value)) {
+      return '[Circular]'; // Handle circular reference here
+    }
+    seen.add(value);
+  }
+
+  // Handle primitive values directly
+  if (isPrimitive(value)) {
+    return String(value);
+  }
+
+  const type = getType(value);
+
+  // Handle Date objects
+  if (type === "date") {
+    return `Date("${(value as Date).toISOString()}")`;
+  }
+
+  // Handle Set
+  if (type === "set") {
+    const setValue = value as Set<unknown>;
+    if (setValue.size === 0) return 'Set {}';
+    let result = 'Set {\n';
+    for (const item of setValue) {
+      result += `${space.repeat(depth + 1)}${prettyFormat(item, depth + 1 , space, seen)}\n`;
+    }
+    result += `${space.repeat(depth)}}`;
+    return result;
+  }
+
+  // Handle Map
+  if (type === "map") {
+    const mapValue = value as Map<unknown, unknown>;
+    if (mapValue.size === 0) return 'Map {}';
+    let result = 'Map {\n';
+    for (const [key, val] of mapValue) {
+      result += `${space.repeat(depth + 1)}[${prettyFormat(key, depth + 1 , space, seen)}]: ${prettyFormat(val, depth + 1 , space, seen)}\n`;
+    }
+    result += `${space.repeat(depth)}}`;
+    return result;
+  }
+
+  // Handle RegExp
+  if (type === "regexp") {
+    return `RegExp("${(value as RegExp).source}", "${(value as RegExp).flags}")`;
+  }
+
+  // Handle Arrays
+  if (type === "array") {
+    const arrayValue = value as unknown[];
+    if (arrayValue.length === 0) return 'Array []';
+    let result = 'Array [\n';
+    for (let i = 0; i < arrayValue.length; i++) {
+      result += `${space.repeat(depth + 1)}${prettyFormat(arrayValue[i], depth + 1 , space, seen)}`;
+      if (i < arrayValue.length - 1) {
+        result += ',';
+      }
+      result += '\n';
+    }
+    result += `${space.repeat(depth)}]`;
+    return result;
+  }
+
+  // Handle Objects (plain objects or arrays)
+  if (type === "object") {
+    const objectValue = value as Record<string, unknown>;
+    let result = 'Object {\n';
+    const keys = Object.keys(objectValue);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      result += `${space.repeat(depth + 1)}"${key}": ${prettyFormat(objectValue[key], depth + 1, space, seen)}`;
+      if (i < keys.length - 1) {
+        result += ',';
+      }
+      result += '\n';
+    }
+    result += `${space.repeat(depth)}}`;
+    return result;
+  }
+
+  // Default to string representation for unsupported types
+  return String(value);
+}
+
 function diffObject(
   expected: Record<string, unknown>,
   received: Record<string, unknown>,
@@ -167,10 +260,11 @@ function diffObject(
 
       switch (currentDiff.kind) {
         case "N": // New key
-          output += `${indent}+ ${pathStr}: ${JSON.stringify(currentDiff.rhs)}\n`;
+          output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs, depth)}\n`;
           break;
         case "D": // Deleted key
-          output += `${indent}- ${pathStr}: ${JSON.stringify(currentDiff.lhs)}\n`;
+          output += `${indent}- ${pathStr}: ${
+            prettyFormat(currentDiff.lhs, depth)}\n`;
           break;
         case "E": // Edited key
           const nestedDiff = formatDiff(
@@ -199,15 +293,15 @@ function diffObject(
       // Handle cases where no direct diff exists (e.g., nested objects/arrays)
       if (deepEqual(expectedValue, receivedValue)) {
         // Use deepEqual here
-        output += `${indent}${pathStr}: ${JSON.stringify(expectedValue)}\n`;
+        output += `${indent}${pathStr}: ${prettyFormat(expectedValue, depth + 1)}\n`;
       } else if (
         isPrimitive(expectedValue) &&
         isPrimitive(receivedValue) &&
         expectedValue !== receivedValue
       ) {
         // Handle primitive differences
-        output += `${indent}- ${pathStr}: ${JSON.stringify(expectedValue)}\n`;
-        output += `${indent}+ ${pathStr}: ${JSON.stringify(receivedValue)}\n`;
+        output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue, depth)}\n`;
+        output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue, depth)}\n`;
       } else if (!isPrimitive(expectedValue) && !isPrimitive(receivedValue)) {
         // Optionally include unchanged values
         const nestedDiff = formatDiff(expectedValue, receivedValue, depth + 1);
@@ -260,18 +354,18 @@ function diffArray(
         const item = currentDiff.item;
         switch (item.kind) {
           case "N":
-            output += `${indent}+ ${pathStr}: ${JSON.stringify(item.rhs)}\n`;
+            output += `${indent}+ ${pathStr}: ${prettyFormat(item.rhs,depth)}\n`;
             break;
           case "D":
-            output += `${indent}- ${pathStr}: ${JSON.stringify(item.lhs)}\n`;
+            output += `${indent}- ${pathStr}: ${prettyFormat(item.lhs,depth)}\n`;
             break;
           case "E":
             const nestedDiff = formatDiff(item.lhs, item.rhs, depth + 1);
             if (nestedDiff) {
               output += `${indent}${pathStr}: ${nestedDiff}\n`;
             } else {
-              output += `${indent}- ${pathStr}: ${JSON.stringify(item.lhs)}\n`;
-              output += `${indent}+ ${pathStr}: ${JSON.stringify(item.rhs)}\n`;
+              output += `${indent}- ${pathStr}: ${prettyFormat(item.lhs,depth)}\n`;
+              output += `${indent}+ ${pathStr}: ${prettyFormat(item.rhs,depth)}\n`;
             }
             break;
         }
@@ -279,10 +373,10 @@ function diffArray(
         // Handle direct array element changes (kind: "N", "D", "E")
         switch (currentDiff.kind) {
           case "N":
-            output += `${indent}+ ${pathStr}: ${JSON.stringify(currentDiff.rhs)}\n`;
+            output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs,depth)}\n`;
             break;
           case "D":
-            output += `${indent}- ${pathStr}: ${JSON.stringify(currentDiff.lhs)}\n`;
+            output += `${indent}- ${pathStr}: ${prettyFormat(currentDiff.lhs,depth)}\n`;
             break;
           case "E":
             const nestedDiff = formatDiff(
@@ -293,8 +387,8 @@ function diffArray(
             if (nestedDiff) {
               output += `${indent}${pathStr}: ${nestedDiff}\n`;
             } else {
-              output += `${indent}- ${pathStr}: ${JSON.stringify(currentDiff.lhs)}\n`;
-              output += `${indent}+ ${pathStr}: ${JSON.stringify(currentDiff.rhs)}\n`;
+              output += `${indent}- ${pathStr}: ${prettyFormat(currentDiff.lhs,depth)}\n`;
+              output += `${indent}+ ${pathStr}: ${prettyFormat(currentDiff.rhs,depth)}\n`;
             }
             break;
         }
@@ -303,22 +397,22 @@ function diffArray(
       // No diff detected, compare nested structures or show values
       if (deepEqual(expectedValue, receivedValue)) {
         // Use deepEqual here
-        output += `${indent}${pathStr}: ${JSON.stringify(expectedValue)}\n`;
+        output += `${indent}${pathStr}: ${prettyFormat(expectedValue,depth)}\n`;
       } else {
         const nestedDiff = formatDiff(expectedValue, receivedValue, depth + 1);
         if (nestedDiff) {
           output += `${indent}${pathStr}: ${nestedDiff}\n`;
         } else {
-          output += `${indent}- ${pathStr}: ${JSON.stringify(expectedValue)}\n`;
-          output += `${indent}+ ${pathStr}: ${JSON.stringify(receivedValue)}\n`;
+          output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue,depth)}\n`;
+          output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue,depth)}\n`;
         }
       }
     } else if (i >= expected.length) {
       // Handle added elements in the `received` array
-      output += `${indent}+ ${pathStr}: ${JSON.stringify(receivedValue)}\n`;
+      output += `${indent}+ ${pathStr}: ${prettyFormat(receivedValue,depth)}\n`;
     } else {
       // Handle removed elements from the `expected` array
-      output += `${indent}- ${pathStr}: ${JSON.stringify(expectedValue)}\n`;
+      output += `${indent}- ${pathStr}: ${prettyFormat(expectedValue,depth)}\n`;
     }
   }
 
@@ -334,7 +428,7 @@ function diffPrimitive(
   const receivedStr = String(received);
 
   if (expectedStr !== receivedStr) {
-    return `-${expectedStr} +${receivedStr}`;
+    return `-${prettyFormat(expectedStr)} +${prettyFormat(receivedStr)}`;
   }
   return undefined;
 }
@@ -357,7 +451,7 @@ function formatDiff(
 
   // If types are different, show the complete change
   if (expectedType !== receivedType) {
-    return `- ${expectedType} ${JSON.stringify(expected)}\n+ ${receivedType} ${JSON.stringify(received)}`;
+    return `- ${prettyFormat(expected,depth)}\n+ ${prettyFormat(received,depth)}`;
   }
 
   try {
