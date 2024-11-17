@@ -10,6 +10,7 @@ import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
 import { expect } from "../framework/Assertion.js";
 import { Spy } from "../framework/Spy.js";
+import { Mock } from "../framework/Mock.js"
 
 export interface ExecResult {
   status: boolean;
@@ -49,6 +50,8 @@ export class Isolated {
       expect,
 
       Spy,
+
+      Mock,
 
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),

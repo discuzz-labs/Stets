@@ -8,6 +8,7 @@ import { getType } from "../utils/index.js";
 import kleur from "../utils/kleur.js";
 import { prettyFormat } from "../utils/PrettyFormat.js";
 import { Difference } from "./Diff.js";
+import { Spy } from "./Spy.js";
 
 class AssertionError extends Error {
   constructor(message: any, methodName: string) {
@@ -27,7 +28,7 @@ class Expectation {
 
   constructor(actual: any) {
     this.actual = actual;
-    this.isNot = false;
+    this.isNot = false
   }
 
   /**
@@ -562,6 +563,12 @@ class Expectation {
         matcher: "toThrow",
       });
     }
+    return this;
+  }
+
+  toHaveBeenCalled() {
+    
+    
     return this;
   }
 }

@@ -57,38 +57,6 @@ export class Spy<T extends any[] = any[], R = any> {
     return spy;
   }
 
-  // Create a standalone spy function
-  static createSpy<T extends any[] = any[], R = any>(
-    returnValue?: R
-  ): SpyFunction<T, R> {
-    const spy = new Spy<T, R>();
-    let currentReturnValue = returnValue;
-    let throwError: Error | undefined;
-
-    const spyFunction = function (this: any, ...args: T): R {
-      if (throwError) {
-        spy.recordException(throwError);
-        throw throwError;
-      }
-      spy.recordCall(args, currentReturnValue as R);
-      return currentReturnValue as R;
-    } as SpyFunction<T, R>;
-
-    spyFunction.spy = spy;
-
-    spyFunction.andReturn = function (value: R): SpyFunction<T, R> {
-      currentReturnValue = value;
-      return spyFunction;
-    };
-
-    spyFunction.andThrow = function (error: Error): SpyFunction<T, R> {
-      throwError = error;
-      return spyFunction;
-    };
-
-    return spyFunction;
-  }
-
   private recordCall(args: T, result: R): void {
     this.calls.push({
       args,

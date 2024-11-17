@@ -15,13 +15,6 @@ export interface SpyException {
   timestamp: Date;
 }
 
-export interface SpyFunction<T extends any[] = any[], R = any>
-  extends Function {
-  spy: SpyInstance<T, R>;
-  andReturn(value: R): SpyFunction<T, R>;
-  andThrow(error: Error): SpyFunction<T, R>;
-}
-
 /**
  * Spy on functions and methods, capturing arguments, return values, exceptions, and call counts.
  * @template T The type of arguments the spied function accepts.
@@ -46,20 +39,6 @@ export class SpyInstance<T extends any[] = any[], R = any> {
     TObj[TMethod] extends (...args: infer P) => any ? P : never,
     TObj[TMethod] extends (...args: any[]) => infer Q ? Q : never
   >;
-
-  /**
-   * Create a standalone spy function.
-   * @param returnValue Optional return value for the spy function.
-   * @returns {SpyFunction<T, R>} A new spy function.
-   * @template T The type of arguments the spy function accepts.
-   * @template R The type of value the spy function returns.
-   * @since v1.0.0
-   * @example
-   * const spy = Spy.createSpy(() => 42);
-   */
-  static createSpy<T extends any[] = any[], R = any>(
-    returnValue?: R,
-  ): SpyFunction<T, R>;
 
   /**
    * Record a function call with arguments and result.
