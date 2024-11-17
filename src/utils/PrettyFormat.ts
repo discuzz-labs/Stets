@@ -103,5 +103,5 @@ export function prettyFormat(
   }
 
   // Default to string representation for unsupported types
-  return String(value);
+  return type;
 }
