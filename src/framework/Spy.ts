@@ -1,50 +1,164 @@
-export class Spy {
-  private callCount: number = 0;
-  private calls: Array<{ args: any[], result: any }> = [];
+import { deepEqual } from "../utils/index.js";
 
-  // Method to spy on a function or method
-  static spyOn(fn: Function): Spy {
-    const spy = new Spy();
-    const original = fn;
+interface SpyCall<T extends any[] = any[], R = any> {
+  args: T;
+  timestamp: Date;
+  result: R;
+}
 
-    fn = (...args: any[]) => {
-      spy.callCount++;
-      const result = original.apply(fn, args);
-      spy.calls.push({ args, result });
-      return result;
+interface SpyException {
+  error: Error;
+  timestamp: Date;
+}
+
+interface SpyFunction<T extends any[] = any[], R = any> {
+  (...args: T): R;
+  spy: Spy<T, R>;
+  andReturn(value: R): SpyFunction<T, R>;
+  andThrow(error: Error): SpyFunction<T, R>;
+}
+
+export class Spy<T extends any[] = any[], R = any> {
+  private calls: SpyCall<T, R>[] = [];
+  private returnValues: R[] = [];
+  private exceptions: SpyException[] = [];
+  private callCount = 0;
+
+  // Create a spy on an existing method
+  static spyOn<TObj extends object, TMethod extends keyof TObj>(
+    obj: TObj,
+    methodName: TMethod
+  ): Spy<
+    TObj[TMethod] extends (...args: infer P) => any ? P : never,
+    TObj[TMethod] extends (...args: any[]) => infer Q ? Q : never
+  > {
+    const originalMethod = obj[methodName];
+    if (typeof originalMethod !== "function") {
+      throw new Error(`Cannot spy on ${String(methodName)} - it's not a function`);
+    }
+
+    const spy = new Spy<
+      TObj[TMethod] extends (...args: infer P) => any ? P : never,
+      TObj[TMethod] extends (...args: any[]) => infer Q ? Q : never
+    >();
+
+    (obj[methodName] as unknown) = function (this: any, ...args: any[]) {
+      try {
+        const result = originalMethod.apply(this, args);
+        spy.recordCall(args as TObj[TMethod] extends (...args: infer P) => any ? P : never, result);
+        return result;
+      } catch (error) {
+        spy.recordException(error instanceof Error ? error : new Error(String(error)));
+        throw error;
+      }
     };
 
+    (obj[methodName] as SpyFunction<any, any>).spy = spy;
     return spy;
   }
 
-  // Method to get the number of times the function was called
+  // Create a standalone spy function
+  static createSpy<T extends any[] = any[], R = any>(
+    returnValue?: R
+  ): SpyFunction<T, R> {
+    const spy = new Spy<T, R>();
+    let currentReturnValue = returnValue;
+    let throwError: Error | undefined;
+
+    const spyFunction = function (this: any, ...args: T): R {
+      if (throwError) {
+        spy.recordException(throwError);
+        throw throwError;
+      }
+      spy.recordCall(args, currentReturnValue as R);
+      return currentReturnValue as R;
+    } as SpyFunction<T, R>;
+
+    spyFunction.spy = spy;
+
+    spyFunction.andReturn = function (value: R): SpyFunction<T, R> {
+      currentReturnValue = value;
+      return spyFunction;
+    };
+
+    spyFunction.andThrow = function (error: Error): SpyFunction<T, R> {
+      throwError = error;
+      return spyFunction;
+    };
+
+    return spyFunction;
+  }
+
+  private recordCall(args: T, result: R): void {
+    this.calls.push({
+      args,
+      timestamp: new Date(),
+      result,
+    });
+    this.returnValues.push(result);
+    this.callCount++;
+  }
+
+  private recordException(error: Error): void {
+    this.exceptions.push({
+      error,
+      timestamp: new Date(),
+    });
+  }
+
+  getCalls(): ReadonlyArray<SpyCall<T, R>> {
+    return this.calls;
+  }
+
+  getCall(index: number): SpyCall<T, R> | undefined {
+    return this.calls[index];
+  }
+
+  getLatestCall(): SpyCall<T, R> | undefined {
+    return this.calls[this.calls.length - 1];
+  }
+
   getCallCount(): number {
     return this.callCount;
   }
 
-  // Method to get all calls made to the function
-  getCalls(): Array<{ args: any[], result: any }> {
-    return this.calls;
+  getAllArgs(): ReadonlyArray<T> {
+    return this.calls.map((call) => call.args);
   }
 
-  // Method to clear call history
-  clearCalls(): void {
-    this.callCount = 0;
+  getArgsForCall(index: number): T | undefined {
+    const call = this.getCall(index);
+    return call?.args;
+  }
+
+  getReturnValues(): ReadonlyArray<R> {
+    return this.returnValues;
+  }
+
+  getExceptions(): ReadonlyArray<SpyException> {
+    return this.exceptions;
+  }
+
+  wasCalled(): boolean {
+    return this.callCount > 0;
+  }
+
+  wasCalledWith(...args: T): boolean {
+    return this.calls.some((call) =>
+      call.args.length === args.length &&
+      call.args.every((arg, index) => deepEqual(arg, args[index]))
+    );
+  }
+
+  wasCalledTimes(n: number): boolean {
+    return this.callCount === n;
+  }
+
+  reset(): void {
     this.calls = [];
-  }
-
-  // Method to spy on an object's method
-  static spyOnObjectMethod(obj: any, methodName: string): Spy {
-    const spy = new Spy();
-    const originalMethod = obj[methodName];
-
-    obj[methodName] = (...args: any[]) => {
-      spy.callCount++;
-      const result = originalMethod.apply(obj, args);
-      spy.calls.push({ args, result });
-      return result;
-    };
-
-    return spy;
+    this.returnValues = [];
+    this.exceptions = [];
+    this.callCount = 0;
   }
 }
+

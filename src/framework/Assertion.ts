@@ -22,14 +22,12 @@ class AssertionError extends Error {
 }
 
 class Expectation {
-  private readonly actual: any;
+  private actual: any;
   private isNot: boolean;
-  private isAsync: boolean;
 
   constructor(actual: any) {
     this.actual = actual;
     this.isNot = false;
-    this.isAsync = false;
   }
 
   /**
@@ -47,15 +45,15 @@ class Expectation {
     if (!(getType(this.actual) === "promise")) {
       throw new Error(".resolves can only be used with a Promise.");
     }
-    this.isAsync = true;
+
     return new Proxy(this, {
       get: (target, prop) => {
         if (prop === "not") return target.not;
         return async (...args: any[]) => {
           try {
             const resolvedValue = await this.actual;
-            target.actual = resolvedValue; // Update actual value to resolved value
-            return target[prop](...args);
+            target.actual = resolvedValue as any;
+            return (target as any)[prop](...args);
           } catch (err) {
             throw new Error(
               `Expected Promise to resolve but it rejected with: ${err}`,
@@ -70,7 +68,7 @@ class Expectation {
     if (!(getType(this.actual) === "promise")) {
       throw new Error(".rejects can only be used with a Promise.");
     }
-    this.isAsync = true;
+
     return new Proxy(this, {
       get: (target, prop) => {
         if (prop === "not") return target.not;
@@ -78,9 +76,9 @@ class Expectation {
           try {
             await this.actual;
             throw new Error("Expected Promise to reject but it resolved.");
-          } catch (err) {
+          } catch (err: any) {
             target.actual = err; // Update actual value to the rejection reason
-            return target[prop](...args);
+            return (target as any)[prop](...args);
           }
         };
       },
@@ -106,8 +104,7 @@ class Expectation {
 
     if (!passes) {
       const formattedActual = prettyFormat(this.actual);
-      const formattedExpected =
-        expected !== null ? prettyFormat(expected) : "";
+      const formattedExpected = expected !== null ? prettyFormat(expected) : "";
       const notStr = this.isNot ? "not " : "";
 
       let errorMessage = `Expected ${formattedActual} ${notStr}${message}`;
@@ -119,137 +116,137 @@ class Expectation {
     }
   }
 
-  toBeAsyncIterable(expected: any) {
+  toBeAsyncIterable() {
     this.assert(
       this.actual !== null ||
         this.actual !== undefined ||
         Symbol.asyncIterator in Object(this.actual),
       {
         message: "to be asnyciterable",
-        expected: this.actual,
+
         matcher: "toBeAsyncIterable",
       },
     );
     return this;
   }
 
-  toBeIterable(expected: any) {
+  toBeIterable() {
     this.assert(
       this.actual !== null ||
         this.actual !== undefined ||
         Symbol.iterator in Object(this.actual),
       {
         message: "to be iterable",
-        expected: this.actual,
+
         matcher: "toBeIterable",
       },
     );
     return this;
   }
 
-  toBePromise(expected: any) {
+  toBePromise() {
     this.assert(getType(this.actual) === "promise", {
       message: "to be promise",
-      expected: this.actual,
+
       matcher: "toBePromise",
     });
     return this;
   }
 
-  toBeAsyncFunction(expected: any) {
+  toBeAsyncFunction() {
     this.assert(getType(this.actual) === "asyncfunction", {
       message: "to be async function",
-      expected: this.actual,
+
       matcher: "toBeAsyncFunction",
     });
     return this;
   }
 
-  toBeAsyncGeneratorFunction(expected: any) {
+  toBeAsyncGeneratorFunction() {
     this.assert(getType(this.actual) === "asyncgeneratorfunction", {
       message: "to be async generator function",
-      expected: this.actual,
+
       matcher: "toBeAsyncGeneratorFunction",
     });
     return this;
   }
 
-  toBeGeneratorFunction(expected: any) {
+  toBeGeneratorFunction() {
     this.assert(getType(this.actual) === "generatorfunction", {
       message: "to be generator function",
-      expected: this.actual,
+
       matcher: "toBeGeneratorFunction",
     });
     return this;
   }
 
-  toBeArray(expected: any) {
+  toBeArray() {
     this.assert(getType(this.actual) === "array", {
       message: "to be an array",
-      expected: this.actual,
+
       matcher: "toBeArray",
     });
     return this;
   }
 
-  toBeObject(expected: any) {
+  toBeObject() {
     this.assert(getType(this.actual) === "object", {
       message: "to be an object",
-      expected: this.actual,
+
       matcher: "toBeObject",
     });
     return this;
   }
 
-  toBeString(expected: any) {
+  toBeString() {
     this.assert(getType(this.actual) === "string", {
       message: "to be a string",
-      expected: this.actual,
+
       matcher: "toBeString",
     });
     return this;
   }
 
-  toBeNumber(expected: any) {
+  toBeNumber() {
     this.assert(getType(this.actual) === "number", {
       message: "to be a number",
-      expected: this.actual,
+
       matcher: "toBeNumber",
     });
     return this;
   }
 
-  toBeBoolean(expected: any) {
+  toBeBoolean() {
     this.assert(getType(this.actual) === "boolean", {
       message: "to be a boolean",
-      expected: this.actual,
+
       matcher: "toBeBoolean",
     });
     return this;
   }
 
-  toBeFunction(expected: any) {
+  toBeFunction() {
     this.assert(getType(this.actual) === "function", {
       message: "to be a function",
-      expected: this.actual,
+
       matcher: "toBeFunction",
     });
     return this;
   }
 
-  toBeRegExp(expected: any) {
+  toBeRegExp() {
     this.assert(getType(this.actual) === "regexp", {
       message: "to be a regexp",
-      expected: this.actual,
+
       matcher: "toBeRegExp",
     });
     return this;
   }
 
-  toBeDate(expected: any) {
+  toBeDate() {
     this.assert(getType(this.actual) === "date", {
       message: "to be a date",
-      expected: this.actual,
+
       matcher: "toBeDate",
     });
     return this;
@@ -258,7 +255,7 @@ class Expectation {
   toBeError(expected: any) {
     this.assert(this.actual instanceof Error, {
       message: "to be an Error",
-      expected: this.actual,
+      expected,
       matcher: "toBeError",
     });
     return this;
@@ -270,7 +267,8 @@ class Expectation {
   toBe(expected: any) {
     const diff = new Difference().formatDiff(this.actual, expected);
     this.assert(diff === undefined, {
-      message: getType(expected) === getType(this.actual) ? "to be " + diff : "to be",
+      message:
+        getType(expected) === getType(this.actual) ? "to be " + diff : "to be",
       expected,
       matcher: "toBe",
     });

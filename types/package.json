@@ -1,8 +1,8 @@
 {
   "name": "@types/veve",
   "version": "1.0.0",
-  "main": "index.d.ts",
-  "types": "index.d.ts",
+  "main": "global.d.ts",
+  "types": "global.d.ts",
   "keywords": [],
   "author": "",
   "license": "ISC",

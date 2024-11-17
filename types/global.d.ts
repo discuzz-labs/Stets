@@ -2,10 +2,11 @@
  * Copyright (c) 2024 Discuzz Labs Organization
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
-
  */
 
-import { TestReport, Options, TestFunction, HookFunction } from "./types";
+import { SpyInstance } from "./spy";
+import { TestReport, Options, TestFunction, HookFunction } from "./framework";
+import { expectation } from "./expect";
 
 declare global {
   /**
@@ -73,7 +74,7 @@ declare global {
    * @param {string} description - A description of the test case for reporting purposes.
    * @param {TestFunction} fn - The function containing the test logic to be executed.
    * @param {Partial<Options>} [options] - Optional configuration options for the test, such as timeout and retry settings.
-   * 
+   *
    * @example
    * testCase.sequence("Sequential Test Example", async () => {
    *   // Test logic here
@@ -86,7 +87,6 @@ declare global {
     fn: TestFunction,
     options?: Partial<Options>,
   ): void;
-
 
   /**
    * Registers an individual test case.
@@ -168,7 +168,7 @@ declare global {
    * // Example usage
    * retry(3, 'Test login functionality with retries', async () => {
    *   const result = await loginUser('username', 'wrong_password');
-   *   
+   *
    * });
    * @since v1.0.0
    */
@@ -272,6 +272,14 @@ declare global {
    * @since v1.0.0
    */
   function run(): Promise<TestReport>;
+
+  // Spy
+
+  const Spy: typeof SpyInstance;
+
+  // Expect
+
+  const expect: typeof expectation;
 }
 
 export {};

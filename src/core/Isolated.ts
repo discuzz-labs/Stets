@@ -9,6 +9,7 @@ import * as vm from "vm";
 import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
 import { expect } from "../framework/Assertion.js";
+import { Spy } from "../framework/Spy.js";
 
 export interface ExecResult {
   status: boolean;
@@ -46,6 +47,8 @@ export class Isolated {
       run: testCase.run.bind(testCase),
 
       expect,
+
+      Spy,
 
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),

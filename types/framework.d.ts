@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2024 Discuzz Labs Organization
+ * Licensed under the MIT License.
+ * See the LICENSE file in the project root for license information.
+ */
+
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
 export type Status = "passed" | "failed" | "soft-failed" | "skipped" | "empty"
@@ -50,7 +56,6 @@ export interface TestReport {
   tests: TestResult[];
   hooks: HookResult[];
 }
-
 
 export interface Options {
   /** The maximum duration in milliseconds to allow for a test or hook to complete. 
