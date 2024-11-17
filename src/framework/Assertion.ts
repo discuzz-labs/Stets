@@ -8,6 +8,7 @@ import { getType } from "../utils/index.js";
 import kleur from "../utils/kleur.js";
 import { prettyFormat } from "../utils/PrettyFormat.js";
 import { Difference } from "./Diff.js";
+import { Mock } from "./Mock.js";
 import { Spy } from "./Spy.js";
 
 class AssertionError extends Error {
@@ -28,7 +29,7 @@ class Expectation {
 
   constructor(actual: any) {
     this.actual = actual;
-    this.isNot = false
+    this.isNot = false;
   }
 
   /**
@@ -567,7 +568,14 @@ class Expectation {
   }
 
   toHaveBeenCalled() {
-    
+    this.assert(
+      (Mock.isMocked(this.actual) || Spy.isSpiedOn(this.actual)) &&
+        this.actual.callCount > 0,
+      {
+        message: "to have been called at least once",
+        matcher: "toHaveBeenCalled",
+      },
+    );
     return this;
   }
 }

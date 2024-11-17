@@ -4,21 +4,34 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import { Spy, SpyCall, SpyException } from "./Spy.js";
+
 export type MockFunction<T extends (...args: any[]) => any> = T & {
-  calls: Array<Parameters<T>>;
-  results: Array<{
-    type: "return" | "throw";
-    value: any;
-  }>;
+  // Existing mock-specific method
   instances: any[];
-  lastCall: Parameters<T> | undefined;
+  andReturn: (value: ReturnType<T>) => MockFunction<T>;
+  andThrow: (error: Error) => MockFunction<T>;
   mockImplementation: (fn: T) => MockFunction<T>;
-  mockReturnValue: (value: ReturnType<T>) => MockFunction<T>;
-  mockResolvedValue: (value: any) => MockFunction<T>;
-  mockRejectedValue: (value: any) => MockFunction<T>;
   mockRestore: () => void;
   mockReset: () => void;
   mockClear: () => void;
+
+  // Spy-like
+  calls: Array<SpyCall<Parameters<T>, ReturnType<T>>>;
+  returnValues: ReturnType<T>[];
+  exceptions: SpyException[];
+  callCount: number;
+  getCalls: () => ReadonlyArray<SpyCall<Parameters<T>, ReturnType<T>>>;
+  getCall: (index: number) => SpyCall<Parameters<T>, ReturnType<T>> | undefined;
+  getLatestCall: () => SpyCall<Parameters<T>, ReturnType<T>> | undefined;
+  getCallCount: () => number;
+  getAllArgs: () => ReadonlyArray<Parameters<T>>;
+  getArgsForCall: (index: number) => Parameters<T> | undefined;
+  getReturnValues: () => ReadonlyArray<ReturnType<T>>;
+  getExceptions: () => ReadonlyArray<SpyException>;
+  wasCalled: () => boolean;
+  wasCalledWith: (...args: Parameters<T>) => boolean;
+  wasCalledTimes: (n: number) => boolean;
 };
 
 export class Mock {
@@ -27,32 +40,37 @@ export class Mock {
   ): MockFunction<T> {
     let impl = implementation || ((() => undefined) as T);
     const mockState = {
-      calls: [] as Array<Parameters<T>>,
-      results: [] as Array<{
-        type: "return" | "throw";
-        value: any;
-      }>,
+      calls: [] as Array<SpyCall<Parameters<T>, ReturnType<T>>>,
+      returnValues: [] as ReturnType<T>[],
+      exceptions: [] as SpyException[],
       instances: [] as any[],
-      lastCall: undefined as Parameters<T> | undefined,
+      callCount: 0,
     };
 
     function resetMockState(): void {
       mockState.calls = [];
-      mockState.results = [];
+      mockState.returnValues = [];
+      mockState.exceptions = [];
       mockState.instances = [];
-      mockState.lastCall = undefined;
+      mockState.callCount = 0;
     }
 
     function call(thisArg: any, ...args: Parameters<T>): ReturnType<T> {
       try {
         const result = impl.apply(thisArg, args);
-        mockState.calls.push(args);
+        const timestamp = new Date();
+        mockState.calls.push({ args, timestamp, result });
+        mockState.returnValues.push(result);
         mockState.instances.push(thisArg);
-        mockState.lastCall = args;
-        mockState.results.push({ type: "return", value: result });
+        mockState.callCount++;
         return result;
       } catch (error) {
-        mockState.results.push({ type: "throw", value: error });
+        if (!(error instanceof Error)) {
+          throw error;
+        }
+        const timestamp = new Date();
+        mockState.exceptions.push({ error, timestamp });
+        mockState.callCount++;
         throw error;
       }
     }
@@ -68,24 +86,21 @@ export class Mock {
 
         // Direct access to mock methods
         switch (prop) {
-          case "mockImplementation":
-            return (fn: T): MockFunction<T> => {
-              impl = fn;
-              return proxy as MockFunction<T>;
-            };
-          case "mockReturnValue":
+          case "andReturn":
             return (value: ReturnType<T>): MockFunction<T> => {
               impl = (() => value) as T;
               return proxy as MockFunction<T>;
             };
-          case "mockResolvedValue":
-            return (value: any): MockFunction<T> => {
-              impl = (() => Promise.resolve(value)) as T;
+          case "andThrow":
+            return (error: Error): MockFunction<T> => {
+              (impl as any) = () => {
+                throw error;
+              };
               return proxy as MockFunction<T>;
             };
-          case "mockRejectedValue":
-            return (value: any): MockFunction<T> => {
-              impl = (() => Promise.reject(value)) as T;
+          case "mockImplementation":
+            return (fn: T): MockFunction<T> => {
+              impl = fn;
               return proxy as MockFunction<T>;
             };
           case "mockRestore":
@@ -102,6 +117,59 @@ export class Mock {
             return (): void => {
               resetMockState();
             };
+
+          // Spy-related methods
+          case "getCalls":
+            return (): ReadonlyArray<SpyCall<Parameters<T>, ReturnType<T>>> => {
+              return mockState.calls;
+            };
+          case "getCall":
+            return (
+              index: number,
+            ): SpyCall<Parameters<T>, ReturnType<T>> | undefined => {
+              return mockState.calls[index];
+            };
+          case "getLatestCall":
+            return (): SpyCall<Parameters<T>, ReturnType<T>> | undefined => {
+              return mockState.calls[mockState.calls.length - 1];
+            };
+          case "getCallCount":
+            return (): number => {
+              return mockState.callCount;
+            };
+          case "getAllArgs":
+            return (): ReadonlyArray<Parameters<T>> => {
+              return mockState.calls.map((call) => call.args);
+            };
+          case "getArgsForCall":
+            return (index: number): Parameters<T> | undefined => {
+              const call = mockState.calls[index];
+              return call?.args;
+            };
+          case "getReturnValues":
+            return (): ReadonlyArray<ReturnType<T>> => {
+              return mockState.returnValues;
+            };
+          case "getExceptions":
+            return (): ReadonlyArray<SpyException> => {
+              return mockState.exceptions;
+            };
+          case "wasCalled":
+            return (): boolean => {
+              return mockState.callCount > 0;
+            };
+          case "wasCalledWith":
+            return (...args: Parameters<T>): boolean => {
+              return mockState.calls.some(
+                (call) =>
+                  call.args.length === args.length &&
+                  call.args.every((arg, index) => deepEqual(arg, args[index])),
+              );
+            };
+          case "wasCalledTimes":
+            return (n: number): boolean => {
+              return mockState.callCount === n;
+            };
         }
 
         return Reflect.get(target, prop);
@@ -115,28 +183,18 @@ export class Mock {
     if (typeof value !== "function") return false;
 
     try {
-      // Try to access mock-specific properties and verify their types
       const fn = value as any;
 
-      // Check for array properties
-      if (!Array.isArray(fn.calls)) return false;
-      if (!Array.isArray(fn.results)) return false;
-      if (!Array.isArray(fn.instances)) return false;
-
-      // Check for mock functions - verify they exist and are functions
+      if (typeof fn.andReturn !== "function") return false;
+      if (typeof fn.andThrow !== "function") return false;
       if (typeof fn.mockImplementation !== "function") return false;
-      if (typeof fn.mockReturnValue !== "function") return false;
-      if (typeof fn.mockResolvedValue !== "function") return false;
-      if (typeof fn.mockRejectedValue !== "function") return false;
       if (typeof fn.mockRestore !== "function") return false;
       if (typeof fn.mockReset !== "function") return false;
       if (typeof fn.mockClear !== "function") return false;
 
-      // If all checks pass, it's a mock
+     if (!Spy.isSpiedOn(fn)) return false;
       return true;
     } catch {
-      // If any property access throws (which can happen with Proxies),
-      // we assume it's not a mock
       return false;
     }
   }

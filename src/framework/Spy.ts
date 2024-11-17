@@ -1,12 +1,12 @@
 import { deepEqual } from "../utils/index.js";
 
-interface SpyCall<T extends any[] = any[], R = any> {
+export interface SpyCall<T extends any[] = any[], R = any> {
   args: T;
   timestamp: Date;
   result: R;
 }
 
-interface SpyException {
+export interface SpyException {
   error: Error;
   timestamp: Date;
 }
@@ -14,8 +14,6 @@ interface SpyException {
 interface SpyFunction<T extends any[] = any[], R = any> {
   (...args: T): R;
   spy: Spy<T, R>;
-  andReturn(value: R): SpyFunction<T, R>;
-  andThrow(error: Error): SpyFunction<T, R>;
 }
 
 export class Spy<T extends any[] = any[], R = any> {
@@ -27,14 +25,16 @@ export class Spy<T extends any[] = any[], R = any> {
   // Create a spy on an existing method
   static spyOn<TObj extends object, TMethod extends keyof TObj>(
     obj: TObj,
-    methodName: TMethod
+    methodName: TMethod,
   ): Spy<
     TObj[TMethod] extends (...args: infer P) => any ? P : never,
     TObj[TMethod] extends (...args: any[]) => infer Q ? Q : never
   > {
     const originalMethod = obj[methodName];
     if (typeof originalMethod !== "function") {
-      throw new Error(`Cannot spy on ${String(methodName)} - it's not a function`);
+      throw new Error(
+        `Cannot spy on ${String(methodName)} - it's not a function`,
+      );
     }
 
     const spy = new Spy<
@@ -45,10 +45,15 @@ export class Spy<T extends any[] = any[], R = any> {
     (obj[methodName] as unknown) = function (this: any, ...args: any[]) {
       try {
         const result = originalMethod.apply(this, args);
-        spy.recordCall(args as TObj[TMethod] extends (...args: infer P) => any ? P : never, result);
+        spy.recordCall(
+          args as TObj[TMethod] extends (...args: infer P) => any ? P : never,
+          result,
+        );
         return result;
       } catch (error) {
-        spy.recordException(error instanceof Error ? error : new Error(String(error)));
+        spy.recordException(
+          error instanceof Error ? error : new Error(String(error)),
+        );
         throw error;
       }
     };
@@ -112,9 +117,10 @@ export class Spy<T extends any[] = any[], R = any> {
   }
 
   wasCalledWith(...args: T): boolean {
-    return this.calls.some((call) =>
-      call.args.length === args.length &&
-      call.args.every((arg, index) => deepEqual(arg, args[index]))
+    return this.calls.some(
+      (call) =>
+        call.args.length === args.length &&
+        call.args.every((arg, index) => deepEqual(arg, args[index])),
     );
   }
 
@@ -128,5 +134,31 @@ export class Spy<T extends any[] = any[], R = any> {
     this.exceptions = [];
     this.callCount = 0;
   }
-}
 
+  static isSpiedOn(value: unknown): value is SpyFunction<any, any> {
+    try {
+      const fn = value as any;
+
+      // Check for the presence of spy-related properties
+      if (!Array.isArray(fn.calls)) return false;
+      if (!Array.isArray(fn.returnValues)) return false;
+      if (!Array.isArray(fn.exceptions)) return false;
+      if (typeof fn.callCount !== "number") return false;
+
+      // Check for specific spy methods
+      if (typeof fn.getCalls !== "function") return false;
+      if (typeof fn.getCall !== "function") return false;
+      if (typeof fn.getLatestCall !== "function") return false;
+      if (typeof fn.getCallCount !== "function") return false;
+      if (typeof fn.getAllArgs !== "function") return false;
+      if (typeof fn.wasCalled !== "function") return false;
+      if (typeof fn.wasCalledWith !== "function") return false;
+      
+
+      // If all checks pass, it's a valid spied function
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
