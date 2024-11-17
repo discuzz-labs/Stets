@@ -111,5 +111,33 @@ export class Mock {
     return proxy as MockFunction<T>;
   }
 
-  
+  static isMocked(value: unknown): value is MockFunction<any> {
+    if (typeof value !== "function") return false;
+
+    try {
+      // Try to access mock-specific properties and verify their types
+      const fn = value as any;
+
+      // Check for array properties
+      if (!Array.isArray(fn.calls)) return false;
+      if (!Array.isArray(fn.results)) return false;
+      if (!Array.isArray(fn.instances)) return false;
+
+      // Check for mock functions - verify they exist and are functions
+      if (typeof fn.mockImplementation !== "function") return false;
+      if (typeof fn.mockReturnValue !== "function") return false;
+      if (typeof fn.mockResolvedValue !== "function") return false;
+      if (typeof fn.mockRejectedValue !== "function") return false;
+      if (typeof fn.mockRestore !== "function") return false;
+      if (typeof fn.mockReset !== "function") return false;
+      if (typeof fn.mockClear !== "function") return false;
+
+      // If all checks pass, it's a mock
+      return true;
+    } catch {
+      // If any property access throws (which can happen with Proxies),
+      // we assume it's not a mock
+      return false;
+    }
+  }
 }

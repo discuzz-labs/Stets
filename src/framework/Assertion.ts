@@ -568,7 +568,6 @@ class Expectation {
 
   toHaveBeenCalled() {
     
-    
     return this;
   }
 }
