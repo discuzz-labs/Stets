@@ -1,6 +1,4 @@
 import { getType } from "../utils/index.js";
-import { Mock } from "./Mock.js";
-import { Spy, SpyCall } from "./Spy.js";
 import { deepEqual } from "../utils/index.js";
 import { AssertionError } from "./AssertionError.js";
 import { AssertionMessages } from "./AssertionMessages.js";

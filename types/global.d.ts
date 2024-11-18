@@ -4,10 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { SpyInstance } from "./spy";
 import { TestReport, Options, TestFunction, HookFunction } from "./framework";
 import { Assertion } from "./assert";
-import { MockInstance } from "./mock"
+import { TrackFn } from "./Fn";
 
 declare global {
   /**
@@ -277,22 +276,37 @@ declare global {
   /**
    * Creates an expectation for assertions.
    * @param {any} actual - The value to assert.
-   * @returns {Expectation} A new `Expectation` instance.
+   * @returns {Assertion} A new `Assertion` instance.
    * @since v1.0.0
    * @example
    * expect(42).toBe(42);
    */
-  export function assert(actual: any): Assertion;
+  function assert(actual: any): Assertion;
 
-  
-  // Spy
-
-  const Spy: typeof SpyInstance;
-  
-
-  // Mock
-
-  const Mock: typeof MockInstance;
+  /**
+   * A factory function that creates a tracked function with the given implementation.
+   * The tracked function will allow you to monitor its calls, control its return values,
+   * handle exceptions, and track all invocations.
+   *
+   * The returned value is both a tracked function (of type `TrackFn`) and callable 
+   * just like the original function you provided.
+   *
+   * @param {(...args: T) => R} implementation - The original function that you want to track.
+   * @returns {(TrackFn<T, R> & ((...args: T) => R))} The tracked function that includes methods to control behavior
+   *                           (e.g., `.return()`, `.throw()`, `.use()`, `.reset()`) and monitor calls.
+   *                           The returned value is callable with the same signature as the original function.
+   * @since v1.0.0
+   * 
+   * Example usage:
+   * 
+   * const mockFn = Fn<[number], number>((x) => x * 2)
+   *   .return(42) // Always returns 42
+   *   .use((x) => x + 3); // Change implementation to add 3
+   * 
+   * const result = mockFn(5); // Call the tracked function with arguments
+   * 
+   */
+  export function Fn<T extends any[], R>(implementation: (...args: T) => R): TrackFn<T, R> & ((...args: T) => R);
 }
 
 export {};

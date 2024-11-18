@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-export class Assertion {
+export interface Assertion {
   /**
    * Negates the assertion.
    * @returns {Assertion} The current `Assertion` instance with negation applied.

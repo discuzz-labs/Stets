@@ -4,13 +4,12 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { createRequire } from "module";
 import * as vm from "vm";
+import { createRequire } from "module";
 import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
 import { assert } from "../framework/Assertion.js";
-import { Spy } from "../framework/Spy.js";
-import { Mock } from "../framework/Mock.js"
+import { Fn } from "../framework/Fn.js";
 
 export interface ExecResult {
   status: boolean;
@@ -46,13 +45,8 @@ export class Isolated {
       beforeEach: testCase.beforeEach.bind(testCase),
       beforeAll: testCase.beforeAll.bind(testCase),
       run: testCase.run.bind(testCase),
-
       assert,
-
-      Spy,
-
-      Mock,
-
+      Fn,
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),
       __dirname: path.dirname(this.filename),
