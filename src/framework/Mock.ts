@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-
+import { deepEqual } from "../utils/index.js"
 import { Spy, SpyCall, SpyException } from "./Spy.js";
 
 export type MockFunction<T extends (...args: any[]) => any> = T & {

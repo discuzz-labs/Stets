@@ -186,7 +186,7 @@ export type MockFunction<T extends (...args: any[]) => any> = T & {
 /**
  * Utility class for creating mock functions with spy capabilities.
  */
-export class Mock {
+export class MockInstance {
   /**
    * Creates a new mock function with optional initial implementation.
    * 

@@ -6,7 +6,8 @@
 
 import { SpyInstance } from "./spy";
 import { TestReport, Options, TestFunction, HookFunction } from "./framework";
-import { expectation } from "./expect";
+import { Assertion } from "./assert";
+import { MockInstance } from "./mock"
 
 declare global {
   /**
@@ -273,13 +274,25 @@ declare global {
    */
   function run(): Promise<TestReport>;
 
+  /**
+   * Creates an expectation for assertions.
+   * @param {any} actual - The value to assert.
+   * @returns {Expectation} A new `Expectation` instance.
+   * @since v1.0.0
+   * @example
+   * expect(42).toBe(42);
+   */
+  export function assert(actual: any): Assertion;
+
+  
   // Spy
 
   const Spy: typeof SpyInstance;
+  
 
-  // Expect
+  // Mock
 
-  const expect: typeof expectation;
+  const Mock: typeof MockInstance;
 }
 
 export {};

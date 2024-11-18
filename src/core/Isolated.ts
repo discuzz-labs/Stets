@@ -8,7 +8,7 @@ import { createRequire } from "module";
 import * as vm from "vm";
 import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
-import { expect } from "../framework/Assertion.js";
+import { assert } from "../framework/Assertion.js";
 import { Spy } from "../framework/Spy.js";
 import { Mock } from "../framework/Mock.js"
 
@@ -47,7 +47,7 @@ export class Isolated {
       beforeAll: testCase.beforeAll.bind(testCase),
       run: testCase.run.bind(testCase),
 
-      expect,
+      assert,
 
       Spy,
 

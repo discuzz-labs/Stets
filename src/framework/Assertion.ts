@@ -1,39 +1,23 @@
-/*
- * Copyright (c) 2024 Discuzz Labs Organization
- * Licensed under the MIT License.
- * See the LICENSE file in the project root for license information.
- */
-
 import { getType } from "../utils/index.js";
-import kleur from "../utils/kleur.js";
-import { prettyFormat } from "../utils/PrettyFormat.js";
-import { Difference } from "./Diff.js";
 import { Mock } from "./Mock.js";
-import { Spy } from "./Spy.js";
+import { Spy, SpyCall } from "./Spy.js";
+import { deepEqual } from "../utils/index.js";
+import { AssertionError } from "./AssertionError.js";
+import { AssertionMessages } from "./AssertionMessages.js";
 
-class AssertionError extends Error {
-  constructor(message: any, methodName: string) {
-    const header =
-      kleur.gray("expect" + "(expected)" + ".") +
-      kleur.bold(methodName) +
-      kleur.gray("(received)") +
-      "\n\n";
-    super(header + message);
-    this.name = "AssertionError";
-  }
-}
-
-class Expectation {
-  private actual: any;
+class Assertion {
+  private received: any;
   private isNot: boolean;
+  private messages: AssertionMessages;
 
-  constructor(actual: any) {
-    this.actual = actual;
+  constructor(received: any) {
+    this.received = received;
     this.isNot = false;
+    this.messages = new AssertionMessages(this.isNot);
   }
 
   /**
-   * Creates a negated version of the matcher
+   * Negate the matcher.
    */
   get not() {
     this.isNot = !this.isNot;
@@ -41,548 +25,530 @@ class Expectation {
   }
 
   /**
-   * Handles promise resolution and rejection for async assertions
+   * Core assert method for all matchers.
    */
-  get resolves() {
-    if (!(getType(this.actual) === "promise")) {
-      throw new Error(".resolves can only be used with a Promise.");
-    }
-
-    return new Proxy(this, {
-      get: (target, prop) => {
-        if (prop === "not") return target.not;
-        return async (...args: any[]) => {
-          try {
-            const resolvedValue = await this.actual;
-            target.actual = resolvedValue as any;
-            return (target as any)[prop](...args);
-          } catch (err) {
-            throw new Error(
-              `Expected Promise to resolve but it rejected with: ${err}`,
-            );
-          }
-        };
-      },
-    });
-  }
-
-  get rejects() {
-    if (!(getType(this.actual) === "promise")) {
-      throw new Error(".rejects can only be used with a Promise.");
-    }
-
-    return new Proxy(this, {
-      get: (target, prop) => {
-        if (prop === "not") return target.not;
-        return async (...args: any[]) => {
-          try {
-            await this.actual;
-            throw new Error("Expected Promise to reject but it resolved.");
-          } catch (err: any) {
-            target.actual = err; // Update actual value to the rejection reason
-            return (target as any)[prop](...args);
-          }
-        };
-      },
-    });
-  }
-
-  /**
-   * Creates an assertion error with a descriptive message
-   */
-  private assert(
-    condition: boolean,
-    {
-      message,
-      expected = null,
-      matcher,
-    }: {
-      message: string;
-      expected?: any;
-      matcher: string;
-    },
-  ) {
+  private assert(condition: boolean, message: string, matcher: string) {
     const passes = this.isNot ? !condition : condition;
 
     if (!passes) {
-      const formattedActual = prettyFormat(this.actual);
-      const formattedExpected = expected !== null ? prettyFormat(expected) : "";
-      const notStr = this.isNot ? "not " : "";
-
-      let errorMessage = `Expected ${formattedActual} ${notStr}${message}`;
-      if (expected !== null) {
-        errorMessage += ` ${formattedExpected}`;
-      }
-
-      throw new AssertionError(errorMessage, matcher);
+      throw new AssertionError(message, matcher);
     }
   }
 
-  toBeAsyncIterable() {
-    this.assert(
-      this.actual !== null ||
-        this.actual !== undefined ||
-        Symbol.asyncIterator in Object(this.actual),
-      {
-        message: "to be asnyciterable",
-
-        matcher: "toBeAsyncIterable",
-      },
-    );
-    return this;
-  }
-
-  toBeIterable() {
-    this.assert(
-      this.actual !== null ||
-        this.actual !== undefined ||
-        Symbol.iterator in Object(this.actual),
-      {
-        message: "to be iterable",
-
-        matcher: "toBeIterable",
-      },
-    );
-    return this;
-  }
-
-  toBePromise() {
-    this.assert(getType(this.actual) === "promise", {
-      message: "to be promise",
-
-      matcher: "toBePromise",
+  private typeOf(expected: string, matcher: string) {
+    const message = this.messages.type({
+      received: this.received,
+      expected,
     });
+    this.assert(getType(this.received) === expected, message, matcher);
     return this;
   }
 
-  toBeAsyncFunction() {
-    this.assert(getType(this.actual) === "asyncfunction", {
-      message: "to be async function",
-
-      matcher: "toBeAsyncFunction",
-    });
-    return this;
-  }
-
-  toBeAsyncGeneratorFunction() {
-    this.assert(getType(this.actual) === "asyncgeneratorfunction", {
-      message: "to be async generator function",
-
-      matcher: "toBeAsyncGeneratorFunction",
-    });
-    return this;
-  }
-
-  toBeGeneratorFunction() {
-    this.assert(getType(this.actual) === "generatorfunction", {
-      message: "to be generator function",
-
-      matcher: "toBeGeneratorFunction",
-    });
-    return this;
-  }
-
-  toBeArray() {
-    this.assert(getType(this.actual) === "array", {
-      message: "to be an array",
-
-      matcher: "toBeArray",
-    });
-    return this;
-  }
-
-  toBeObject() {
-    this.assert(getType(this.actual) === "object", {
-      message: "to be an object",
-
-      matcher: "toBeObject",
-    });
-    return this;
+  // --- Type Matchers ---
+  toBeType(expected: string) {
+    return this.typeOf(expected, "toBeType");
   }
 
   toBeString() {
-    this.assert(getType(this.actual) === "string", {
-      message: "to be a string",
-
-      matcher: "toBeString",
-    });
-    return this;
+    return this.typeOf("string", "toBeString");
   }
 
   toBeNumber() {
-    this.assert(getType(this.actual) === "number", {
-      message: "to be a number",
-
-      matcher: "toBeNumber",
-    });
-    return this;
+    return this.typeOf("number", "toBeNumber");
   }
 
   toBeBoolean() {
-    this.assert(getType(this.actual) === "boolean", {
-      message: "to be a boolean",
+    return this.typeOf("boolean", "toBeBoolean");
+  }
 
-      matcher: "toBeBoolean",
-    });
-    return this;
+  toBeArray() {
+    return this.typeOf("array", "toBeArray");
+  }
+
+  toBeObject() {
+    return this.typeOf("object", "toBeObject");
   }
 
   toBeFunction() {
-    this.assert(getType(this.actual) === "function", {
-      message: "to be a function",
-
-      matcher: "toBeFunction",
-    });
-    return this;
+    return this.typeOf("function", "toBeFunction");
   }
 
-  toBeRegExp() {
-    this.assert(getType(this.actual) === "regexp", {
-      message: "to be a regexp",
-
-      matcher: "toBeRegExp",
-    });
-    return this;
-  }
-
-  toBeDate() {
-    this.assert(getType(this.actual) === "date", {
-      message: "to be a date",
-
-      matcher: "toBeDate",
-    });
-    return this;
-  }
-
-  toBeError(expected: any) {
-    this.assert(this.actual instanceof Error, {
-      message: "to be an Error",
-      expected,
-      matcher: "toBeError",
-    });
-    return this;
-  }
-
-  /**
-   * Strict equality comparison using ===
-   */
-  toBe(expected: any) {
-    const diff = new Difference().formatDiff(this.actual, expected);
-    this.assert(diff === undefined, {
-      message:
-        getType(expected) === getType(this.actual) ? "to be " + diff : "to be",
-      expected,
-      matcher: "toBe",
-    });
-    return this;
-  }
-
-  /**
-   * Loose equality comparison using ==
-   */
-  toEqual(expected: any) {
-    // eslint-disable-next-line eqeqeq
-    this.assert(this.actual == expected, {
-      message: "to equal",
-      expected,
-      matcher: "toEqual",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if value is truthy
-   */
-  toBeTruthy() {
-    this.assert(Boolean(this.actual), {
-      message: "to be truthy",
-      matcher: "toBeTruthy",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if value is falsy
-   */
-  toBeFalsy() {
-    this.assert(!this.actual, {
-      message: "to be falsy",
-      matcher: "toBeFalsy",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if value is null
-   */
   toBeNull() {
-    this.assert(this.actual === null, {
-      message: "to be null",
-      matcher: "toBeNull",
-    });
-    return this;
+    return this.typeOf("null", "toBeNull");
   }
 
-  /**
-   * Checks if value is undefined
-   */
   toBeUndefined() {
-    this.assert(this.actual === undefined, {
-      message: "to be undefined",
-      matcher: "toBeUndefined",
-    });
-    return this;
+    return this.typeOf("undefined", "toBeUndefined");
   }
 
-  /**
-   * Checks if value is defined (not null or undefined)
-   */
-  toBeDefined() {
-    this.assert(this.actual !== null && this.actual !== undefined, {
-      message: "to be defined",
-      matcher: "toBeDefined",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if number is greater than expected
-   */
-  toBeGreaterThan(expected: number) {
-    this.assert(getType(this.actual) === "number" && this.actual > expected, {
-      message: "to be greater than",
-      expected,
-      matcher: "toBeGreaterThan",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if number is greater than or equal to expected
-   */
-  toBeGreaterThanOrEqual(expected: number) {
-    this.assert(getType(this.actual) === "number" && this.actual >= expected, {
-      message: "to be greater than or equal to",
-      expected,
-      matcher: "toBeGreaterThanOrEqual",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if number is less than expected
-   */
-  toBeLessThan(expected: number) {
-    this.assert(getType(this.actual) === "number" && this.actual < expected, {
-      message: "to be less than",
-      expected,
-      matcher: "toBeLessThan",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if number is less than or equal to expected
-   */
-  toBeLessThanOrEqual(expected: number) {
-    this.assert(getType(this.actual) === "number" && this.actual <= expected, {
-      message: "to be less than or equal to",
-      expected,
-      matcher: "toBeLessThanOrEqual",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if value matches a type
-   */
-  toBeTypeOf(expected: string) {
-    this.assert(getType(this.actual) === expected, {
-      message: "to be of type",
-      expected,
-      matcher: "toBeTypeOf",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if value is instance of expected constructor
-   */
+  // --- Instance Matcher ---
   toBeInstanceOf(expected: Function) {
-    this.assert(this.actual instanceof expected, {
-      message: "to be instance of",
-      expected: expected.name,
-      matcher: "toBeInstanceOf",
+    const message = this.messages.instance({
+      received: this.received,
+      expected,
     });
+    this.assert(this.received instanceof expected, message, "toBeInstanceOf");
     return this;
   }
 
-  /**
-   * Checks if value matches regex pattern
-   */
-  toMatch(expected: RegExp) {
-    this.assert(
-      getType(this.actual) === "string" && expected.test(this.actual),
-      {
-        message: "to match pattern",
-        expected,
-        matcher: "toMatch",
-      },
-    );
+  // --- Comparison Matchers ---
+  toBeGreaterThan(expected: number) {
+    const message = this.messages.comparison({
+      received: this.received,
+      expected,
+      comparison: "to be greater than",
+    });
+    const condition =
+      getType(this.received) === "number" && this.received > expected;
+    this.assert(condition, message, "toBeGreaterThan");
     return this;
   }
 
-  /**
-   * Checks if array or string contains expected value
-   */
+  toBeLessThan(expected: number) {
+    const message = this.messages.comparison({
+      received: this.received,
+      expected,
+      comparison: "to be less than",
+    });
+    const condition =
+      getType(this.received) === "number" && this.received < expected;
+    this.assert(condition, message, "toBeLessThan");
+    return this;
+  }
+
+  // --- Truthy/Falsy Matchers ---
+  toBeTruthy() {
+    const message = this.messages.comparison({
+      received: this.received,
+      expected: true,
+      comparison: "to be truthy",
+    });
+    this.assert(Boolean(this.received), message, "toBeTruthy");
+    return this;
+  }
+
+  toBeFalsy() {
+    const message = this.messages.comparison({
+      received: this.received,
+      expected: false,
+      comparison: "to be falsy",
+    });
+    this.assert(!this.received, message, "toBeFalsy");
+    return this;
+  }
+
+  // --- Collection/String Matchers ---
   toContain(expected: any) {
     const isValidType =
-      Array.isArray(this.actual) || getType(this.actual) === "string";
-    const contains = isValidType && this.actual.includes(expected);
+      Array.isArray(this.received) || getType(this.received) === "string";
+    const contains = isValidType && this.received.includes(expected);
 
-    this.assert(contains, {
-      message: "to contain",
+    const message = this.messages.comparison({
+      received: this.received,
       expected,
-      matcher: "toContain",
+      comparison: "to contain",
     });
+    this.assert(contains, message, "toContain");
     return this;
   }
 
-  /**
-   * Checks if value is close to expected number within precision
-   */
-  toBeCloseTo(expected: number, precision: number = 2) {
-    const multiplier = Math.pow(10, precision);
-    const actualRounded = Math.round(this.actual * multiplier);
-    const expectedRounded = Math.round(expected * multiplier);
+  toHaveProperty(prop: string, value?: any) {
+    const hasProperty = Object.prototype.hasOwnProperty.call(
+      this.received,
+      prop,
+    );
+    const matchesValue = value === undefined || this.received[prop] === value;
 
-    this.assert(actualRounded === expectedRounded, {
-      message: `to be close to (within ${precision} decimal places)`,
-      expected,
-      matcher: "toBeCloseTo",
+    const message = this.messages.property({
+      received: this.received,
+      prop,
+      value,
     });
+    this.assert(hasProperty && matchesValue, message, "toHaveProperty");
     return this;
   }
 
-  /**
-   * Checks if value has specific length
-   */
-  toHaveLength(expected: number) {
+  // --- Mocking and Spying Matchers ---
+  toHaveBeenCalled() {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    const callCount = this.received.getCallCount();
+    const action = "to have been called";
+    const expected = "at least once";
+
+    const message = isMockedOrSpied
+      ? this.messages.mockCall({
+          received: "function",
+          action,
+          expected,
+
+          callCount,
+        })
+      : "Function must be mocked or spied on to verify calls.";
+
+    this.assert(isMockedOrSpied && callCount > 0, message, "toHaveBeenCalled");
+    return this;
+  }
+
+  toHaveBeenCalledTimes(times: number) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    const callCount = this.received.getCallCount();
+    const action = "to have been called";
+    const expected = `${times} ${times === 1 ? "time" : "times"}`;
+
+    const message = isMockedOrSpied
+      ? this.messages.mockCall({
+          received: "function",
+          action,
+          expected,
+
+          callCount,
+        })
+      : "Function must be mocked or spied on to verify calls.";
+
     this.assert(
-      (Array.isArray(this.actual) || getType(this.actual) === "string") &&
-        this.actual.length === expected,
-      {
-        message: "to have length",
-        expected,
-        matcher: "toHaveLength",
-      },
+      isMockedOrSpied && callCount === times,
+      message,
+      "toHaveBeenCalledTimes",
     );
     return this;
   }
 
-  /**
-   * Checks if object has specific property
-   */
-  toHaveProperty(prop: string, value?: any) {
-    const hasProperty = Object.prototype.hasOwnProperty.call(this.actual, prop);
-    const matchesValue = value === undefined || this.actual[prop] === value;
+  toHaveBeenCalledWith(...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
 
-    this.assert(hasProperty && matchesValue, {
-      message:
-        value === undefined
-          ? `to have property "${prop}"`
-          : `to have property "${prop}" with value`,
-      expected: value,
-      matcher: "toHaveProperty",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if array or object is empty
-   */
-  toBeEmpty() {
-    let isEmpty = false;
-
-    if (Array.isArray(this.actual) || getType(this.actual) === "string") {
-      isEmpty = this.actual.length === 0;
-    } else if (getType(this.actual) === "object" && this.actual !== null) {
-      isEmpty = Object.keys(this.actual).length === 0;
-    }
-
-    this.assert(isEmpty, {
-      message: "to be empty",
-      matcher: "toBeEmpty",
-    });
-    return this;
-  }
-
-  /**
-   * Checks if function throws when executed
-   */
-  toThrow(expected?: string | RegExp | Error) {
-    if (getType(this.actual) !== "function") {
-      throw new AssertionError(
-        "toThrow() can only be used with functions",
-        "toThrow",
+    // Check if any call matches the given arguments
+    const hasTheseArgs = this.received.calls.some((call: SpyCall) => {
+      return (
+        call.args.length === args.length &&
+        call.args.every((arg, index) => deepEqual(arg, args[index]))
       );
-    }
+    });
 
-    let thrown: Error | null = null;
-    try {
-      this.actual();
-    } catch (err: any) {
-      thrown = err;
-    }
+    const callCount = this.received.getCallCount();
+    const action = "to have been called with";
 
-    if (expected !== undefined) {
-      if (expected instanceof RegExp) {
-        this.assert(thrown !== null && expected.test(thrown.message), {
-          message: "to throw error matching",
-          expected,
-          matcher: "toThrow",
-        });
-      } else if (expected instanceof Error) {
-        this.assert(
-          thrown !== null && thrown.constructor === expected.constructor,
-          {
-            message: "to throw error instance of",
-            expected: expected.constructor.name,
-            matcher: "toThrow",
-          },
-        );
-      } else {
-        this.assert(thrown !== null && thrown.message === expected, {
-          message: "to throw error with message",
-          expected,
-          matcher: "toThrow",
-        });
-      }
-    } else {
-      this.assert(thrown !== null, {
-        message: "to throw",
-        matcher: "toThrow",
-      });
-    }
+    const message = isMockedOrSpied
+      ? this.messages.mockCall({
+          received: "function",
+          action,
+          expected: "",
+
+          callCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify calls.";
+
+    this.assert(
+      isMockedOrSpied && hasTheseArgs,
+      message,
+      "toHaveBeenCalledWith",
+    );
     return this;
   }
 
-  toHaveBeenCalled() {
+  toHaveBeenNthCalledWith(n: number, ...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    // Check if the nth call matches the expected arguments
+    const nthCall = this.received.calls[n - 1]; // n is 1-based index
+    const nthCallArgs =
+      nthCall &&
+      nthCall.args.length === args.length &&
+      nthCall.args.every((arg: any, index: number) =>
+        deepEqual(arg, args[index]),
+      );
+
+    const callCount = this.received.getCallCount();
+    const action = `to have been called ${n} ${n === 1 ? "time" : "times"} with`;
+
+    const message = isMockedOrSpied
+      ? this.messages.mockCall({
+          received: this.received,
+          action,
+          expected: "",
+
+          callCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify calls.";
+
     this.assert(
-      (Mock.isMocked(this.actual) || Spy.isSpiedOn(this.actual)) &&
-        this.actual.callCount > 0,
-      {
-        message: "to have been called at least once",
-        matcher: "toHaveBeenCalled",
-      },
+      isMockedOrSpied && nthCallArgs,
+      message,
+      "toHaveBeenNthCalledWith",
+    );
+    return this;
+  }
+
+  toHaveBeenLastCalledWith(...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    // Get the last call and check if its arguments match the expected ones
+    const lastCall = this.received.calls[this.received.calls.length - 1];
+    const lastCallArgs =
+      lastCall &&
+      lastCall.args.length === args.length &&
+      lastCall.args.every((arg: any, index: number) =>
+        deepEqual(arg, args[index]),
+      );
+
+    const callCount = this.received.getCallCount();
+    const action = "to have been called last with";
+
+    const message = isMockedOrSpied
+      ? this.messages.mockCall({
+          received: this.received,
+          action,
+          expected: "",
+
+          callCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify calls.";
+
+    this.assert(
+      isMockedOrSpied && lastCallArgs,
+      message,
+      "toHaveBeenLastCalledWith",
+    );
+    return this;
+  }
+
+  toHaveCalledNthWith(n: number, ...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    // Check if the nth call matches the expected arguments
+    const nthCall = this.received.calls[n - 1]; // n is 1-based index
+    const nthCallArgs =
+      nthCall &&
+      nthCall.args.length === args.length &&
+      nthCall.args.every((arg: any, index: number) =>
+        deepEqual(arg, args[index]),
+      );
+
+    const callCount = this.received.getCallCount();
+    const action = `to have been called ${n} ${n === 1 ? "time" : "times"} with`;
+
+    const message = isMockedOrSpied
+      ? this.messages.mockCall({
+          received: this.received,
+          action,
+          expected: "",
+
+          callCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify calls.";
+
+    this.assert(isMockedOrSpied && nthCallArgs, message, "toHaveCalledNthWith");
+    return this;
+  }
+
+  toHaveBeenCalledLastCalledWith(...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    // Get the last call and check if its arguments match the expected ones
+    const lastCall = this.received.calls[this.received.calls.length - 1];
+    const lastCallArgs =
+      lastCall &&
+      lastCall.args.length === args.length &&
+      lastCall.args.every((arg: any, index: number) =>
+        deepEqual(arg, args[index]),
+      );
+
+    const callCount = this.received.getCallCount();
+    const action = "to have been called last with";
+
+    const message = isMockedOrSpied
+      ? this.messages.mockCall({
+          received: this.received,
+          action,
+          expected: "",
+
+          callCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify calls.";
+
+    this.assert(
+      isMockedOrSpied && lastCallArgs,
+      message,
+      "toHaveBeenCalledLastCalledWith",
+    );
+    return this;
+  }
+
+  toHaveReturned() {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    const returnCount = this.received.getReturnValues().length;
+    const action = "to have returned";
+    const expected = "at least once";
+
+    const message = isMockedOrSpied
+      ? this.messages.mockReturn({
+          received: "function",
+          action,
+          expected,
+
+          returnCount,
+        })
+      : "Function must be mocked or spied on to verify returns.";
+
+    this.assert(
+      isMockedOrSpied && returnCount > 0,
+      message,
+      "toHaveReturned",
+    );
+    return this;
+  }
+
+  toHaveReturnedTimes(times: number) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    const returnCount = this.received.getReturnValues().length;
+    const action = "to have returned";
+    const expected = `${times} ${times === 1 ? "time" : "times"}`;
+
+    const message = isMockedOrSpied
+      ? this.messages.mockReturn({
+          received: "function",
+          action,
+          expected,
+
+          returnCount,
+        })
+      : "Function must be mocked or spied on to verify returns.";
+
+    this.assert(
+      isMockedOrSpied && returnCount === times,
+      message,
+      "toHaveReturnedTimes",
+    );
+    return this;
+  }
+
+  toHaveReturnedWith(...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    // Check if any return matches the given arguments
+    const hasTheseReturns = this.received
+      .getReturnValues()
+      .some((returnValue: any) => {
+        return (
+          args.length === returnValue.length &&
+          args.every((arg: any, index: number) =>
+            deepEqual(arg, returnValue[index]),
+          )
+        );
+      });
+
+    const returnCount = this.received.getReturnValues().length;
+    const action = "to have returned with";
+
+    const message = isMockedOrSpied
+      ? this.messages.mockReturn({
+          received: "function",
+          action,
+          expected: "",
+
+          returnCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify returns.";
+
+    this.assert(
+      isMockedOrSpied && hasTheseReturns,
+      message,
+      "toHaveReturnedWith",
+    );
+    return this;
+  }
+
+  toHaveReturnedLastWith(...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    // Get the last return value and check if it matches the expected arguments
+    const lastReturn = this.received.getReturnValues().slice(-1)[0];
+    const lastReturnArgs =
+      lastReturn &&
+      lastReturn.length === args.length &&
+      lastReturn.every((arg: any, index: number) =>
+        deepEqual(arg, args[index]),
+      );
+
+    const returnCount = this.received.getReturnValues().length;
+    const action = "to have returned last with";
+
+    const message = isMockedOrSpied
+      ? this.messages.mockReturn({
+          received: this.received,
+          action,
+          expected: "",
+
+          returnCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify returns.";
+
+    this.assert(
+      isMockedOrSpied && lastReturnArgs,
+      message,
+      "toHaveReturnedLastWith",
+    );
+    return this;
+  }
+
+  toHaveReturnedNthWith(n: number, ...args: any) {
+    const isMockedOrSpied =
+      Mock.isMocked(this.received) || Spy.isSpiedOn(this.received);
+
+    // Check if the nth return matches the expected arguments
+    const nthReturn = this.received.getReturnValues()[n - 1]; // n is 1-based index
+    const nthReturnArgs =
+      nthReturn &&
+      nthReturn.length === args.length &&
+      nthReturn.every((arg: any, index: number) => deepEqual(arg, args[index]));
+
+    const returnCount = this.received.getReturnValues().length;
+    const action = `to have returned ${n} ${n === 1 ? "time" : "times"} with`;
+
+    const message = isMockedOrSpied
+      ? this.messages.mockReturn({
+          received: this.received,
+          action,
+          expected: "",
+
+          returnCount,
+          args,
+        })
+      : "Function must be mocked or spied on to verify returns.";
+
+    this.assert(
+      isMockedOrSpied && nthReturnArgs,
+      message,
+      "toHaveReturnedLastWith",
     );
     return this;
   }
 }
 
 /**
- * Main expect function that creates new Expectation instance
+ * Main expect function that creates new Assertion instance
  */
-export function expect(actual: any) {
-  return new Expectation(actual);
+export function assert(received: any) {
+  return new Assertion(received);
 }
