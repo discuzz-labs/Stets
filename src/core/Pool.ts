@@ -33,10 +33,14 @@ export class Pool {
       testFiles: string[];
       timeout: number;
       plugins: Plugin[];
-      context: Record<any, any>
+      context: Record<any, any>;
+      tsconfig: string;
     },
   ) {
-    this.transformer = new Transform(options.plugins);
+    this.transformer = new Transform({
+      plugins: options.plugins,
+      tsconfig: this.options.tsconfig,
+    });
   }
 
   async run(): Promise<number> {
@@ -63,7 +67,7 @@ export class Pool {
             const logger = new Console();
 
             // Load the test code
-            const code = await this.transformer.transform(file)
+            const code = await this.transformer.transform(file);
 
             // Create isolated environment and context
             const isolated = new Isolated(file);
@@ -111,7 +115,7 @@ export class Pool {
   }
 
   report() {
-   // console.clear();
+    // console.clear();
 
     for (const [file, { logs, error, duration, report }] of this.reports) {
       const status = report ? report.status : "failed";

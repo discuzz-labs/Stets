@@ -6,7 +6,8 @@ const config: Veve = {
   envs: [],
   plugins: [],
   timeout: 600_000,
-  context: {}
+  context: {},
+  tsconfig: ""
 };
 
 export default config;

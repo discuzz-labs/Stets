@@ -21,6 +21,12 @@ const COMMANDS: Record<
     isArray: false,
     shortValue: "c",
   },
+  tsconfig: {
+    description: "Path to the tsconfig",
+    requiresValue: true,
+    isArray: false,
+    shortValue: "ts",
+  },
   timeout: {
     description: "Timeout for single test file.",
     requiresValue: true,

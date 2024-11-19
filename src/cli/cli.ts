@@ -23,7 +23,7 @@ import COMMANDS from "./commands.js";
   const plugins = config.get("plugins")
   const files = args.get("file");
   const context = config.get("context")
-  
+  const tsconfig = config.get("tsconfig")
   new Env(envs).load();
 
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
@@ -31,6 +31,7 @@ import COMMANDS from "./commands.js";
     testFiles,
     context,
     plugins,
+    tsconfig,
     timeout: parseInt(timeout as unknown as string),
   });
 

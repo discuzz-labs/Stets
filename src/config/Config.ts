@@ -9,6 +9,7 @@ import { existsSync } from "fs";
 import { join } from "path";
 import config from "../veve.config.js";
 import { getType } from "../utils/index.js";
+import fs from "fs";
 
 export type Veve = {
     pattern: string[];
@@ -17,6 +18,7 @@ export type Veve = {
     plugins: Plugin[];
     timeout: number;
     context: Record<any, any>;
+    tsconfig: string;
 };
 
 export class Config {
@@ -26,16 +28,15 @@ export class Config {
         // Initialize the config property based on the configPath
         if (configPath && existsSync(join(process.cwd(), configPath))) {
             const module = await import(join(process.cwd(), configPath));
-            this.validConfig(module.default) === false ? process.exit(1) : ""
+            this.validConfig(module.default) === false ? process.exit(1) : "";
             this.config = { ...config, ...module.default };
         } else {
-            // If no valid configPath is provided, initialize with an empty config
             this.config = config;
         }
         return this;
     }
 
-     validConfig(config?: Partial<Veve>): boolean {
+    validConfig(config?: Partial<Veve>): boolean {
         if (!config || getType(config) !== "object") {
             console.error("Invalid configuration: Config must be an object.");
             return false;
@@ -43,8 +44,10 @@ export class Config {
 
         // Pattern validation (optional)
         if (config.pattern != null) {
-            if (!Array.isArray(config.pattern) || 
-                !config.pattern.every((item) => getType(item) === "string")) {
+            if (
+                !Array.isArray(config.pattern) ||
+                !config.pattern.every((item) => getType(item) === "string")
+            ) {
                 console.error(
                     'Invalid configuration: "pattern" must be an array of strings.',
                 );
@@ -54,9 +57,10 @@ export class Config {
 
         // Exclude validation (optional)
         if (config.exclude !== undefined) {
-            
-            if (!Array.isArray(config.exclude) || 
-                !config.exclude.every((item) => getType(item) === "string")) {
+            if (
+                !Array.isArray(config.exclude) ||
+                !config.exclude.every((item) => getType(item) === "string")
+            ) {
                 console.error(
                     'Invalid configuration: "exclude" must be an array of strings.',
                 );
@@ -66,8 +70,10 @@ export class Config {
 
         // Envs validation (optional)
         if (config.envs != null) {
-            if (!Array.isArray(config.envs) || 
-                !config.envs.every((item) => getType(item) === "string")) {
+            if (
+                !Array.isArray(config.envs) ||
+                !config.envs.every((item) => getType(item) === "string")
+            ) {
                 console.error(
                     'Invalid configuration: "envs" must be an array of strings.',
                 );
@@ -77,13 +83,15 @@ export class Config {
 
         // Plugins validation (optional)
         if (config.plugins != null) {
-            if (!Array.isArray(config.plugins) || 
+            if (
+                !Array.isArray(config.plugins) ||
                 !config.plugins.every(
                     (item) =>
                         typeof item === "object" &&
                         item.name &&
                         typeof item.name === "string",
-                )) {
+                )
+            ) {
                 console.error(
                     'Invalid configuration: "plugins" must only contain valid esbuild Plugin objects.',
                 );
@@ -105,10 +113,29 @@ export class Config {
             return false;
         }
 
+        // Context validation (optional)
+        if (config.tsconfig != null && getType(config.tsconfig) !== "string") {
+            console.error(
+                'Invalid configuration: "context" must be an object.',
+            );
+            return false;
+        }
+
+        if (
+            config.tsconfig != null &&
+            !fs.existsSync(join(process.cwd() + config.tsconfig))
+        ) {
+            console.error(
+                "Invalid configuration: tsconfig must be a valid path. No tsconfig.json found in " +
+                    join(process.cwd() + config.tsconfig),
+            );
+            return false;
+        }
+
         // If all checks pass
         return true;
     }
-    
+
     public get<K extends keyof Veve>(key: K): Veve[K] {
         return this.config[key];
     }
