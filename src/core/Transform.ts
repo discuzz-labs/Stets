@@ -30,7 +30,8 @@ export class Transform {
       loader: this.getLoaderConfig(),
       plugins:
         this.options.plugins.length > 0 ? this.options.plugins : undefined,
-      tsconfig: path.join(process.cwd() ,this.options.tsconfig)
+      tsconfig: this.options.tsconfig !== "" ? path.join(process.cwd() ,this.options.tsconfig) : undefined,
+     logLevel: "silent"
     });
 
     if (result.outputFiles?.length) {

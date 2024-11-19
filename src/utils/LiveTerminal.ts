@@ -11,7 +11,7 @@ export class LiveTerminal {
 
   // Function to render the current file statuses in the console
   render() {
-    //console.clear(); // Clears the console
+    console.clear(); // Clears the console
     this.renderMap.forEach((status, file) => {
       console.log(Reporter.draft({ file, status }));
     });
@@ -22,7 +22,6 @@ export class LiveTerminal {
     const currentStatus = this.renderMap.get(file);
     if (currentStatus !== status) {
       this.renderMap.set(file, status);
-      this.render(); // Re-render after each status change
     }
   }
 

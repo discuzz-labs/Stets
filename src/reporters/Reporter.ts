@@ -150,7 +150,7 @@ export class Reporter {
       kleur.gray(path.dirname(file)) +
       " in " +
       kleur.gray(`${duration} s`) +
-      "\n"
+      "\n\n"
     );
   }
 
