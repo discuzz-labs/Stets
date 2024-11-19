@@ -4,7 +4,6 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { time } from "console";
 import { version, name, description } from "../../package.json";
 import { ArgsParser } from "../cli/ArgParser.js";
 import { Config } from "../config/Config.js";
@@ -15,7 +14,7 @@ import COMMANDS from "./commands.js";
 
 (async () => {
   const args = new ArgsParser();
-  const config = new Config(args.get("config"));
+  const config = await new Config().load(args.get("config") || "veve.config.js")
 
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
@@ -23,17 +22,14 @@ import COMMANDS from "./commands.js";
   const timeout = args.get("timeout") || config.get("timeout");
   const plugins = config.get("plugins")
   const files = args.get("file");
-
-  if (isNaN(timeout)) {
-    console.warn("Timeout must be a number!");
-    process.exit(1);
-  }
-
+  const context = config.get("context")
+  
   new Env(envs).load();
 
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
   const pool = new Pool({
     testFiles,
+    context,
     plugins,
     timeout: parseInt(timeout as unknown as string),
   });

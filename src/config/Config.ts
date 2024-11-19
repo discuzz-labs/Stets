@@ -4,10 +4,11 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { join } from "path";
+import { Plugin } from "esbuild"; // Ensure to import your Plugin type
 import { existsSync } from "fs";
+import { join } from "path";
 import config from "../veve.config.js";
-import { Plugin } from "esbuild"
+import { getType } from "../utils/index.js";
 
 export type Veve = {
     pattern: string[];
@@ -15,18 +16,99 @@ export type Veve = {
     envs: string[];
     plugins: Plugin[];
     timeout: number;
+    context: Record<any, any>;
 };
 
 export class Config {
     private config: Veve = config;
 
-    constructor(configPath: string | undefined) {
+    async load(configPath: string | undefined): Promise<Config> {
         // Initialize the config property based on the configPath
         if (configPath && existsSync(join(process.cwd(), configPath))) {
-            this.config = require(join(process.cwd(), configPath)).default;
+            const module = await import(join(process.cwd(), configPath));
+            this.validConfig(module.default) === false ? process.exit(1) : ""
+            this.config = { ...config, ...module.default };
+        } else {
+            // If no valid configPath is provided, initialize with an empty config
+            this.config = config;
         }
+        return this;
     }
 
+     validConfig(config?: Partial<Veve>): boolean {
+        if (!config || getType(config) !== "object") {
+            console.error("Invalid configuration: Config must be an object.");
+            return false;
+        }
+
+        // Pattern validation (optional)
+        if (config.pattern != null) {
+            if (!Array.isArray(config.pattern) || 
+                !config.pattern.every((item) => getType(item) === "string")) {
+                console.error(
+                    'Invalid configuration: "pattern" must be an array of strings.',
+                );
+                return false;
+            }
+        }
+
+        // Exclude validation (optional)
+        if (config.exclude !== undefined) {
+            
+            if (!Array.isArray(config.exclude) || 
+                !config.exclude.every((item) => getType(item) === "string")) {
+                console.error(
+                    'Invalid configuration: "exclude" must be an array of strings.',
+                );
+                return false;
+            }
+        }
+
+        // Envs validation (optional)
+        if (config.envs != null) {
+            if (!Array.isArray(config.envs) || 
+                !config.envs.every((item) => getType(item) === "string")) {
+                console.error(
+                    'Invalid configuration: "envs" must be an array of strings.',
+                );
+                return false;
+            }
+        }
+
+        // Plugins validation (optional)
+        if (config.plugins != null) {
+            if (!Array.isArray(config.plugins) || 
+                !config.plugins.every(
+                    (item) =>
+                        typeof item === "object" &&
+                        item.name &&
+                        typeof item.name === "string",
+                )) {
+                console.error(
+                    'Invalid configuration: "plugins" must only contain valid esbuild Plugin objects.',
+                );
+                return false;
+            }
+        }
+
+        // Timeout validation (optional)
+        if (config.timeout != null && getType(config.timeout) !== "number") {
+            console.error('Invalid configuration: "timeout" must be a number.');
+            return false;
+        }
+
+        // Context validation (optional)
+        if (config.context != null && getType(config.context) !== "object") {
+            console.error(
+                'Invalid configuration: "context" must be an object.',
+            );
+            return false;
+        }
+
+        // If all checks pass
+        return true;
+    }
+    
     public get<K extends keyof Veve>(key: K): Veve[K] {
         return this.config[key];
     }

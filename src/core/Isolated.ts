@@ -30,6 +30,10 @@ export class Isolated {
     const testCase = new TestCase("Unnamed test");
 
     return vm.createContext({
+      assert,
+      Fn,
+      is,
+      spy,
       ...context,
       it: testCase.it.bind(testCase),
       fail: testCase.fail.bind(testCase),
@@ -45,10 +49,6 @@ export class Isolated {
       beforeEach: testCase.beforeEach.bind(testCase),
       beforeAll: testCase.beforeAll.bind(testCase),
       run: testCase.run.bind(testCase),
-      assert,
-      Fn,
-      is,
-      spy,
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),
       __dirname: path.dirname(this.filename),
@@ -66,7 +66,7 @@ export class Isolated {
       const report = await script.runInNewContext(context, {
         timeout,
       });
-      
+
       const isValid = this.isValidReport(report);
 
       return {

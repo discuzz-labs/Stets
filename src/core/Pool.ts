@@ -33,6 +33,7 @@ export class Pool {
       testFiles: string[];
       timeout: number;
       plugins: Plugin[];
+      context: Record<any, any>
     },
   ) {
     this.transformer = new Transform(options.plugins);
@@ -68,8 +69,9 @@ export class Pool {
             const isolated = new Isolated(file);
 
             const context = isolated.context({
-              console: logger,
+              ...this.options.context,
               ...this.processClone.context(),
+              console: logger,
             });
             const script = isolated.script(code);
             const exec = await isolated.exec({

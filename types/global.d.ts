@@ -8,6 +8,7 @@ import { TestReport, Options, TestFunction, HookFunction } from "./framework";
 import { Assertion } from "./assert";
 import { TrackFn } from "./Fn";
 import { IsAssertion } from "./is";
+import { VeveConfig } from "./config";
 
 declare global {
   /**
@@ -367,4 +368,4 @@ declare global {
   ) : TrackFn<T, R> & ((...args: T) => R);
 }
 
-export {};
+export { VeveConfig }
