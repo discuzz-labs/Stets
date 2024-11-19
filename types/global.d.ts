@@ -7,6 +7,7 @@
 import { TestReport, Options, TestFunction, HookFunction } from "./framework";
 import { Assertion } from "./assert";
 import { TrackFn } from "./Fn";
+import { IsAssertion } from "./is";
 
 declare global {
   /**
@@ -278,10 +279,16 @@ declare global {
    * @param {any} actual - The value to assert.
    * @returns {Assertion} A new `Assertion` instance.
    * @since v1.0.0
-   * @example
-   * expect(42).toBe(42);
    */
   function assert(actual: any): Assertion;
+
+  /**
+   * Creates an expectation for assertions that instead of throwing errors returns boolean.
+   * @param {any} actual - The value to assert.
+   * @returns {Assertion} A new `Assertion` instance.
+   * @since v1.0.0
+   */
+  function is(actual: any): IsAssertion;
 
   /**
    * A factory function that creates a tracked function with the given implementation.

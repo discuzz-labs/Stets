@@ -4,7 +4,6 @@
  * See the LICENSE file in the project root for license information.
  */
 
-
 import { deepEqual } from "../utils/index.js";
 
 // Define the types for the tracking function calls
@@ -185,11 +184,34 @@ export class TrackFn<T extends any[], R> {
   wasCalledTimes(n: number): boolean {
     return this._callCount === n;
   }
-
-  
 }
 
 // Fn function to create a new instance of TrackFn
-export function Fn<T extends any[], R>(implementation: (...args: T) => R): (...args: T) => R {
+export function Fn<T extends any[], R>(
+  implementation: (...args: T) => R,
+): (...args: T) => R {
   return new TrackFn(implementation).track();
+}
+
+export function isFn(value: any): boolean {
+  const methods = [
+    "getCalls",
+    "getCall",
+    "getLatestCall",
+    "getCallCount",
+    "getAllArgs",
+    "getArgsForCall",
+    "getReturnValues",
+    "getExceptions",
+    "wasCalled",
+    "wasCalledWith",
+    "wasCalledTimes",
+    "return",
+    "throw",
+    "use",
+    "reset",
+    "clear",
+  ];
+
+  return methods.every((method) => typeof value[method] === "function");
 }

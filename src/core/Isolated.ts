@@ -8,7 +8,7 @@ import * as vm from "vm";
 import { createRequire } from "module";
 import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
-import { assert } from "../framework/Assertion.js";
+import { assert, is } from "../framework/Assertion.js";
 import { Fn } from "../framework/Fn.js";
 
 export interface ExecResult {
@@ -47,6 +47,7 @@ export class Isolated {
       run: testCase.run.bind(testCase),
       assert,
       Fn,
+      is,
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),
       __dirname: path.dirname(this.filename),

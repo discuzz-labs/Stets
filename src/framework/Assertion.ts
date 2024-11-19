@@ -10,19 +10,21 @@ import { deepEqual } from "../utils/index.js";
 import { AssertionError } from "./AssertionError.js";
 import { AssertionMessages } from "./AssertionMessages.js";
 import { Diff } from "./Diff.js";
-import { Is } from "./Is.js";
+import { isFn } from "./Fn.js";
 
 class Assertion {
   private received: any;
   private isNot: boolean;
   private messages: AssertionMessages;
   private isTracked: boolean = false;
+  private throws: boolean = false;
 
-  constructor(received: any) {
+  constructor(received: any, throws: boolean) {
+    this.throws = throws;
     this.received = received;
     this.isNot = false;
     this.messages = new AssertionMessages(this.isNot);
-    this.isTracked = Is.isTrackedFunction(received);
+    this.isTracked = isFn(this.received);
   }
 
   /**
@@ -34,14 +36,64 @@ class Assertion {
   }
 
   /**
+   * Handles promise resolution and rejection for async assertions
+   */
+  get resolves() {
+    return new Proxy(this, {
+      get: (target, prop) => {
+        if (prop === "not") return target.not;
+        return async (...args: any[]) => {
+          try {
+            const resolvedValue = await this.received;
+            target.received = resolvedValue; // Update actual value to resolved value
+            return (target as any)[prop](...args);
+          } catch (err: any) {
+            throw new Error(
+              `Expected Promise to resolve but it rejected with: ${err}`,
+            );
+          }
+        };
+      },
+    });
+  }
+
+  get rejects() {
+    return new Proxy(this, {
+      get: (target, prop) => {
+        if (prop === "not") return target.not;
+        return async (...args: any[]) => {
+          try {
+            await this.received;
+            throw new Error("Expected Promise to reject but it resolved.");
+          } catch (err) {
+            target.received = err; // Update actual value to the rejection reason
+            return (target as any)[prop](...args);
+          }
+        };
+      },
+    });
+  }
+
+  /**
    * Core assert method for all matchers.
    */
-  private assert(condition: boolean, message: string, matcher: string) {
+  private assert(
+    condition: boolean,
+    message: string,
+    matcher: string,
+  ): Assertion | boolean {
     const passes = this.isNot ? !condition : condition;
 
     if (!passes) {
-      throw new AssertionError(message, matcher);
+      if (this.throws) {
+        throw new AssertionError(message, matcher); // Properly throw the error
+      } else {
+        return false; // Return false explicitly
+      }
     }
+
+    // Return the appropriate value based on `throws`
+    return this.throws ? this : true;
   }
 
   private typeOf(expected: string, matcher: string) {
@@ -49,23 +101,33 @@ class Assertion {
       received: this.received,
       expected,
     });
-    this.assert(getType(this.received) === expected, message, matcher);
-    return this;
+    return this.assert(
+      getType(this.received) === getType(expected),
+      message,
+      matcher,
+    );
   }
 
   // ---  Matchers ---
   toStrictEqual(expected: any) {
-    const diff = new Diff(this.received, expected)
-    const message = this.messages.diff({ diffFormatted: diff.format()})
-    this.assert(!diff.has(), message, "toBe");
-    return this;
+    const diff = new Diff(this.received, expected);
+    const message = this.messages.diff({ diffFormatted: diff.format() });
+    return this.assert(!diff.has(), message, "toBe");
   }
 
   toEqual(expected: any) {
-    const diff = new Diff(this.received, expected)
-    const message = this.messages.diff({ diffFormatted: diff.format()})
-    this.assert(equal(this.received, expected), message, "toEqual");
-    return this;
+    const diff = new Diff(this.received, expected);
+    const message = this.messages.diff({ diffFormatted: diff.format() });
+    return this.assert(equal(this.received, expected), message, "toEqual");
+  }
+
+  toBeTracked(expected: any) {
+    const message = this.messages.type({
+      received: this.received,
+      expected: "tracked function.",
+    });
+
+    return this.assert(this.isTracked, message, "toBeTracked");
   }
 
   toBeType(expected: string) {
@@ -110,8 +172,11 @@ class Assertion {
       received: this.received,
       expected,
     });
-    this.assert(this.received instanceof expected, message, "toBeInstanceOf");
-    return this;
+    return this.assert(
+      this.received instanceof expected,
+      message,
+      "toBeInstanceOf",
+    );
   }
 
   // --- Comparison Matchers ---
@@ -123,8 +188,7 @@ class Assertion {
     });
     const condition =
       getType(this.received) === "number" && this.received > expected;
-    this.assert(condition, message, "toBeGreaterThan");
-    return this;
+    return this.assert(condition, message, "toBeGreaterThan");
   }
 
   toBeLessThan(expected: number) {
@@ -135,8 +199,7 @@ class Assertion {
     });
     const condition =
       getType(this.received) === "number" && this.received < expected;
-    this.assert(condition, message, "toBeLessThan");
-    return this;
+    return this.assert(condition, message, "toBeLessThan");
   }
 
   // --- Truthy/Falsy Matchers ---
@@ -146,8 +209,7 @@ class Assertion {
       expected: true,
       comparison: "to be truthy",
     });
-    this.assert(Boolean(this.received), message, "toBeTruthy");
-    return this;
+    return this.assert(Boolean(this.received), message, "toBeTruthy");
   }
 
   toBeFalsy() {
@@ -156,8 +218,7 @@ class Assertion {
       expected: false,
       comparison: "to be falsy",
     });
-    this.assert(!this.received, message, "toBeFalsy");
-    return this;
+    return this.assert(!this.received, message, "toBeFalsy");
   }
 
   // --- Collection/String Matchers ---
@@ -171,8 +232,7 @@ class Assertion {
       expected,
       comparison: "to contain",
     });
-    this.assert(contains, message, "toContain");
-    return this;
+    return this.assert(contains, message, "toContain");
   }
 
   toHaveProperty(prop: string, value?: any) {
@@ -187,8 +247,7 @@ class Assertion {
       prop,
       value,
     });
-    this.assert(hasProperty && matchesValue, message, "toHaveProperty");
-    return this;
+    return this.assert(hasProperty && matchesValue, message, "toHaveProperty");
   }
 
   // --- Mocking and Spying Matchers ---
@@ -206,8 +265,11 @@ class Assertion {
         })
       : "Function must be tracked to verify calls.";
 
-    this.assert(this.isTracked && callCount > 0, message, "toHaveBeenCalled");
-    return this;
+    return this.assert(
+      this.isTracked && callCount > 0,
+      message,
+      "toHaveBeenCalled",
+    );
   }
 
   toHaveBeenCalledTimes(times: number) {
@@ -224,12 +286,11 @@ class Assertion {
         })
       : "Function must be tracked to verify calls.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && callCount === times,
       message,
       "toHaveBeenCalledTimes",
     );
-    return this;
   }
 
   toHaveBeenCalledWith(...args: any[]) {
@@ -258,12 +319,11 @@ class Assertion {
         })
       : "Function must be tracked to verify calls.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && hasTheseArgs,
       message,
       "toHaveBeenCalledWith",
     );
-    return this;
   }
 
   toHaveBeenNthCalledWith(n: number, ...args: any[]) {
@@ -288,12 +348,11 @@ class Assertion {
         })
       : "Function must be tracked to verify calls.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && nthCallArgs,
       message,
       "toHaveBeenNthCalledWith",
     );
-    return this;
   }
 
   toHaveBeenLastCalledWith(...args: any[]) {
@@ -318,12 +377,11 @@ class Assertion {
         })
       : "Function must be tracked to verify calls.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && lastCallArgs,
       message,
       "toHaveBeenLastCalledWith",
     );
-    return this;
   }
 
   toHaveReturned() {
@@ -342,8 +400,11 @@ class Assertion {
         })
       : "Function must be tracked to verify returns.";
 
-    this.assert(this.isTracked && returnCount > 0, message, "toHaveReturned");
-    return this;
+    return this.assert(
+      this.isTracked && returnCount > 0,
+      message,
+      "toHaveReturned",
+    );
   }
 
   toHaveReturnedTimes(times: number) {
@@ -362,12 +423,11 @@ class Assertion {
         })
       : "Function must be tracked to verify returns.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && returnCount === times,
       message,
       "toHaveReturnedTimes",
     );
-    return this;
   }
 
   toHaveReturnedWith(value: any) {
@@ -392,12 +452,11 @@ class Assertion {
         })
       : "Function must be tracked to verify returns.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && hasReturnedValue,
       message,
       "toHaveReturnedWith",
     );
-    return this;
   }
 
   toHaveNthReturnedWith(n: number, value: any) {
@@ -421,12 +480,11 @@ class Assertion {
         })
       : "Function must be tracked to verify returns.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && matchesValue,
       message,
       "toHaveNthReturnedWith",
     );
-    return this;
   }
 
   toHaveLastReturnedWith(value: any) {
@@ -450,12 +508,11 @@ class Assertion {
         })
       : "Function must be tracked to verify returns.";
 
-    this.assert(
+    return this.assert(
       this.isTracked && matchesValue,
       message,
       "toHaveLastReturnedWith",
     );
-    return this;
   }
 }
 
@@ -463,5 +520,9 @@ class Assertion {
  * Main expect function that creates new Assertion instance
  */
 export function assert(received: any) {
-  return new Assertion(received);
+  return new Assertion(received, true);
+}
+
+export function is(received: any) {
+  return new Assertion(received, false);
 }

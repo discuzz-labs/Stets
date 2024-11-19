@@ -4,218 +4,203 @@
  * See the LICENSE file in the project root for license information.
  */
 
-export interface Assertion {
+export interface IsAssertion {
   /**
    * Negates the assertion.
    * @returns {Assertion} The current `Assertion` instance with negation applied.
    */
-  get not(): Assertion;
+  get not(): IsAssertion;
 
   /**
    * Compares the received value with the expected value using a strict equality check.
    * This method uses `diff` to display the difference between the two values.
    *
    * @param expected - The value to compare the received value against.
-   * @returns This instance for chaining.
+   * @returns {boolean} `true` if the values are strictly equal, otherwise `false`.
    * @since v1.0.0
    */
-  toStrictEqual(expected: any): this;
+  toStrictEqual(expected: any): boolean;
 
   /**
    * Compares the received value with the expected value using a deep equality check.
    * This method uses `equal` to deeply compare the two values, ignoring `undefined`.
    *
    * @param expected - The value to compare the received value against.
-   * @returns This instance for chaining.
+   * @returns {boolean} `true` if the values are deeply equal, otherwise `false`.
    * @since v1.0.0
    */
-  toEqual(expected: any): this;
+  toEqual(expected: any): boolean;
 
   /**
    * Asserts that the actual value is of a specific type.
    * @param {string} expected - The type to compare against (e.g., "string", "number").
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is of the expected type, otherwise `false`.
    */
-  toBeTypeOf(expected: string): this;
+  toBeTypeOf(expected: string): boolean;
 
   /**
    * Asserts that the actual value is a string.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is a string, otherwise `false`.
    */
-  toBeString(): this;
+  toBeString(): boolean;
 
   /**
    * Asserts that the actual value is a number.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is a number, otherwise `false`.
    */
-  toBeNumber(): this;
+  toBeNumber(): boolean;
 
   /**
    * Asserts that the actual value is a boolean.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is a boolean, otherwise `false`.
    */
-  toBeBoolean(): this;
+  toBeBoolean(): boolean;
 
   /**
    * Asserts that the actual value is an array.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is an array, otherwise `false`.
    */
-  toBeArray(): this;
+  toBeArray(): boolean;
 
   /**
    * Asserts that the actual value is an object.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is an object, otherwise `false`.
    */
-  toBeObject(): this;
+  toBeObject(): boolean;
 
   /**
    * Asserts that the actual value is a function.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is a function, otherwise `false`.
    */
-  toBeFunction(): this;
+  toBeFunction(): boolean;
 
   /**
    * Asserts that the actual value is null.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is null, otherwise `false`.
    */
-  toBeNull(): this;
+  toBeNull(): boolean;
 
   /**
    * Asserts that the actual value is undefined.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is undefined, otherwise `false`.
    */
-  toBeUndefined(): this;
+  toBeUndefined(): boolean;
 
   /**
    * Asserts that the actual value is an instance of the expected constructor.
    * @param {Function} expected - The constructor to compare against.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is an instance of the expected constructor, otherwise `false`.
    */
-  toBeInstanceOf(expected: Function): this;
+  toBeInstanceOf(expected: Function): boolean;
 
   /**
    * Asserts that the actual value is greater than the expected value.
    * @param {number} expected - The value to compare against.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is greater, otherwise `false`.
    */
-  toBeGreaterThan(expected: number): this;
+  toBeGreaterThan(expected: number): boolean;
 
   /**
    * Asserts that the actual value is less than the expected value.
    * @param {number} expected - The value to compare against.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is less, otherwise `false`.
    */
-  toBeLessThan(expected: number): this;
+  toBeLessThan(expected: number): boolean;
 
   /**
    * Asserts that the actual value is truthy.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is truthy, otherwise `false`.
    */
-  toBeTruthy(): this;
+  toBeTruthy(): boolean;
 
   /**
    * Asserts that the actual value is falsy.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value is falsy, otherwise `false`.
    */
-  toBeFalsy(): this;
+  toBeFalsy(): boolean;
 
   /**
    * Asserts that the actual value contains the expected value.
    * @param {any} expected - The value to check for in the actual value.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the actual value contains the expected value, otherwise `false`.
    */
-  toContain(expected: any): this;
+  toContain(expected: any): boolean;
 
   /**
    * Asserts that the actual object has a specific property.
    * @param {string} prop - The property name.
    * @param {any} [value] - The value to compare against (optional).
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the property exists and matches the value (if provided), otherwise `false`.
    */
-  toHaveProperty(prop: string, value?: any): this;
+  toHaveProperty(prop: string, value?: any): boolean;
 
   /**
    * Asserts that the actual function has been called.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the function was called, otherwise `false`.
    */
-  toHaveBeenCalled(): this;
+  toHaveBeenCalled(): boolean;
 
   /**
    * Asserts that the actual function has been called a specific number of times.
    * @param {number} count - The expected number of calls.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the function was called the expected number of times, otherwise `false`.
    */
-  toHaveBeenCalledTimes(count: number): this;
+  toHaveBeenCalledTimes(count: number): boolean;
 
   /**
    * Asserts that the actual function has been called with specific arguments.
    * @param {...any} args - The arguments the function should have been called with.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the function was called with the expected arguments, otherwise `false`.
    */
-  toHaveBeenCalledWith(...args: any[]): this;
+  toHaveBeenCalledWith(...args: any[]): boolean;
 
   /**
    * Asserts that the actual function has been called with specific arguments at a specific call index.
    * @param {number} n - The call index.
    * @param {...any} args - The arguments the function should have been called with.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the function was called with the expected arguments at the specified index, otherwise `false`.
    */
-  toHaveBeenNthCalledWith(n: number, ...args: any[]): this;
+  toHaveBeenNthCalledWith(n: number, ...args: any[]): boolean;
 
   /**
    * Asserts that the actual function has been called with specific arguments at the last call.
    * @param {...any} args - The arguments the function should have been called with.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the function was called with the expected arguments at the last call, otherwise `false`.
    */
-  toHaveBeenLastCalledWith(...args: any[]): this;
+  toHaveBeenLastCalledWith(...args: any[]): boolean;
 
   /**
-   * Asserts that the actual function has been called with specific arguments at a specific call index.
-   * @param {number} n - The call index.
-   * @param {...any} args - The arguments the function should have been called with.
-   * @returns {Assertion} The current `Assertion` instance.
+   * Asserts that the actual function has returned in its call lifecycle.
+   * @returns {boolean} `true` if the function returned, otherwise `false`.
    */
-  toHaveBeenCalledNthWith(n: number, ...args: any[]): this;
-
-  /**
-   * Asserts that the actual function has been called with specific arguments at the last call.
-   * @param {...any} args - The arguments the function should have been called with.
-   * @returns {Assertion} The current `Assertion` instance.
-   */
-  toHaveBeenCalledLastCalledWith(...args: any[]): this;
-
-  /**
-   * Asserts that the actual function has returned in his call lifecycle.
-   * @returns {Assertion} The current `Assertion` instance.
-   */
-  toHaveReturned(): this;
+  toHaveReturned(): boolean;
 
   /**
    * Asserts that the actual function has returned a value a specific number of times.
    * @param {number} count - The expected number of return values.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the function returned the expected number of times, otherwise `false`.
    */
-  toHaveReturnedTimes(count: number): this;
+  toHaveReturnedTimes(count: number): boolean;
 
   /**
    * Asserts that the actual function has returned a specific value.
    * @param {any} expected - The value that should have been returned.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the function returned the expected value, otherwise `false`.
    */
-  toHaveReturnedWith(expected: any): this;
+  toHaveReturnedWith(expected: any): boolean;
 
   /**
    * Asserts that the actual function has returned the value at the last return.
    * @param {any} expected - The value that should have been returned.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the last returned value matches the expected value, otherwise `false`.
    */
-  toHaveReturnedLastWith(expected: any): this;
+  toHaveReturnedLastWith(expected: any): boolean;
 
   /**
    * Asserts that the actual function has returned the value at a specific return index.
    * @param {number} n - The return index.
    * @param {any} expected - The value that should have been returned.
-   * @returns {Assertion} The current `Assertion` instance.
+   * @returns {boolean} `true` if the returned value at the specified index matches the expected value, otherwise `false`.
    */
-  toHaveReturnedNthWith(n: number, expected: any): this;
+  toHaveReturnedNthWith(n: number, expected: any): boolean;
 }

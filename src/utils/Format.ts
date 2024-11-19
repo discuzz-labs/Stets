@@ -160,13 +160,18 @@ export class Format {
     return `new Map{[\n${elements}\n${closingIndent}]}`;
   }
 
-  formatFunction(fn: Function) {
+  formatFunction(fn: Function): string {
+    // Convert the function to a string
     let str = fn.toString();
-    // Handle arrow functions, regular functions, and class methods
-    if (str.length > this.maxStringLength) {
-      str = str.slice(0, this.maxStringLength) + "...";
+
+    // Truncate the function string if it exceeds the maximum length
+    const maxLength = this.maxStringLength || 100; // Fallback to 100 if maxStringLength is undefined
+    if (str.length > maxLength) {
+      str = str.slice(0, maxLength) + "...";
     }
-    return str;
+
+    // Return a formatted string representation
+    return `Function ${str}`;
   }
 
   formatObject(obj: any, depth: number) {
