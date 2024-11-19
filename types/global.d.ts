@@ -304,7 +304,7 @@ declare global {
    *                           The returned value is callable with the same signature as the original function.
    * @since v1.0.0
    * 
-   * Example usage:
+   * @example
    * 
    * const mockFn = Fn<[number], number>((x) => x * 2)
    *   .return(42) // Always returns 42
@@ -314,6 +314,57 @@ declare global {
    * 
    */
   export function Fn<T extends any[], R>(implementation: (...args: T) => R): TrackFn<T, R> & ((...args: T) => R);
+
+  /**
+   * A function that spies on a specific method of an object and tracks its calls.
+   * The spied method will be wrapped in a tracked function, allowing you to monitor 
+   * its calls, control its return values, handle exceptions, and track all invocations.
+   *
+   * The returned value is both a tracked function (of type `TrackFn`) and callable 
+   * just like the original method you provided. Additionally, you can chain methods 
+   * to control the behavior of the spied method (e.g., `.return()`, `.throw()`, `.use()`, `.reset()`).
+   *
+   * @param {object} obj - The object containing the method to spy on.
+   * @param {string} method - The name of the method to spy on.
+   * @returns {TrackFn<T, R> & ((...args: T) => R)} The tracked function that includes methods to control behavior
+   *                           (e.g., `.return()`, `.throw()`, `.use()`, `.reset()`) and monitor calls.
+   *                           The returned value is callable with the same signature as the original method.
+   *
+   * @throws {Error} Throws an error if the specified method does not exist on the object.
+   * 
+   * @since v1.0.0
+   * 
+   * @example
+   * 
+   * const calculator = {
+   *   add(a: number, b: number): number {
+   *     return a + b;
+   *   },
+   *   subtract(a: number, b: number): number {
+   *     return a - b;
+   *   }
+   * };
+   * 
+   * // Spy on the 'add' method of the calculator
+   * const trackedAdd = spy(calculator, "add");
+   * 
+   * // Call the spied method
+   * calculator.add(1, 2);  // This will be tracked
+   * 
+   * // Change the behavior of the tracked function
+   * trackedAdd.return(10); // Always returns 10
+   * 
+   * // Access tracking data
+   * console.log(trackedAdd.getCalls()); // Logs the tracked calls to 'add'
+   * 
+   * // Call the spied method again
+   * calculator.add(3, 4);
+   * console.log(trackedAdd.getCalls()); // Logs the tracked calls to 'add'
+   */
+  export function spy<T extends any[], R>(
+    obj: { [key: string]: (...args: T) => R },
+    method: string,
+  ) : TrackFn<T, R> & ((...args: T) => R);
 }
 
 export {};

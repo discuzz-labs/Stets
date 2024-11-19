@@ -9,7 +9,7 @@ import { createRequire } from "module";
 import TestCase, { TestReport } from "../framework/TestCase.js";
 import path from "path";
 import { assert, is } from "../framework/Assertion.js";
-import { Fn } from "../framework/Fn.js";
+import { Fn, spy } from "../framework/Fn.js";
 
 export interface ExecResult {
   status: boolean;
@@ -48,6 +48,7 @@ export class Isolated {
       assert,
       Fn,
       is,
+      spy,
       require: createRequire(this.filename),
       __filename: path.basename(this.filename),
       __dirname: path.dirname(this.filename),

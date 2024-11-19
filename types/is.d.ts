@@ -12,6 +12,48 @@ export interface IsAssertion {
   get not(): IsAssertion;
 
   /**
+   * A getter that returns a proxy function for tracking assertions on promises that resolve.
+   * The returned function can be used to chain assertions on a promise that is expected to resolve.
+   *
+   * This proxy ensures that once the promise resolves, the actual resolved value is passed
+   * to the assertion methods, allowing for proper validation of the resolved value.
+   *
+   * @returns {Assertion} The current `Assertion` instance wrapped in a proxy that tracks and modifies
+   *                       the behavior for assertions on resolved promises.
+   *
+   * @example
+   *
+   * // Usage example:
+   *
+   * const assertion = new Assertion(promise);
+   * assertion.resolves.toEqual(expectedValue); // Assert that the promise resolves with expected value.
+   *
+   * @since v1.0.0
+   */
+  get resolves(): IsAssertion;
+
+  /**
+   * A getter that returns a proxy function for tracking assertions on promises that reject.
+   * The returned function can be used to chain assertions on a promise that is expected to reject.
+   *
+   * This proxy ensures that once the promise rejects, the rejection reason is passed
+   * to the assertion methods, allowing for proper validation of the rejection reason.
+   *
+   * @returns {Assertion} The current `Assertion` instance wrapped in a proxy that tracks and modifies
+   *                       the behavior for assertions on rejected promises.
+   *
+   * @example
+   *
+   * // Usage example:
+   *
+   * const assertion = new Assertion(promise);
+   * assertion.rejects.toEqual(expectedError); // Assert that the promise rejects with expected error.
+   *
+   * @since v1.0.0
+   */
+  get rejects(): IsAssertion;
+
+  /**
    * Compares the received value with the expected value using a strict equality check.
    * This method uses `diff` to display the difference between the two values.
    *

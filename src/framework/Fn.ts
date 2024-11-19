@@ -215,3 +215,23 @@ export function isFn(value: any): boolean {
 
   return methods.every((method) => typeof value[method] === "function");
 }
+
+export function spy<T extends any[], R>(
+  obj: { [key: string]: (...args: T) => R },
+  method: string,
+) {
+  if (!obj || typeof obj[method] !== "function") {
+    throw new Error(`Method '${method}' not found on the object.`);
+  }
+
+  // Get the original method
+  const originalMethod = obj[method];
+
+  // Create a tracked version of the method using the Fn function
+  const trackedFn = Fn(originalMethod);
+
+  // Replace the original method with the tracked version
+  obj[method] = trackedFn;
+
+  return trackedFn;
+}
