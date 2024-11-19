@@ -9,7 +9,7 @@ import kleur from "../utils/kleur.js";
 export class AssertionError extends Error {
   constructor(message: any, methodName: string) {
     const header =
-      kleur.gray("expect" + "(expected)" + ".") +
+      kleur.gray("assert" + "(expected)" + ".") +
       kleur.bold(methodName) +
       kleur.gray("(received)") +
       "\n\n";

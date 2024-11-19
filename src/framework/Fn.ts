@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2024 Discuzz Labs Organization
+ * Licensed under the MIT License.
+ * See the LICENSE file in the project root for license information.
+ */
+
+
 import { deepEqual } from "../utils/index.js";
 
 // Define the types for the tracking function calls
@@ -178,6 +185,8 @@ export class TrackFn<T extends any[], R> {
   wasCalledTimes(n: number): boolean {
     return this._callCount === n;
   }
+
+  
 }
 
 // Fn function to create a new instance of TrackFn

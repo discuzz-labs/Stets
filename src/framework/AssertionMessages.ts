@@ -1,7 +1,9 @@
-import { prettyFormat } from "../utils/PrettyFormat.js";
+import { Format } from "../utils/Format.js";
+import kleur from "../utils/kleur.js";
 
 export class AssertionMessages {
   private isNot: boolean;
+  private formatter: Format = new Format()
 
   // Constructor to initialize the isNot flag
   constructor(isNot: boolean) {
@@ -16,7 +18,11 @@ export class AssertionMessages {
     received: any;
     expected: string;
   }) {
-    return `Expected ${prettyFormat(received)} ${this.isNot ? "not " : ""}to be of type ${expected}`;
+    return `Expected ${this.formatter.format(received)} ${this.isNot ? "not " : ""}to be of type ${expected}`;
+  }
+
+  diff({ diffFormatted } : { diffFormatted: string }) {
+    return `${kleur.bgRed("- Expected")}\n${kleur.bgGreen("+ Received")}\n\n${diffFormatted}`
   }
 
   // Format for instance check
@@ -27,7 +33,7 @@ export class AssertionMessages {
     received: any;
     expected: Function;
   }) {
-    return `Expected ${prettyFormat(received)} ${this.isNot ? "not " : ""}to be an instance of ${expected.name}`;
+    return `Expected ${this.formatter.format(received)} ${this.isNot ? "not " : ""}to be an instance of ${expected.name}`;
   }
 
   // Format for comparison
@@ -40,7 +46,7 @@ export class AssertionMessages {
     expected: any;
     comparison: string;
   }) {
-    return `Expected ${prettyFormat(received)} ${this.isNot ? "not " : ""}${comparison} ${prettyFormat(expected)}`;
+    return `Expected ${this.formatter.format(received)} ${this.isNot ? "not " : ""}${comparison} ${this.formatter.format(expected)}`;
   }
 
   // Format for property check
@@ -53,8 +59,8 @@ export class AssertionMessages {
     prop: string;
     value: any;
   }) {
-    return `Expected ${prettyFormat(received)} ${this.isNot ? "not " : ""}to have property "${prop}"${
-      value !== undefined ? ` with value ${prettyFormat(value)}` : ""
+    return `Expected ${this.formatter.format(received)} ${this.isNot ? "not " : ""}to have property "${prop}"${
+      value !== undefined ? ` with value ${this.formatter.format(value)}` : ""
     }`;
   }
 
@@ -73,15 +79,15 @@ export class AssertionMessages {
     args?: any[];
   }) {
     const formattedArgs =
-      args.length > 0 ? args.map((arg: any) => prettyFormat(arg)) : [];
+      args.length > 0 ? args.map((arg: any) => this.formatter.format(arg)) : [];
 
     return this.isNot
       ? args.length > 0
-        ? `Expected ${prettyFormat(received)} ${action} with arguments ${formattedArgs.join(", ")}, but it was not called with these arguments.`
-        : `Expected ${prettyFormat(received)} ${action} ${expected}, but it was called ${callCount} times.`
+        ? `Expected ${this.formatter.format(received)} ${action} with arguments ${formattedArgs.join(", ")}, but it was not called with these arguments.`
+        : `Expected ${this.formatter.format(received)} ${action} ${expected}, but it was called ${callCount} times.`
       : args.length > 0
-        ? `Expected ${prettyFormat(received)} ${action} with arguments ${formattedArgs.join(", ")}, but it was called ${callCount} times with different arguments.`
-        : `Expected ${prettyFormat(received)} ${action} ${expected}, but it was called ${callCount} times.`;
+        ? `Expected ${this.formatter.format(received)} ${action} with arguments ${formattedArgs.join(", ")}, but it was called ${callCount} times with different arguments.`
+        : `Expected ${this.formatter.format(received)} ${action} ${expected}, but it was called ${callCount} times.`;
   }
 
   // Format for mock return value check
@@ -99,14 +105,14 @@ export class AssertionMessages {
     args?: any[];
   }) {
     const formattedArgs =
-      args.length > 0 ? args.map((arg: any) => prettyFormat(arg)) : [];
+      args.length > 0 ? args.map((arg: any) => this.formatter.format(arg)) : [];
 
     return this.isNot
       ? args.length > 0
-        ? `Expected ${prettyFormat(received)} ${action} with return values ${formattedArgs.join(", ")}, but it did not return these values.`
-        : `Expected ${prettyFormat(received)} ${action} ${expected}, but it was returned ${returnCount} times.`
+        ? `Expected ${this.formatter.format(received)} ${action} with return values ${formattedArgs.join(", ")}, but it did not return these values.`
+        : `Expected ${this.formatter.format(received)} ${action} ${expected}, but it was returned ${returnCount} times.`
       : args.length > 0
-        ? `Expected ${prettyFormat(received)} ${action} with return values ${formattedArgs.join(", ")}, but it was returned ${returnCount} times with different values.`
-        : `Expected ${prettyFormat(received)} ${action} ${expected}, but it was returned ${returnCount} times.`;
+        ? `Expected ${this.formatter.format(received)} ${action} with return values ${formattedArgs.join(", ")}, but it was returned ${returnCount} times with different values.`
+        : `Expected ${this.formatter.format(received)} ${action} ${expected}, but it was returned ${returnCount} times.`;
   }
 }

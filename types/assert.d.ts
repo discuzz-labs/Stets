@@ -12,11 +12,24 @@ export interface Assertion {
   get not(): Assertion;
 
   /**
-   * Asserts that the actual value is strictly equal to the expected value.
-   * @param {any} expected - The value to compare with the actual value.
-   * @returns {Assertion} The current `Assertion` instance.
+   * Compares the received value with the expected value using a strict equality check.
+   * This method uses `diff` to display the difference between the two values.
+   *
+   * @param expected - The value to compare the received value against.
+   * @returns This instance for chaining.
+   * @since v1.0.0
    */
-  toBe(expected: any): this;
+  toStrictEqual(expected: any): this;
+
+  /**
+   * Compares the received value with the expected value using a deep equality check.
+   * This method uses `equal` to deeply compare the two values, ignoring `undefined`.
+   *
+   * @param expected - The value to compare the received value against.
+   * @returns This instance for chaining.
+   * @since v1.0.0
+   */
+  toEqual(expected: any): this;
 
   /**
    * Asserts that the actual value is of a specific type.
