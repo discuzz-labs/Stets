@@ -3,13 +3,15 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
+
 import kleur from "./kleur.js";
 import esbuild from "esbuild";
+import fs from "fs";
 
 interface ParsedStack {
   file?: string;
   methodName?: string;
-  arguments?: any[]; // Arguments can be any type
+  arguments?: any[];
   lineNumber?: number;
   column?: number;
 }
@@ -25,9 +27,69 @@ interface ErrorParserOptions {
   file?: string;
 }
 
+interface ErrorContext {
+  previousLine: string;
+  errorLine: string;
+  nextLine: string;
+  column: number;
+}
+
 export class ErrorParser {
   private static errorRegex =
     /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
+
+  private static readFileContext(
+    filePath: string,
+    lineNumber: number,
+  ): ErrorContext | null {
+    try {
+      const fileContent = fs.readFileSync(filePath, "utf-8");
+      const lines = fileContent.split("\n");
+
+      // Adjust line number to 0-based index
+      const targetLine = lineNumber - 1;
+
+      if (targetLine < 0 || targetLine >= lines.length) {
+        return null;
+      }
+
+      return {
+        previousLine: lines[targetLine - 1] || "",
+        errorLine: lines[targetLine],
+        nextLine: lines[targetLine + 1] || "",
+        column: 0, // Will be set later
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private static formatErrorContext(
+    context: ErrorContext,
+    lineNumber: number,
+  ): string {
+    const lineNumWidth = String(lineNumber + 1).length;
+    const padNum = (num: number) => String(num).padStart(lineNumWidth);
+
+    const previousLineNum = lineNumber - 1;
+    const nextLineNum = lineNumber + 1;
+
+    let output = "";
+
+    // Previous line
+    if (context.previousLine) {
+      output += `\n${kleur.gray(padNum(previousLineNum))} | ${context.previousLine}\n`;
+    }
+
+    // Error line with pointer
+    output += `${kleur.red(padNum(lineNumber))} | ${kleur.bgLightRed(context.errorLine)}\n`;
+    // Next line
+    if (context.nextLine) {
+      output += `${kleur.gray(padNum(nextLineNum))} | ${context.nextLine}\n`;
+    }
+
+    return output;
+  }
 
   private static formatStackLine(parsed: ParsedStack): string {
     const file = parsed.file?.padEnd(30) || "<UNKNOWN>";
@@ -47,7 +109,6 @@ export class ErrorParser {
   static parseStackLine(line: string): ParsedStack | null {
     const parts = this.errorRegex.exec(line);
     if (!parts) return null;
-
     return {
       methodName: parts[1] || "<UNKNOWN>",
       file: parts[2],
@@ -59,7 +120,6 @@ export class ErrorParser {
   static parseStack(stack: string, options: ErrorParserOptions): ParsedStack[] {
     const { maxLines = 5, file } = options;
     const lines = stack.split("\n").slice(0, maxLines);
-
     const parsedLines = lines
       .map((line) =>
         file && !line.includes(file) ? null : this.parseStackLine(line),
@@ -72,7 +132,6 @@ export class ErrorParser {
         .map((line) => this.parseStackLine(line))
         .filter((parsed): parsed is ParsedStack => parsed !== null);
     }
-
     return parsedLines;
   }
 
@@ -80,16 +139,27 @@ export class ErrorParser {
     stack: string,
     options: ErrorParserOptions,
   ): string {
-    return this.parseStack(stack, options)
-      .map((parsed) => this.formatStackLine(parsed))
-      .join("\n");
+    const parsedStack = this.parseStack(stack, options);
+    let output = "";
+
+    for (const parsed of parsedStack) {
+      output += "\n"+this.formatStackLine(parsed);
+
+      if (parsed.file && parsed.lineNumber) {
+        const context = this.readFileContext(parsed.file, parsed.lineNumber);
+        if (context) {
+          context.column = parsed.column || 0;
+          output += this.formatErrorContext(context, parsed.lineNumber);
+        }
+      }
+    }
+    return output;
   }
 
   static format(options: ErrorParserOptions): string {
     const separator = kleur.gray("-".repeat(process.stdout.columns));
     let result = "";
 
-    // Check if error has an 'errors' or 'warning' property, format accordingly
     if (
       options.error?.hasOwnProperty("errors") ||
       options.error?.hasOwnProperty("warning")
@@ -103,14 +173,12 @@ export class ErrorParser {
           color: true,
         },
       );
-
       result += messages.join("\n").trim();
-    }
-    // If neither 'errors' nor 'warning' property, use message and stack if available
-    else {
-      if (options.error?.message) {
-        result += options.error.message + "\n";
-      }
+    } else {
+      result += options.error?.message
+        ? options.error.message + "\n"
+        : "No Error Message was provided";
+
       result += options.error?.stack
         ? this.displayParsedStack(options.error.stack, options)
         : kleur.red("No stack trace available!");

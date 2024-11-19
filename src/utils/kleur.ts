@@ -28,7 +28,7 @@ export default class kleur {
 
   //cyan colors
   public static cyan(text: string | number): string {
-    return this.apply("31", text);
+    return this.apply("36", text);
   }
 
   // Red colors
