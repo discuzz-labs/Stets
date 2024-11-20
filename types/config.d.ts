@@ -11,7 +11,7 @@
  *
  * @since v1.0.0
  */
-export type VeveConfig = {
+export type Veve = {
   /**
    * An array of glob patterns specifying which files to include in the processing.
    * Files matching these patterns will be processed by the system.

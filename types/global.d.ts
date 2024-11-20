@@ -8,7 +8,7 @@ import { TestReport, Options, TestFunction, HookFunction } from "./framework";
 import { Assertion } from "./assert";
 import { TrackFn } from "./Fn";
 import { IsAssertion } from "./is";
-import { VeveConfig } from "./config";
+import { Veve } from "./config"
 
 declare global {
   /**
@@ -198,8 +198,8 @@ declare global {
   function bench(
     description: string,
     fn: TestFunction,
-    options: Partial<Options> = {}
-  ): void {
+    options?: Partial<Options>
+  ): void;
 
   /**
    * Registers a test case to be executed exclusively.
@@ -388,4 +388,4 @@ declare global {
   ) : TrackFn<T, R> & ((...args: T) => R);
 }
 
-export { VeveConfig }
+export default function veve(config: Partial<Veve>): Partial<Veve>;

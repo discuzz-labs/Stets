@@ -4,12 +4,13 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Plugin } from "esbuild"; // Ensure to import your Plugin type
+import { Plugin } from "esbuild";
 import { existsSync } from "fs";
-import { join } from "path";
+import { join, extname } from "path";
 import config from "../veve.config.js";
-import { getType } from "../utils/index.js";
-import fs from "fs";
+import "esbuild-register";
+import { createRequire } from "module";
+import { ErrorInspect } from "../core/ErrorInspect.js";
 
 export type Veve = {
     pattern: string[];
@@ -21,119 +22,65 @@ export type Veve = {
     tsconfig: string;
 };
 
+export function veve(config: Partial<Veve>): Partial<Veve> {
+    return config;
+}
+
 export class Config {
     private config: Veve = config;
+    private require = createRequire(process.cwd());
 
     async load(configPath: string | undefined): Promise<Config> {
-        // Initialize the config property based on the configPath
-        if (configPath && existsSync(join(process.cwd(), configPath))) {
-            const module = await import(join(process.cwd(), configPath));
-            this.validConfig(module.default) === false ? process.exit(1) : "";
-            this.config = { ...config, ...module.default };
+        if (configPath) {
+            const fullPath = join(process.cwd(), configPath);
+            if (existsSync(fullPath)) {
+                await this.loadConfig(fullPath);
+            } else {
+                console.error(`Configuration file not found: ${fullPath}`);
+                process.exit(1);
+            }
         } else {
-            this.config = config;
+            const possibleFiles = ["veve.config.js", "veve.config.ts"];
+            const foundFile = possibleFiles.find((file) =>
+                existsSync(join(process.cwd(), file)),
+            );
+
+            if (foundFile) {
+                await this.loadConfig(join(process.cwd(), foundFile));
+            }
         }
+
         return this;
     }
 
-    validConfig(config?: Partial<Veve>): boolean {
-        if (!config || getType(config) !== "object") {
-            console.error("Invalid configuration: Config must be an object.");
-            return false;
-        }
+    private async loadConfig(filePath: string): Promise<void> {
+        const ext = extname(filePath);
 
-        // Pattern validation (optional)
-        if (config.pattern != null) {
-            if (
-                !Array.isArray(config.pattern) ||
-                !config.pattern.every((item) => getType(item) === "string")
-            ) {
-                console.error(
-                    'Invalid configuration: "pattern" must be an array of strings.',
-                );
-                return false;
+        // Directly import the configuration file
+        if (ext === ".ts" || ext === ".js" ) {
+            try {
+                const module = await this.require(filePath);
+                this.applyConfig(module.default);
+            } catch (error: any) {
+                console.log(ErrorInspect.format({ error }));
+                process.exit(1);
             }
-        }
-
-        // Exclude validation (optional)
-        if (config.exclude !== undefined) {
-            if (
-                !Array.isArray(config.exclude) ||
-                !config.exclude.every((item) => getType(item) === "string")
-            ) {
-                console.error(
-                    'Invalid configuration: "exclude" must be an array of strings.',
-                );
-                return false;
-            }
-        }
-
-        // Envs validation (optional)
-        if (config.envs != null) {
-            if (
-                !Array.isArray(config.envs) ||
-                !config.envs.every((item) => getType(item) === "string")
-            ) {
-                console.error(
-                    'Invalid configuration: "envs" must be an array of strings.',
-                );
-                return false;
-            }
-        }
-
-        // Plugins validation (optional)
-        if (config.plugins != null) {
-            if (
-                !Array.isArray(config.plugins) ||
-                !config.plugins.every(
-                    (item) =>
-                        typeof item === "object" &&
-                        item.name &&
-                        typeof item.name === "string",
-                )
-            ) {
-                console.error(
-                    'Invalid configuration: "plugins" must only contain valid esbuild Plugin objects.',
-                );
-                return false;
-            }
-        }
-
-        // Timeout validation (optional)
-        if (config.timeout != null && getType(config.timeout) !== "number") {
-            console.error('Invalid configuration: "timeout" must be a number.');
-            return false;
-        }
-
-        // Context validation (optional)
-        if (config.context != null && getType(config.context) !== "object") {
+        } else {
             console.error(
-                'Invalid configuration: "context" must be an object.',
+                `Unsupported configuration file type: ${ext}. Only .js, and .ts are supported. Got: ${filePath} `,
             );
-            return false;
+            process.exit(1);
         }
+    }
 
-        // Context validation (optional)
-        if (config.tsconfig != null && getType(config.tsconfig) !== "string") {
+    private applyConfig(configModule: Partial<Veve>): void {
+        if (configModule === undefined) {
             console.error(
-                'Invalid configuration: "context" must be an object.',
+                `No Configuretion was default exported form the configuration file.`,
             );
-            return false;
+            process.exit(1);
         }
-
-        if (
-            config.tsconfig != null &&
-            !fs.existsSync(join(process.cwd() + config.tsconfig))
-        ) {
-            console.error(
-                "Invalid configuration: tsconfig must be a valid path. No tsconfig.json found in " +
-                    join(process.cwd() + config.tsconfig),
-            );
-            return false;
-        }
-
-        // If all checks pass
-        return true;
+        this.config = { ...config, ...configModule };
     }
 
     public get<K extends keyof Veve>(key: K): Veve[K] {

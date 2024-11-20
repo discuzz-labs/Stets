@@ -19,20 +19,24 @@ export class Transform {
   async transform(filename: string): Promise<string> {
     // Validate file exists
     await fs.access(filename);
-    
+
     // Use esbuild's build API to bundle the file with plugins
     const result = await build({
       entryPoints: [filename],
       bundle: true,
       format: "cjs",
       sourcemap: true,
-      write: false, // Prevent output to disk
+      write: false,
       loader: this.getLoaderConfig(),
       minify: false,
       plugins:
         this.options.plugins.length > 0 ? this.options.plugins : undefined,
-      tsconfig: this.options.tsconfig !== "" ? path.join(process.cwd() ,this.options.tsconfig) : undefined,
-     logLevel: "silent"
+      tsconfig:
+        this.options.tsconfig !== ""
+          ? path.join(process.cwd(), this.options.tsconfig)
+          : undefined,
+      logLevel: "silent",
+      sourcesContent: true, // Ensure full source content is included
     });
 
     if (result.outputFiles?.length) {

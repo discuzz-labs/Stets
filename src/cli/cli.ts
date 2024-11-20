@@ -14,7 +14,7 @@ import { help} from "./commands.js";
 
 (async () => {
   const args = new ArgsParser();
-  const config = await new Config().load(args.get("config") || "veve.config.js")
+  const config = await new Config().load(args.get("config"))
 
   if(args.get("help")) {
     console.log(help())

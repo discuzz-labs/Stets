@@ -19,11 +19,8 @@
     "src"
   ],
   "scripts": {
-    "postinstall": "echo 'Thanks for using stets\n https://github.com/discuzz-labs/stets'",
     "build:typescript": "tsc",
-    "build:watch": "tsc -w",
-    "prepublishOnly": "npm run build",
-    "postpublish": "echo 'Publishing completed!'"
+    "build:watch": "tsc -w"
   },
   "devDependencies": {
     "@types/diff": "^6.0.0",
@@ -34,6 +31,7 @@
     "diff": "^7.0.0",
     "dotenv": "^16.4.5",
     "esbuild": "^0.24.0",
+    "esbuild-register": "^3.6.0",
     "tinybench": "^3.0.6"
   }
 }
