@@ -6,7 +6,7 @@
 
 import { format } from "util";
 import RunTime from "./RunTime.js";
-import { ErrorMetadata } from "../utils/ErrorParser.js";
+import { ErrorMetadata } from "../core/ErrorInspect.js";
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;

@@ -5,7 +5,7 @@
  */
 
 import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
-import { ErrorMetadata, ErrorParser } from "../utils/ErrorParser.js";
+import { ErrorMetadata, ErrorInspect } from "../core/ErrorInspect.js";
 import kleur from "../utils/kleur.js";
 import path from "path";
 
@@ -93,7 +93,7 @@ export class Reporter {
     retries,
     softFail,
   }: FailArgs): string {
-    const errorDetails = ErrorParser.format({
+    const errorDetails = ErrorInspect.format({
       error,
       file,
       maxLines: 10,

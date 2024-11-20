@@ -11,9 +11,9 @@ import { Process } from "./Process.js";
 import { Transform } from "./Transform.js";
 import { LiveTerminal } from "../utils/LiveTerminal.js";
 import { Reporter } from "../reporters/Reporter.js";
-import { ErrorParser } from "../utils/ErrorParser.js";
 import { Plugin } from "esbuild";
 import path from "path";
+import { ErrorInspect } from "./ErrorInspect.js";
 
 export interface PoolResult {
   error: any;
@@ -134,7 +134,7 @@ export class Pool {
 
       if (report) process.stdout.write(Reporter.report({ file, report }));
       if (error)
-        process.stdout.write(ErrorParser.format({ error, file, maxLines: 10 }));
+        process.stdout.write(ErrorInspect.format({ error, file, maxLines: 10 }));
 
       replay(logs);
     }
