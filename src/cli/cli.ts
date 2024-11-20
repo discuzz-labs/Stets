@@ -4,18 +4,28 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { version, name, description } from "../../package.json";
+import { version } from "./commands.js";
 import { ArgsParser } from "../cli/ArgParser.js";
 import { Config } from "../config/Config.js";
 import { Env } from "../core/Env.js";
 import { Pool } from "../core/Pool.js";
 import { Glob } from "../glob/Glob.js";
-import COMMANDS from "./commands.js";
+import { help} from "./commands.js";
 
 (async () => {
   const args = new ArgsParser();
   const config = await new Config().load(args.get("config") || "veve.config.js")
 
+  if(args.get("help")) {
+    console.log(help())
+    return 
+  }
+
+  if(args.get("version")) {
+    console.log(version())
+    return 
+  }
+  
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
   const envs = args.get("envs") || config.get("envs");

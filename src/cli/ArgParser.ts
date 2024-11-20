@@ -4,12 +4,14 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import COMMANDS from "./commands.js";
+import {COMMANDS} from "./commands.js";
 
 ////types
 export type CLIOptions = {
   config?: string;
   file?: string[];
+  version?: boolean;
+  help?: boolean;
   
   pattern?: string[];
   exclude?: string[];

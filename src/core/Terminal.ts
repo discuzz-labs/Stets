@@ -6,7 +6,7 @@ import { Reporter } from "../reporters/Reporter.js";
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-export class LiveTerminal {
+export class Terminal {
   renderMap = new Map<string, TestCaseStatus>();
 
   // Function to render the current file statuses in the console

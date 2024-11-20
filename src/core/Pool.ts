@@ -9,7 +9,7 @@ import { TestReport } from "../framework/TestCase";
 import { Isolated } from "./Isolated.js";
 import { Process } from "./Process.js";
 import { Transform } from "./Transform.js";
-import { LiveTerminal } from "../utils/LiveTerminal.js";
+import { Terminal } from "./Terminal.js";
 import { Reporter } from "../reporters/Reporter.js";
 import { Plugin } from "esbuild";
 import path from "path";
@@ -23,7 +23,7 @@ export interface PoolResult {
 }
 
 export class Pool {
-  private readonly terminal = new LiveTerminal();
+  private readonly terminal = new Terminal();
   private readonly processClone = new Process();
   private transformer;
   private reports = new Map<string, PoolResult>();
