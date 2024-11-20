@@ -71,6 +71,10 @@ export default class kleur {
     return this.apply("34", text);
   }
 
+  public static bgBlue(text: string | number): string {
+    return this.apply("44", text);
+  }
+
   // Black colors
   public static black(text: string | number): string {
     return this.apply("30", text);

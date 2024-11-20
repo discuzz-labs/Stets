@@ -8,6 +8,7 @@ import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
 import { ErrorMetadata, ErrorInspect } from "../core/ErrorInspect.js";
 import kleur from "../utils/kleur.js";
 import path from "path";
+import { Table } from "../utils/Table.js";
 
 interface ReportOptions {
   file: string;
@@ -46,29 +47,31 @@ export class Reporter {
     failed: 0,
     skipped: 0,
     softFailed: 0,
+    benched: 0,
   };
 
   private static details(stats: Stats): string {
     let statusText = "";
-    switch (true) {
-      case stats.failed > 0:
-        statusText += kleur.red(" 🔴 " + stats.failed);
-        break;
-      case stats.skipped > 0:
-        statusText += kleur.yellow(" 🟡 " + stats.skipped);
-        break;
-      case stats.passed > 0:
-        statusText += kleur.green(" 🟢 " + stats.passed);
-        break;
-      case stats.softFailed > 0:
-        statusText += kleur.lightRed(" 🟠 " + stats.softFailed);
-        break;
-      default:
-        statusText = " Empty ";
-        break;
+    if (stats.failed > 0) {
+      statusText += kleur.red(" 🔴" + stats.failed);
+    }
+    if (stats.skipped > 0) {
+      statusText += kleur.yellow(" 🟡" + stats.skipped);
+    }
+    if (stats.passed > 0) {
+      statusText += kleur.green(" 🟢" + stats.passed);
+    }
+    if (stats.softFailed > 0) {
+      statusText += kleur.lightRed(" 🟠" + stats.softFailed);
+    }
+    if (stats.benched > 0) {
+      statusText += kleur.blue(" ⏱️ " + stats.benched);
+    }
+    if (statusText === '') {
+      statusText = " Empty ";
     }
     if (stats.total > 0) {
-      statusText += kleur.gray(" 🔢 " + stats.total);
+      statusText += kleur.gray(" 🔢" + stats.total);
     }
     return statusText;
   }
@@ -115,6 +118,15 @@ export class Reporter {
   private static skip({ description }: SkipArgs): string {
     return (
       kleur.bgYellow(kleur.bold(" SKIPPED ")) +
+      " " +
+      kleur.bgBlack(kleur.white(description)) +
+      "\n"
+    );
+  }
+
+  private static bench({ description }: SkipArgs): string {
+    return (
+      kleur.bgBlue(kleur.bold(" BENCHED ")) +
       " " +
       kleur.bgBlack(kleur.white(description)) +
       "\n"
@@ -192,6 +204,13 @@ export class Reporter {
           this.stats.passed++;
       }
     });
+
+    report.benchMarks.forEach((bench) => {
+      if(!bench) return
+      output.push(this.bench({ description: bench['Task name'] as string}))
+      output.push(Table([bench], Object.keys(bench).slice(-5)))
+    });
+
 
     this.stats.total += report.stats.total;
     if (items.length === 0) output.push(`${report.description} is empty!`);

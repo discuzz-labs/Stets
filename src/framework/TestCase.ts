@@ -15,8 +15,6 @@ export type Status =
   | "failed"
   | "soft-failed"
   | "skipped"
-  | "empty"
-  | "pending";
 export type TestCaseStatus = "passed" | "failed" | "pending" |"empty"
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
@@ -31,6 +29,7 @@ export interface Options {
   retry: number;
   softFail: boolean;
   sequencial: boolean;
+  bench: boolean;
 }
 
 export interface Test {
@@ -65,6 +64,7 @@ export interface Stats {
   passed: number;
   failed: number;
   softFailed: number;
+  benched: number;
 }
 
 export interface TestReport {
@@ -73,6 +73,7 @@ export interface TestReport {
   status: TestCaseStatus;
   tests: TestResult[];
   hooks: HookResult[];
+  benchMarks: (Record<string, string | number | undefined> | null)[];
 }
 
 const DEFAULT_OPTIONS: Options = {
@@ -82,6 +83,7 @@ const DEFAULT_OPTIONS: Options = {
   if: true,
   retry: 0,
   sequencial: false,
+  bench: false
 };
 
 // Merge the provided options with the default options
@@ -114,6 +116,13 @@ class TestCase {
 
   should(description: string) {
     this.description = description;
+  }
+
+  bench(description: string, fn: TestFunction, options?: Partial<Options>) {
+    const mergedOptions = mergeOptions({ ...options,  bench: true });
+    if (options?.sequencial)
+      this.sequenceTests.push({ description, fn, options: mergedOptions });
+    else this.tests.push({ description, fn, options: mergedOptions });
   }
 
   each(

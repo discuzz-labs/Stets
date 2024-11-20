@@ -4,13 +4,13 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import { Bench } from "tinybench";
 import type {
   Hook,
   HookResult,
   Test,
   TestResult,
   TestReport,
-  Status,
   Stats,
   TestCaseStatus
 } from "./TestCase.js";
@@ -20,22 +20,27 @@ import { cpus } from "os";
 class RunTime {
   private readonly MAX_PARALLEL_TESTS = cpus().length || 4;
   private readonly MAX_TIMEOUT = 300_000; // 5 minutes
+  private bench: Bench;
 
-  constructor(private testCase: TestCase) {}
+  constructor(private testCase: TestCase) {
+    this.bench = new Bench({ name: testCase.description, time: 1 });
+  }
 
   // Define a common interface for Test and Hook
   private async execute(
     executable: Test | Hook,
   ): Promise<TestResult | HookResult> {
     const { description, fn, options } = executable;
-    const { timeout, skip, if: condition, softFail, retry } = options;
-
+    const { timeout, skip, if: condition, softFail, retry, bench } = options;
     const result: TestResult | HookResult = {
       description,
       retries: 0,
       status: "passed",
     };
-
+    
+    if(bench) this.bench.add(description, fn)
+      
+    
     if (
       skip ||
       condition === undefined ||
@@ -104,26 +109,6 @@ class RunTime {
     return condition ?? true;
   }
 
-  // Run all tests and hooks in the TestCase
-  async run(): Promise<TestReport> {
-    const report: TestReport = this.initializeReport();
-
-    await this.runHook(this.testCase.hooks.beforeAll, report);
-
-    const { testsToRun, sequenceTestsToRun } = this.determineTestsToRun();
-
-    await this.markSkippedTests(report, testsToRun, sequenceTestsToRun);
-
-    await this.runTestsInParallel(testsToRun, report);
-    await this.runTestsInSequence(sequenceTestsToRun, report);
-
-    await this.runHook(this.testCase.hooks.afterAll, report);
-
-    report.status = this.status(report.stats);
-
-    return report;
-  }
-
   private status(stats: Stats): TestCaseStatus {
     if(stats.total === 0) return "empty"
     if(stats.failed > 0) return "failed"
@@ -139,11 +124,13 @@ class RunTime {
         failed: 0,
         skipped: 0,
         softFailed: 0,
+        benched: 0,
       },
       status: "passed",
       description: this.testCase.description,
       tests: [],
       hooks: [],
+      benchMarks: []
     };
   }
 
@@ -248,6 +235,36 @@ class RunTime {
         report.stats.failed++;
       }
     }
+  }
+
+  private async runBenchs() {
+    await this.bench.run()
+  }
+
+  // Run all tests and hooks in the TestCase
+  async run(): Promise<TestReport> {
+    const report: TestReport = this.initializeReport();
+
+    await this.runHook(this.testCase.hooks.beforeAll, report);
+
+    const { testsToRun, sequenceTestsToRun } = this.determineTestsToRun();
+
+    await this.markSkippedTests(report, testsToRun, sequenceTestsToRun);
+
+    await this.runTestsInParallel(testsToRun, report);
+    await this.runTestsInSequence(sequenceTestsToRun, report);
+
+    await this.runHook(this.testCase.hooks.afterAll, report);
+
+    await this.runBenchs()
+
+    report.benchMarks = this.bench.table()
+    
+    report.stats.benched = this.bench.table().length
+
+    report.status = this.status(report.stats);
+
+    return report;
   }
 }
 

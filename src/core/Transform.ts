@@ -28,6 +28,7 @@ export class Transform {
       sourcemap: true,
       write: false, // Prevent output to disk
       loader: this.getLoaderConfig(),
+      minify: false,
       plugins:
         this.options.plugins.length > 0 ? this.options.plugins : undefined,
       tsconfig: this.options.tsconfig !== "" ? path.join(process.cwd() ,this.options.tsconfig) : undefined,

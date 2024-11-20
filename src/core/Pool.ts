@@ -125,6 +125,7 @@ export class Pool {
         failed: 0,
         softFailed: 0,
         skipped: 0,
+        benched:0
       };
       const description = report?.description || path.basename(file);
 

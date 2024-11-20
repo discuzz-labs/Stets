@@ -81,4 +81,7 @@ export interface Options {
 
   /** Marks a test as sequencial to be runned in the order it was added */
   sequencial?: number;
+
+  /** Marks a test to be benched */
+  bench?: boolean;
 }

@@ -35,6 +35,7 @@ export class Isolated {
       is,
       spy,
       ...context,
+      bench: testCase.bench.bind(testCase),
       it: testCase.it.bind(testCase),
       fail: testCase.fail.bind(testCase),
       sequence: testCase.sequence.bind(testCase),

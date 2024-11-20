@@ -182,6 +182,26 @@ declare global {
   ): void;
 
   /**
+   * Benchmarks a test function with optional retry and configuration.
+   *
+   * @param description - Description of the test being benchmarked
+   * @param fn - Test function to execute
+   * @param options - Optional configuration for benchmarking
+   *
+   * @example
+   *bench('benched test', async () => {
+   *   // Test logic to bench
+   * });
+   *
+   * @since v1.0.0
+   */
+  function bench(
+    description: string,
+    fn: TestFunction,
+    options: Partial<Options> = {}
+  ): void {
+
+  /**
    * Registers a test case to be executed exclusively.
    *
    * @param {string} description - The description of the exclusive test case.

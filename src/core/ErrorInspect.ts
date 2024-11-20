@@ -1,6 +1,5 @@
 import kleur from "../utils/kleur.js";
 import esbuild from "esbuild";
-import fs from "fs";
 
 interface ParsedStack {
   file?: string;
@@ -19,56 +18,9 @@ interface ErrorInspectOptions {
   file?: string;
 }
 
-interface ErrorContext {
-  previousLine: string;
-  errorLine: string;
-  nextLine: string;
-  column: number;
-}
-
 export class ErrorInspect {
   private static regex =
     /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
-
-  private static read(
-    filePath: string,
-    lineNumber: number,
-  ): ErrorContext | null {
-    try {
-      const lines = fs.readFileSync(filePath, "utf-8").split("\n");
-      const target = lineNumber - 1;
-      if (target < 0 || target >= lines.length) return null;
-      return {
-        previousLine: lines[target - 1] || "",
-        errorLine: lines[target],
-        nextLine: lines[target + 1] || "",
-        column: 0,
-      };
-    } catch {
-      return null;
-    }
-  }
-
-  private static formatContext(
-    context: ErrorContext,
-    lineNumber: number,
-  ): string {
-    const lineNumWidth = String(lineNumber + 1).length;
-    const pad = (num: number) => String(num).padStart(lineNumWidth);
-
-    return (
-      (context.previousLine
-        ? kleur.gray(pad(lineNumber - 1)) + " | " + context.previousLine + "\n"
-        : "") +
-      kleur.red(pad(lineNumber)) +
-      " | " +
-      kleur.bgLightRed(context.errorLine) +
-      "\n" +
-      (context.nextLine
-        ? kleur.gray(pad(lineNumber + 1)) + " | " + context.nextLine + "\n"
-        : "")
-    );
-  }
 
   private static formatLine(parsed: ParsedStack): string {
     const file = parsed.file?.padEnd(30) || "<UNKNOWN>";
@@ -82,7 +34,8 @@ export class ErrorInspect {
       " " +
       kleur.bold(line.toString()) +
       ":" +
-      kleur.bold(column.toString())
+      kleur.bold(column.toString()) +
+      "\n"
     );
   }
 
@@ -112,19 +65,7 @@ export class ErrorInspect {
 
   private static show(stack: string, options: ErrorInspectOptions): string {
     const parsedStack = this.stack(stack, options);
-
-    return parsedStack
-      .map((parsed) => {
-        const line = this.formatLine(parsed);
-        if (!parsed.file || !parsed.lineNumber) return line;
-
-        const context = this.read(parsed.file, parsed.lineNumber);
-        if (!context) return line;
-
-        context.column = parsed.column || 0;
-        return line + this.formatContext(context, parsed.lineNumber);
-      })
-      .join("\n");
+    return parsedStack.map((parsed) => this.formatLine(parsed)).join("\n");
   }
 
   private static buildMessages(
@@ -138,7 +79,7 @@ export class ErrorInspect {
   }
 
   static format(options: ErrorInspectOptions): string {
-    const separator = kleur.gray("-".repeat(process.stdout.columns));
+    const separator = kleur.gray("-".repeat(process.stdout.columns / 2));
     const header = options.error?.message || "No Error Message was provided";
     const body = options.error?.stack
       ? this.show(options.error.stack, options)
@@ -158,11 +99,7 @@ export class ErrorInspect {
 
     // Return either buildMessages or the fallback (header + body)
     return (
-      separator +
-      "\n" +
-      (buildMessages || header + "\n" + body) +
-      "\n" +
-      separator
+      separator + "\n" + (buildMessages || header + "\n\n" + body) + separator
     );
   }
 }
