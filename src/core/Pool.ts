@@ -123,7 +123,7 @@ export class Pool {
         total: 0,
         passed: 0,
         failed: 0,
-        softFailed: 0,
+        softfailed: 0,
         skipped: 0,
         todo:0
       };

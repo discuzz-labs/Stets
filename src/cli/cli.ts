@@ -11,6 +11,7 @@ import { Env } from "../core/Env.js";
 import { Pool } from "../core/Pool.js";
 import { Glob } from "../glob/Glob.js";
 import { help} from "./commands.js";
+import { Reporter } from "../reporters/Reporter.js";
 
 (async () => {
   const args = new ArgsParser();
@@ -34,7 +35,9 @@ import { help} from "./commands.js";
   const files = args.get("file");
   const context = config.get("context")
   const tsconfig = config.get("tsconfig")
+  
   new Env(envs).load();
+  new Reporter(["all"])
 
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
   const pool = new Pool({

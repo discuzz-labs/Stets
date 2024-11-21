@@ -4,7 +4,11 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
+import {
+  Stats,
+  TestCaseStatus,
+  TestReport,
+} from "../framework/TestCase.js";
 import { ErrorMetadata, ErrorInspect } from "../core/ErrorInspect.js";
 import kleur from "../utils/kleur.js";
 import path from "path";
@@ -15,37 +19,15 @@ interface ReportOptions {
   report: TestReport;
 }
 
-interface DraftArgs {
-  file: string;
-  status: TestCaseStatus;
-}
-
-interface TestCaseArgs {
+interface LogArgs {
   description: string;
-  file: string;
-  duration: number;
-  status: TestCaseStatus;
-  stats: Stats;
-}
-
-interface FailArgs {
-  description: string;
-  error: ErrorMetadata | undefined;
-  file: string;
-  retries: number;
-  softFail: boolean;
-}
-
-interface SkipArgs {
-  description: string;
-}
-
-interface BenchArgs {
-  description: string;
-}
-
-interface TodoArgs {
-  description: string;
+  file?: string;
+  duration?: number;
+  status?: TestCaseStatus;
+  stats?: Stats;
+  error?: ErrorMetadata;
+  retries?: number;
+  softFail?: boolean;
 }
 
 export class Reporter {
@@ -54,234 +36,126 @@ export class Reporter {
     passed: 0,
     failed: 0,
     skipped: 0,
-    softFailed: 0,
+    softfailed: 0,
     todo: 0,
   };
 
+  static config: Set<string>;
+
+  constructor(config: string[]) {
+    Reporter.config = new Set(config.map((level) => level.toLowerCase()));
+  }
+
   private static details(stats: Stats): string {
-    let statusText = "";
-    if (stats.failed > 0) {
-      statusText += kleur.red(" 🔴" + stats.failed);
-    }
-    if (stats.skipped > 0) {
-      statusText += kleur.yellow(" 🟡" + stats.skipped);
-    }
-    if (stats.passed > 0) {
-      statusText += kleur.green(" 🟢" + stats.passed);
-    }
-    if (stats.softFailed > 0) {
-      statusText += kleur.lightRed(" 🟠" + stats.softFailed);
-    }
-    if (stats.todo > 0) {
-      statusText += kleur.purple(" ✏️ " + stats.todo);
-    }
-    if (statusText === "") {
-      statusText = " Empty ";
-    }
-    if (stats.total > 0) {
-      statusText += kleur.gray(" 🔢" + stats.total);
-    }
-    return statusText;
+    const elements = [
+      stats.failed > 0 && kleur.red(`🔴 ${stats.failed}`),
+      stats.skipped > 0 && kleur.yellow(`🟡 ${stats.skipped}`),
+      stats.passed > 0 && kleur.green(`🟢 ${stats.passed}`),
+      stats.softfailed > 0 && kleur.lightRed(`🟠 ${stats.softfailed}`),
+      stats.todo > 0 && kleur.purple(`✏️ ${stats.todo}`),
+      stats.total > 0 && kleur.gray(`🔢 ${stats.total}`),
+    ];
+    return elements.filter(Boolean).join(" ") || "Empty";
   }
 
-  private static status(name: string, status: TestCaseStatus): string {
-    switch (status) {
-      case "pending":
-        return kleur.bgYellow(" RUNNING ");
-      case "empty":
-        return kleur.bgGray(name);
+  static status(name: string, status: TestCaseStatus): string {
+    const statusMap = {
+      pending: kleur.bgYellow(" RUNNING "),
+      empty: kleur.bgGray(name),
+      failed: kleur.bgRed(name),
+      passed: kleur.bgGreen(name),
+    };
+    return statusMap[status] || kleur.bgBlack(name);
+  }
+
+  private static log(args: LogArgs, type: string): string {
+    const { description, file, error, retries } = args;
+    const labelMap = {
+      failed: kleur.bgRed(kleur.bold(" FAILED ")),
+      softfailed: kleur.bgLightRed(kleur.bold(" SOFT FAIL ")),
+      skipped: kleur.bgYellow(kleur.bold(" SKIPPED ")),
+      passed: kleur.bgGreen(kleur.bold(" PASSED ")),
+      todo: kleur.bgPurple(kleur.bold(" TODO ")),
+      benched: kleur.bgBlue(kleur.bold(" BENCHED ")),
+    };
+
+    if (!Reporter.config.has(type.toLowerCase()) && !Reporter.config.has("all"))
+      return "";
+
+    switch (type) {
       case "failed":
-        return kleur.bgRed(name);
+      case "softfailed":
+        const errorDetails = ErrorInspect.format({
+          error,
+          file,
+          maxLines: 10,
+        });
+        return `${labelMap[type]} ${kleur.bgBlack(
+          kleur.white(description),
+        )} ${kleur.gray(`retries: ${retries}`)}\n${errorDetails}\n`;
+      case "skipped":
+      case "todo":
       case "passed":
-        return kleur.bgGreen(name);
+      case "benched":
+        return `${labelMap[type]} ${kleur.bgBlack(kleur.white(description))}`;
     }
+    return "";
   }
 
-  private static fail({
-    file,
-    description,
-    error,
-    retries,
-    softFail,
-  }: FailArgs): string {
-    const errorDetails = ErrorInspect.format({
-      error,
-      file,
-      maxLines: 10,
-    });
+  static header({ description, file, duration, stats }: LogArgs): string {
     return (
-      (softFail
-        ? kleur.bgLightRed(kleur.bold(" SOFT FAIL "))
-        : kleur.bgRed(kleur.bold(" FAILED "))) +
-      " " +
-      kleur.bgBlack(kleur.white(description)) +
-      " " +
-      kleur.gray("retries: " + retries) +
-      "\n" +
-      errorDetails +
-      "\n"
+      `\n\n${kleur.bold(description)} (${this.details(stats!)}) ` +
+      `at ${kleur.gray(path.dirname(file!))} in ${kleur.gray(`${duration} s`)}\n\n`
     );
   }
 
-  private static skip({ description }: SkipArgs): string {
-    return (
-      kleur.bgYellow(kleur.bold(" SKIPPED ")) +
-      " " +
-      kleur.bgBlack(kleur.white(description))
-    );
-  }
-
-  private static bench({ description }: BenchArgs): string {
-    return (
-      kleur.bgBlue(kleur.bold(" BENCHED ")) +
-      " " +
-      kleur.bgBlack(kleur.white(description)) +
-      "\n"
-    );
-  }
-
-  private static todo({ description }: TodoArgs): string {
-    return (
-      kleur.bgPurple(kleur.bold(" TODO ")) +
-      " " +
-      kleur.bgBlack(kleur.white(description))
-    );
-  }
-
-  private static pass({ description }: TodoArgs): string {
-    return (
-      kleur.bgGreen(kleur.bold(" PASSED ")) +
-      " " +
-      kleur.bgBlack(kleur.white(description))
-    );
-  }
-
-  static draft({ file, status }: DraftArgs): string {
-    const dirPath = path.dirname(file);
-    const fileName = path.basename(file);
-
-    return (
-      this.status(fileName, status) +
-      " " +
-      kleur.gray(dirPath) +
-      "/" +
-      kleur.white(fileName)
-    );
-  }
-
-  static header({
-    description,
-    file,
-    duration,
-    status,
-    stats,
-  }: TestCaseArgs): string {
-    return (
-      "\n\n" +
-      this.status(description, status) +
-      " (" +
-      this.details(stats) +
-      ") " +
-      " at " +
-      kleur.gray(path.dirname(file)) +
-      " in " +
-      kleur.gray(`${duration} s`) +
-      "\n\n"
-    );
-  }
-
-  static report({ file, report }: ReportOptions) {
-    const output = [];
+  static report({ file, report }: ReportOptions): string {
+    const output: string[] = [];
     const items = [...report.tests, ...report.hooks];
 
     items.forEach((t) => {
-      switch (t.status) {
-        case "failed":
-          this.stats.failed++;
-          output.push(
-            this.fail({
-              description: t.description,
-              error: t.error,
-              file,
-              retries: t.retries,
-              softFail: false,
-            }),
-          );
-          break;
-        case "skipped":
-          this.stats.skipped++;
-          output.push(this.skip({ description: t.description }));
-          break;
-        case "soft-failed":
-          this.stats.softFailed++;
-          output.push(
-            this.fail({
-              description: t.description,
-              error: t.error,
-              file,
-              retries: t.retries,
-              softFail: true,
-            }),
-          );
-          break;
-        case "todo":
-          this.stats.todo++;
-          output.push(
-            this.todo({
-              description: t.description,
-            }),
-          );
-          break;
-        case "passed":
-          this.stats.passed++;
-          output.push(this.pass({ description: t.description }));
-      }
+      output.push(
+        this.log(
+          {
+            description: t.description,
+            error: t.error,
+            file,
+            retries: t.retries,
+            softFail: t.status === "softfailed",
+          },
+          t.status,
+        ),
+      );
+      this.stats[t.status]++;
     });
 
     report.benchMarks.forEach((bench) => {
       if (!bench) return;
-      output.push(this.bench({ description: bench["Task name"] as string }));
+      output.push(
+        this.log({ description: bench["Task name"] as string }, "benched"),
+      );
       output.push(Table([bench], Object.keys(bench).slice(-5)));
     });
 
     this.stats.total += report.stats.total;
     if (items.length === 0) output.push(`${report.description} is empty!`);
-    return output.join("\n");
+    return output.filter(Boolean).join("\n");
   }
 
   static summary(): string {
-    const { total, passed, failed, skipped, softFailed, todo } = this.stats;
-    const passedPercentage =
-      total > 0 ? ((passed / total) * 100).toFixed(2) : "0.00";
-    const failedPercentage =
-      total > 0 ? ((failed / total) * 100).toFixed(2) : "0.00";
-    const skippedPercentage =
-      total > 0 ? ((skipped / total) * 100).toFixed(2) : "0.00";
-    const softFailedPercentage =
-      total > 0 ? ((softFailed / total) * 100).toFixed(2) : "0.00";
-    const todoPercentage =
-      total > 0 ? ((todo / total) * 100).toFixed(2) : "0.00";
+    const { total, passed, failed, skipped, softfailed, todo } = this.stats;
+    const calcPercent = (count: number) =>
+      total > 0 ? ((count / total) * 100).toFixed(2) : "0.00";
 
     return (
-      "\n\n" +
-      kleur.white("Total: ") +
-      `${total}` +
-      "\n" +
-      kleur.green("Passed: ") +
-      `${passed} (${kleur.bold(passedPercentage)}%)` +
-      "\n" +
-      kleur.red("Failed: ") +
-      `${failed} (${kleur.bold(failedPercentage)}%)` +
-      "\n" +
-      kleur.yellow("Skipped: ") +
-      `${skipped} (${kleur.bold(skippedPercentage)}%)` +
-      "\n" +
-      kleur.lightRed("Soft failed: ") +
-      `${softFailed} (${kleur.bold(softFailedPercentage)}%)` +
-      "\n" +
-      kleur.purple("Todo: ") +
-      `${todo} (${kleur.bold(todoPercentage)}%)` +
-      "\n\n" +
+      `\n\n${kleur.white("Total: ")}${total}\n` +
+      `${kleur.green("Passed: ")}${passed} (${kleur.bold(calcPercent(passed))}%)\n` +
+      `${kleur.red("Failed: ")}${failed} (${kleur.bold(calcPercent(failed))}%)\n` +
+      `${kleur.yellow("Skipped: ")}${skipped} (${kleur.bold(calcPercent(skipped))}%)\n` +
+      `${kleur.lightRed("Soft failed: ")}${softfailed} (${kleur.bold(
+        calcPercent(softfailed),
+      )}%)\n` +
+      `${kleur.purple("Todo: ")}${todo} (${kleur.bold(calcPercent(todo))}%)\n\n` +
       kleur.gray("🍾 ⚡️ All Tests ran!") +
       "\n\n"
     );

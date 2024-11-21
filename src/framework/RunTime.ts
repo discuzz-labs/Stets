@@ -35,7 +35,7 @@ class RunTime {
       timeout,
       skip,
       if: condition,
-      softFail,
+      softfail,
       retry,
       bench,
       todo,
@@ -87,8 +87,8 @@ class RunTime {
 
         // If softFail is set and this was the last attempt, mark as "soft-fail"
         if (result.retries > retry) {
-          if (softFail) {
-            result.status = "soft-failed";
+          if (softfail) {
+            result.status = "softfailed";
             result.error = {
               message: `Soft failure: ${lastError.message}`,
               stack: lastError.stack,
@@ -131,7 +131,7 @@ class RunTime {
         passed: 0,
         failed: 0,
         skipped: 0,
-        softFailed: 0,
+        softfailed: 0,
         todo: 0
       },
       status: "passed",
@@ -237,8 +237,8 @@ class RunTime {
       if (result.status === "passed") {
         report.stats.passed++;
       }
-      if (result.status === "soft-failed") {
-        report.stats.softFailed++;
+      if (result.status === "softfailed") {
+        report.stats.softfailed++;
       }
       if (result.status === "failed") {
         report.stats.failed++;

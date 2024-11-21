@@ -13,7 +13,7 @@ export type HookFunction = () => void | Promise<void>;
 export type Status =
   | "passed"
   | "failed"
-  | "soft-failed"
+  | "softfailed"
   | "skipped"
   | "todo"
 export type TestCaseStatus = "passed" | "failed" | "pending" |"empty"
@@ -28,7 +28,7 @@ export interface Options {
     | null
     | (() => boolean | Promise<boolean> | null | undefined);
   retry: number;
-  softFail: boolean;
+  softfail: boolean;
   sequencial: boolean;
   bench: boolean;
   todo: boolean;
@@ -65,7 +65,7 @@ export interface Stats {
   skipped: number;
   passed: number;
   failed: number;
-  softFailed: number;
+  softfailed: number;
   todo: number;
 }
 
@@ -81,7 +81,7 @@ export interface TestReport {
 const DEFAULT_OPTIONS: Options = {
   timeout: 0,
   skip: false,
-  softFail: false,
+  softfail: false,
   if: true,
   retry: 0,
   sequencial: false,
@@ -222,7 +222,7 @@ class TestCase {
     fn: TestFunction,
     options?: Partial<Options>,
   ): void {
-    const mergedOptions = mergeOptions({ ...options, softFail: true });
+    const mergedOptions = mergeOptions({ ...options, softfail: true });
     if (options?.sequencial)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });

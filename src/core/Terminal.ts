@@ -1,4 +1,6 @@
+import path from "path";
 import { TestCaseStatus } from "../framework/TestCase.js";
+import kleur from "../utils/kleur.js";
 import { Reporter } from "../reporters/Reporter.js";
 
 /*
@@ -9,11 +11,23 @@ import { Reporter } from "../reporters/Reporter.js";
 export class Terminal {
   renderMap = new Map<string, TestCaseStatus>();
 
+  draft(file: string, status: TestCaseStatus) {
+    const dirPath = path.dirname(file);
+    const fileName = path.basename(file);
+
+    console.log(
+      Reporter.status(fileName, status) +
+        " " +
+        kleur.gray(dirPath) +
+        "/" +
+        kleur.white(fileName),
+    );
+  }
   // Function to render the current file statuses in the console
   render() {
-    //console.clear(); // Clears the console
+    console.clear(); // Clears the console
     this.renderMap.forEach((status, file) => {
-      console.log(Reporter.draft({ file, status }));
+      this.draft(file, status);
     });
   }
 
