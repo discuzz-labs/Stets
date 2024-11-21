@@ -4,15 +4,12 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import {
-  Stats,
-  TestCaseStatus,
-  TestReport,
-} from "../framework/TestCase.js";
+import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
 import { ErrorMetadata, ErrorInspect } from "../core/ErrorInspect.js";
 import kleur from "../utils/kleur.js";
 import path from "path";
 import { Table } from "../utils/Table.js";
+import { BenchmarkMetrics } from "../core/Bench.js";
 
 interface ReportOptions {
   file: string;
@@ -28,6 +25,7 @@ interface LogArgs {
   error?: ErrorMetadata;
   retries?: number;
   softFail?: boolean;
+  bench?: BenchmarkMetrics | null
 }
 
 export class Reporter {
@@ -96,8 +94,9 @@ export class Reporter {
       case "skipped":
       case "todo":
       case "passed":
-      case "benched":
         return `${labelMap[type]} ${kleur.bgBlack(kleur.white(description))}`;
+      case "benched":
+        return `${labelMap[type]} ${kleur.bgBlack(kleur.white(description))}\n\n${Table([args.bench])}`;
     }
     return "";
   }
@@ -122,19 +121,13 @@ export class Reporter {
             file,
             retries: t.retries,
             softFail: t.status === "softfailed",
+            bench: t.bench
           },
           t.status,
         ),
       );
-      this.stats[t.status]++;
-    });
 
-    report.benchMarks.forEach((bench) => {
-      if (!bench) return;
-      output.push(
-        this.log({ description: bench["Task name"] as string }, "benched"),
-      );
-      output.push(Table([bench], Object.keys(bench).slice(-5)));
+      t.status === "benched" ? this.stats.passed++ : this.stats[t.status]++;
     });
 
     this.stats.total += report.stats.total;

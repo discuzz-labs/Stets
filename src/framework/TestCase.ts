@@ -7,6 +7,7 @@
 import { format } from "util";
 import RunTime from "./RunTime.js";
 import { ErrorMetadata } from "../core/ErrorInspect.js";
+import { BenchmarkMetrics } from "../core/Bench.js";
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
@@ -16,6 +17,7 @@ export type Status =
   | "softfailed"
   | "skipped"
   | "todo"
+  | "benched"
 export type TestCaseStatus = "passed" | "failed" | "pending" |"empty"
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
@@ -51,6 +53,7 @@ export type TestResult = {
   status: Status;
   retries: number;
   error?: ErrorMetadata;
+  bench: BenchmarkMetrics | null
 };
 
 export type HookResult = {
@@ -58,6 +61,7 @@ export type HookResult = {
   status: Status;
   retries: number;
   error?: ErrorMetadata;
+  bench: null;
 };
 
 export interface Stats {
@@ -75,7 +79,6 @@ export interface TestReport {
   status: TestCaseStatus;
   tests: TestResult[];
   hooks: HookResult[];
-  benchMarks: (Record<string, string | number | undefined> | null)[];
 }
 
 const DEFAULT_OPTIONS: Options = {

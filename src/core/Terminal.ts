@@ -25,7 +25,7 @@ export class Terminal {
   }
   // Function to render the current file statuses in the console
   render() {
-    console.clear(); // Clears the console
+    //console.clear(); // Clears the console
     this.renderMap.forEach((status, file) => {
       this.draft(file, status);
     });

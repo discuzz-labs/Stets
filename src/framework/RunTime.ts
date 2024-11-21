@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Bench } from "tinybench";
+import { Bench } from "../core/Bench.js";
 import type {
   Hook,
   HookResult,
@@ -20,11 +20,8 @@ import { cpus } from "os";
 class RunTime {
   private readonly MAX_PARALLEL_TESTS = cpus().length || 4;
   private readonly MAX_TIMEOUT = 300_000; // 5 minutes
-  private bench: Bench;
 
-  constructor(private testCase: TestCase) {
-    this.bench = new Bench({ name: testCase.description, time: 1 });
-  }
+  constructor(private testCase: TestCase) {}
 
   // Define a common interface for Test and Hook
   private async execute(
@@ -40,14 +37,18 @@ class RunTime {
       bench,
       todo,
     } = options;
+
     const result: TestResult | HookResult = {
       description,
       retries: 0,
       status: "passed",
+      bench: null,
     };
-    if (todo) result.status = "todo";
 
-    if (bench) this.bench.add(description, fn);
+    if (todo) {
+      result.status = "todo";
+      return result;
+    }
 
     if (
       skip ||
@@ -79,8 +80,7 @@ class RunTime {
           ),
         ]);
 
-        // If it succeeds, we exit the loop with a passed result
-        return result;
+        break;
       } catch (error: any) {
         lastError = error; // Keep track of the last error
         result.retries++;
@@ -103,6 +103,11 @@ class RunTime {
           return result;
         }
       }
+    }
+
+    if (bench) {
+      result.bench = await Bench.run(fn);
+      result.status = "benched";
     }
 
     return result;
@@ -132,13 +137,12 @@ class RunTime {
         failed: 0,
         skipped: 0,
         softfailed: 0,
-        todo: 0
+        todo: 0,
       },
       status: "passed",
       description: this.testCase.description,
       tests: [],
       hooks: [],
-      benchMarks: [],
     };
   }
 
@@ -237,6 +241,9 @@ class RunTime {
       if (result.status === "passed") {
         report.stats.passed++;
       }
+      if (result.status === "benched") {
+        report.stats.passed++;
+      }
       if (result.status === "softfailed") {
         report.stats.softfailed++;
       }
@@ -250,10 +257,6 @@ class RunTime {
         report.stats.todo++;
       }
     }
-  }
-
-  private async runBenchs() {
-    await this.bench.run();
   }
 
   // Run all tests and hooks in the TestCase
@@ -270,10 +273,6 @@ class RunTime {
     await this.runTestsInSequence(sequenceTestsToRun, report);
 
     await this.runHook(this.testCase.hooks.afterAll, report);
-
-    await this.runBenchs();
-
-    report.benchMarks = this.bench.table();
 
     report.status = this.status(report.stats);
 
