@@ -102,6 +102,15 @@ export default class kleur {
     return this.apply("100", text);
   }
 
+  //Purple Colors
+  public static purple(text: string | number): string {
+    return this.apply("35", text);
+  }
+  
+  public static bgPurple(text: string | number): string {
+    return this.apply("45", text);
+  }
+
   // Formatting
   public static bold(text: string | number): string {
     return this.apply("1", text);

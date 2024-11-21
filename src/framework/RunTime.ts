@@ -12,7 +12,7 @@ import type {
   TestResult,
   TestReport,
   Stats,
-  TestCaseStatus
+  TestCaseStatus,
 } from "./TestCase.js";
 import TestCase from "./TestCase.js";
 import { cpus } from "os";
@@ -31,16 +31,24 @@ class RunTime {
     executable: Test | Hook,
   ): Promise<TestResult | HookResult> {
     const { description, fn, options } = executable;
-    const { timeout, skip, if: condition, softFail, retry, bench } = options;
+    const {
+      timeout,
+      skip,
+      if: condition,
+      softFail,
+      retry,
+      bench,
+      todo,
+    } = options;
     const result: TestResult | HookResult = {
       description,
       retries: 0,
       status: "passed",
     };
-    
-    if(bench) this.bench.add(description, fn)
-      
-    
+    if (todo) result.status = "todo";
+
+    if (bench) this.bench.add(description, fn);
+
     if (
       skip ||
       condition === undefined ||
@@ -110,10 +118,10 @@ class RunTime {
   }
 
   private status(stats: Stats): TestCaseStatus {
-    if(stats.total === 0) return "empty"
-    if(stats.failed > 0) return "failed"
-    
-    return "passed"
+    if (stats.total === 0) return "empty";
+    if (stats.failed > 0) return "failed";
+
+    return "passed";
   }
 
   private initializeReport(): TestReport {
@@ -124,13 +132,13 @@ class RunTime {
         failed: 0,
         skipped: 0,
         softFailed: 0,
-        benched: 0,
+        todo: 0
       },
       status: "passed",
       description: this.testCase.description,
       tests: [],
       hooks: [],
-      benchMarks: []
+      benchMarks: [],
     };
   }
 
@@ -180,7 +188,6 @@ class RunTime {
           description: test.description,
           status: "skipped",
         } as TestResult);
-        report.stats.skipped++;
       }
     }
   }
@@ -229,16 +236,24 @@ class RunTime {
     for (const result of results) {
       if (result.status === "passed") {
         report.stats.passed++;
-      } else if (result.status === "soft-failed") {
+      }
+      if (result.status === "soft-failed") {
         report.stats.softFailed++;
-      } else if (result.status === "failed") {
+      }
+      if (result.status === "failed") {
         report.stats.failed++;
+      }
+      if (result.status === "skipped") {
+        report.stats.skipped++;
+      }
+      if (result.status === "todo") {
+        report.stats.todo++;
       }
     }
   }
 
   private async runBenchs() {
-    await this.bench.run()
+    await this.bench.run();
   }
 
   // Run all tests and hooks in the TestCase
@@ -256,11 +271,9 @@ class RunTime {
 
     await this.runHook(this.testCase.hooks.afterAll, report);
 
-    await this.runBenchs()
+    await this.runBenchs();
 
-    report.benchMarks = this.bench.table()
-    
-    report.stats.benched = this.bench.table().length
+    report.benchMarks = this.bench.table();
 
     report.status = this.status(report.stats);
 

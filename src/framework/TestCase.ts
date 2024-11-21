@@ -15,6 +15,7 @@ export type Status =
   | "failed"
   | "soft-failed"
   | "skipped"
+  | "todo"
 export type TestCaseStatus = "passed" | "failed" | "pending" |"empty"
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
@@ -30,6 +31,7 @@ export interface Options {
   softFail: boolean;
   sequencial: boolean;
   bench: boolean;
+  todo: boolean;
 }
 
 export interface Test {
@@ -64,7 +66,7 @@ export interface Stats {
   passed: number;
   failed: number;
   softFailed: number;
-  benched: number;
+  todo: number;
 }
 
 export interface TestReport {
@@ -83,7 +85,8 @@ const DEFAULT_OPTIONS: Options = {
   if: true,
   retry: 0,
   sequencial: false,
-  bench: false
+  bench: false,
+  todo: false
 };
 
 // Merge the provided options with the default options
@@ -190,10 +193,11 @@ class TestCase {
   }
 
   public todo(description: string, options?: Partial<Options>): void {
+    const mergedOptions = mergeOptions({ ...options, todo: true });
     this.tests.push({
       description,
       fn: () => {},
-      options: mergeOptions(options),
+      options: mergedOptions,
     });
   }
 

@@ -115,7 +115,7 @@ export class Pool {
   }
 
   report() {
-    // console.clear();
+    console.clear();
 
     for (const [file, { logs, error, duration, report }] of this.reports) {
       const status = report ? report.status : "failed";
@@ -125,7 +125,7 @@ export class Pool {
         failed: 0,
         softFailed: 0,
         skipped: 0,
-        benched:0
+        todo:0
       };
       const description = report?.description || path.basename(file);
 

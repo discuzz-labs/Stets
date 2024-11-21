@@ -40,6 +40,14 @@ interface SkipArgs {
   description: string;
 }
 
+interface BenchArgs {
+  description: string;
+}
+
+interface TodoArgs {
+  description: string;
+}
+
 export class Reporter {
   static stats: Stats = {
     total: 0,
@@ -47,7 +55,7 @@ export class Reporter {
     failed: 0,
     skipped: 0,
     softFailed: 0,
-    benched: 0,
+    todo: 0,
   };
 
   private static details(stats: Stats): string {
@@ -64,10 +72,10 @@ export class Reporter {
     if (stats.softFailed > 0) {
       statusText += kleur.lightRed(" 🟠" + stats.softFailed);
     }
-    if (stats.benched > 0) {
-      statusText += kleur.blue(" ⏱️ " + stats.benched);
+    if (stats.todo > 0) {
+      statusText += kleur.purple(" ✏️ " + stats.todo);
     }
-    if (statusText === '') {
+    if (statusText === "") {
       statusText = " Empty ";
     }
     if (stats.total > 0) {
@@ -84,7 +92,7 @@ export class Reporter {
         return kleur.bgGray(name);
       case "failed":
         return kleur.bgRed(name);
-      default:
+      case "passed":
         return kleur.bgGreen(name);
     }
   }
@@ -119,17 +127,32 @@ export class Reporter {
     return (
       kleur.bgYellow(kleur.bold(" SKIPPED ")) +
       " " +
-      kleur.bgBlack(kleur.white(description)) +
-      "\n"
+      kleur.bgBlack(kleur.white(description))
     );
   }
 
-  private static bench({ description }: SkipArgs): string {
+  private static bench({ description }: BenchArgs): string {
     return (
       kleur.bgBlue(kleur.bold(" BENCHED ")) +
       " " +
       kleur.bgBlack(kleur.white(description)) +
       "\n"
+    );
+  }
+
+  private static todo({ description }: TodoArgs): string {
+    return (
+      kleur.bgPurple(kleur.bold(" TODO ")) +
+      " " +
+      kleur.bgBlack(kleur.white(description))
+    );
+  }
+
+  private static pass({ description }: TodoArgs): string {
+    return (
+      kleur.bgGreen(kleur.bold(" PASSED ")) +
+      " " +
+      kleur.bgBlack(kleur.white(description))
     );
   }
 
@@ -154,6 +177,7 @@ export class Reporter {
     stats,
   }: TestCaseArgs): string {
     return (
+      "\n\n" +
       this.status(description, status) +
       " (" +
       this.details(stats) +
@@ -200,17 +224,25 @@ export class Reporter {
             }),
           );
           break;
-        default:
+        case "todo":
+          this.stats.todo++;
+          output.push(
+            this.todo({
+              description: t.description,
+            }),
+          );
+          break;
+        case "passed":
           this.stats.passed++;
+          output.push(this.pass({ description: t.description }));
       }
     });
 
     report.benchMarks.forEach((bench) => {
-      if(!bench) return
-      output.push(this.bench({ description: bench['Task name'] as string}))
-      output.push(Table([bench], Object.keys(bench).slice(-5)))
+      if (!bench) return;
+      output.push(this.bench({ description: bench["Task name"] as string }));
+      output.push(Table([bench], Object.keys(bench).slice(-5)));
     });
-
 
     this.stats.total += report.stats.total;
     if (items.length === 0) output.push(`${report.description} is empty!`);
@@ -218,7 +250,7 @@ export class Reporter {
   }
 
   static summary(): string {
-    const { total, passed, failed, skipped, softFailed } = this.stats;
+    const { total, passed, failed, skipped, softFailed, todo } = this.stats;
     const passedPercentage =
       total > 0 ? ((passed / total) * 100).toFixed(2) : "0.00";
     const failedPercentage =
@@ -227,9 +259,11 @@ export class Reporter {
       total > 0 ? ((skipped / total) * 100).toFixed(2) : "0.00";
     const softFailedPercentage =
       total > 0 ? ((softFailed / total) * 100).toFixed(2) : "0.00";
+    const todoPercentage =
+      total > 0 ? ((todo / total) * 100).toFixed(2) : "0.00";
 
     return (
-      "\n" +
+      "\n\n" +
       kleur.white("Total: ") +
       `${total}` +
       "\n" +
@@ -245,8 +279,11 @@ export class Reporter {
       kleur.lightRed("Soft failed: ") +
       `${softFailed} (${kleur.bold(softFailedPercentage)}%)` +
       "\n" +
-      kleur.gray("\n🍾 ⚡️ All Tests ran!") +
-      "\n"
+      kleur.purple("Todo: ") +
+      `${todo} (${kleur.bold(todoPercentage)}%)` +
+      "\n\n" +
+      kleur.gray("🍾 ⚡️ All Tests ran!") +
+      "\n\n"
     );
   }
 }
