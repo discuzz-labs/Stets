@@ -18,6 +18,5 @@ node_modules/
 
 dist
 test
-examples
-core-wasm/target
-core-wasm/Cargo.lock
+
+veve

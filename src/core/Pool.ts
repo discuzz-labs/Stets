@@ -125,7 +125,7 @@ export class Pool {
         failed: 0,
         softfailed: 0,
         skipped: 0,
-        todo:0
+        todo: 0,
       };
       const description = report?.description || path.basename(file);
 
@@ -133,9 +133,13 @@ export class Pool {
         Reporter.header({ description, file, duration, status, stats }),
       );
 
-      if (report) process.stdout.write(Reporter.report({ file, report }));
+      if (report) {
+        process.stdout.write(Reporter.report({ file, report }));
+      }
       if (error)
-        process.stdout.write(ErrorInspect.format({ error, file, maxLines: 10 }));
+        process.stdout.write(
+          ErrorInspect.format({ error, file, maxLines: 10 }),
+        );
 
       replay(logs);
     }

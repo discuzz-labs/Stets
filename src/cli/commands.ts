@@ -25,9 +25,29 @@ const COMMANDS: Record<
     shortValue: "h",
     type: "",
   },
+  outputDir: {
+    description: "Specify the directory where output files will be saved realtive to cwd.",
+    requiresValue: true,
+    isArray: false,
+    shortValue: "o",
+    type: "path",
+  },
+  formats: {
+    description: "List of formats for output (JSON, JUnit, HTML).",
+    requiresValue: true,
+    isArray: true,
+    shortValue: "rf",
+    type: "json, junit, html",
+  },
+  timestamp: {
+    description: "Include a timestamp in the report path.",
+    requiresValue: false,
+    isArray: false,
+    shortValue: "",
+    type: "boolean",
+  },
   version: {
-    description:
-      "Display current version",
+    description: "Display current version",
     requiresValue: false,
     isArray: false,
     shortValue: "v",
@@ -97,7 +117,7 @@ function version() {
 
 function help(): string {
   const appName = kleur.blue("Veve");
-  const appVersion = version()
+  const appVersion = version();
   const header = `\nUsage: ${appName} ${appVersion} [options]\n\n${kleur.gray("Options")}:\n`;
 
   // Sort and process options in a single pass

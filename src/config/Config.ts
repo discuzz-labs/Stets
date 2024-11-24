@@ -20,6 +20,9 @@ export type Veve = {
     timeout: number;
     context: Record<any, any>;
     tsconfig: string;
+    outputDir: string;
+    formats: string[];
+    timestamp: boolean;
 };
 
 export function veve(config: Partial<Veve>): Partial<Veve> {

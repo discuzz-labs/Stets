@@ -7,7 +7,10 @@ const config: Veve = {
   plugins: [],
   timeout: 600_000,
   context: {},
-  tsconfig: ""
+  tsconfig: "",
+  outputDir: "",
+  timestamp: false,
+  formats: ["json"]
 };
 
 export default config;

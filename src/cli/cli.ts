@@ -35,9 +35,17 @@ import { Reporter } from "../reporters/Reporter.js";
   const files = args.get("file");
   const context = config.get("context")
   const tsconfig = config.get("tsconfig")
+  const timestamp = args.get("timestamp") || config.get("timestamp");
+  const outputDir = args.get("outputDir") || config.get("outputDir");
+  const formats = args.get("formats") || config.get("formats");
   
   new Env(envs).load();
-  new Reporter(["all"])
+  new Reporter({
+    timestamp,
+    // Todo: Add Type validtion on all passed values
+    formats: (formats as any),
+    outputDir
+  })
 
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
   const pool = new Pool({

@@ -18,6 +18,9 @@ export type CLIOptions = {
   envs?: string[];
   timeout?: number;
   tsconfig?: string;
+  outputDir?: string;
+  formats?: string[];
+  timestamp?: boolean;
 };
 ////
 
