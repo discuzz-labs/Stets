@@ -138,7 +138,7 @@ export class Pool {
       }
       if (error)
         process.stdout.write(
-          ErrorInspect.format({ error, file, maxLines: 10 }),
+          ErrorInspect.format({ error, file}),
         );
 
       replay(logs);

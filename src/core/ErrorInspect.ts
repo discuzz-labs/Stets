@@ -1,4 +1,3 @@
-import kleur from "../utils/kleur.js";
 import esbuild from "esbuild";
 
 interface ParsedStack {
@@ -14,29 +13,18 @@ export interface ErrorMetadata {
 
 interface ErrorInspectOptions {
   error: ErrorMetadata | Error | undefined;
-  maxLines?: number;
   file?: string;
 }
 
 export class ErrorInspect {
-  private static regex =
-    /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
+  private static regex = /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
 
   private static formatLine(parsed: ParsedStack): string {
-    const file = parsed.file?.padEnd(30) || "<UNKNOWN>";
+    const file = parsed.file?.padEnd(30) || "";
     const line = parsed.lineNumber ?? 0;
     const column = parsed.column ?? 0;
 
-    return (
-      kleur.gray("at") +
-      " " +
-      kleur.cyan(file) +
-      " " +
-      kleur.bold(line.toString()) +
-      ":" +
-      kleur.bold(column.toString()) +
-      "\n"
-    );
+    return `→ ${file} ${line}:${column}`;
   }
 
   private static parse(line: string): ParsedStack | null {
@@ -50,56 +38,63 @@ export class ErrorInspect {
     };
   }
 
-  private static stack(
-    stack: string,
-    options: ErrorInspectOptions,
-  ): ParsedStack[] {
-    const lines = stack.split("\n").slice(0, options.maxLines || 5);
+  private static stack(stack: string, options: ErrorInspectOptions): ParsedStack[] {
+    const lines = stack.split("\n").slice(0);
 
     return lines
-      .map((line) =>
-        options.file && !line.includes(options.file) ? null : this.parse(line),
+      .map((line) => 
+        options.file && !line.includes(options.file) ? null : this.parse(line)
       )
-      .filter((parsed): parsed is ParsedStack => parsed !== null);
+     .filter((parsed): parsed is ParsedStack => parsed !== null);
   }
 
   private static show(stack: string, options: ErrorInspectOptions): string {
     const parsedStack = this.stack(stack, options);
-    return parsedStack.map((parsed) => this.formatLine(parsed)).join("\n");
+    return parsedStack.map((parsed) => this.formatLine(parsed)).join("");
   }
 
-  private static buildMessages(
-    messages: any[],
-    kind: "error" | "warning",
-  ): string[] {
-    if (Array.isArray(messages) && messages.length > 0) {
-      return esbuild.formatMessagesSync(messages, { kind, color: true });
-    }
-    return [];
+  private static formatBuildMessages(messages: any[], type: "error" | "warning"): string {
+    if (!Array.isArray(messages) || messages.length === 0) return "";
+
+    const prefix = type === "error" ? "✖" : "⚠";
+    const formattedMessages = esbuild.formatMessagesSync(messages, { 
+      kind: type,
+      color: false, // Disable colors for cleaner output
+    });
+
+    return formattedMessages
+      .map(msg => `${prefix} ${msg.trim()}`)
+      .join("\n");
   }
 
   static format(options: ErrorInspectOptions): string {
-    const separator = kleur.gray("-".repeat(process.stdout.columns / 2));
-    const header = options.error?.message || "No Error Message was provided";
+    const divider = "─".repeat(60);
+    const header = options.error?.message || "Unknown Error";
     const body = options.error?.stack
       ? this.show(options.error.stack, options)
-      : kleur.red("No stack trace available!");
+      : "No stack trace available\n";
 
-    // Build error and warning messages
-    let buildMessages = "";
+    let buildOutput = "";
     if (options.error) {
       const { errors = [], warnings = [] } = options.error as any;
-      const errorMessages = this.buildMessages(errors, "error");
-      const warningMessages = this.buildMessages(warnings, "warning");
-      buildMessages = [errorMessages, warningMessages]
+      const errorMessages = this.formatBuildMessages(errors, "error");
+      const warningMessages = this.formatBuildMessages(warnings, "warning");
+
+      buildOutput = [errorMessages, warningMessages]
         .filter(Boolean)
         .join("\n\n")
         .trim();
     }
 
-    // Return either buildMessages or the fallback (header + body)
-    return (
-      separator + "\n" + (buildMessages || header + "\n\n" + body) + separator
-    );
+  
+    const output = [
+      divider,
+      header,
+      "",
+      buildOutput || body,
+      divider
+    ].join("\n");
+
+    return output;
   }
 }

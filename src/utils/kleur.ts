@@ -11,9 +11,9 @@ export default class kleur {
   // Check if FORCE_COLOR is set to 0 or -no-color is in process.argv
   static initialize() {
     const forceColor = process.env.FORCE_COLOR;
-    const noColorArg = process.argv.includes('-no-color');
+    const noColorArg = process.argv.includes("-no-color");
 
-    if (forceColor === '0' || noColorArg) {
+    if (forceColor === "0" || noColorArg) {
       this.colorsDisabled = true;
     }
   }
@@ -21,7 +21,7 @@ export default class kleur {
   // Function to apply the color if not disabled
   private static apply(code: string, text: string | number): string {
     if (this.colorsDisabled) {
-      return String(text);  // Return plain text if colors are disabled
+      return String(text); // Return plain text if colors are disabled
     }
     return `\x1b[${code}m${text}\x1b[0m`;
   }
@@ -40,10 +40,6 @@ export default class kleur {
     return this.apply("91", text);
   }
 
-  public static bgLightRed(text: string | number): string {
-    return this.apply("101", text);
-  }
-
   public static bgRed(text: string | number): string {
     return this.apply("41", text);
   }
@@ -53,44 +49,18 @@ export default class kleur {
     return this.apply("33", text);
   }
 
-  public static bgYellow(text: string | number): string {
-    return this.apply("43", text);
-  }
-
   // Green colors
   public static green(text: string | number): string {
     return this.apply("32", text);
   }
 
   public static bgGreen(text: string | number): string {
-      return this.apply("42", text);
+    return this.apply("42", text);
   }
-  
+
   // Blue colors
   public static blue(text: string | number): string {
     return this.apply("34", text);
-  }
-
-  public static bgBlue(text: string | number): string {
-    return this.apply("44", text);
-  }
-
-  // Black colors
-  public static black(text: string | number): string {
-    return this.apply("30", text);
-  }
-
-  public static bgBlack(text: string | number): string {
-    return this.apply("40", text);
-  }
-
-  // White colors
-  public static white(text: string | number): string {
-    return this.apply("37", text);
-  }
-
-  public static bgWhite(text: string | number): string {
-    return this.apply("47", text);
   }
 
   // Gray colors
@@ -98,29 +68,10 @@ export default class kleur {
     return this.apply("90", text);
   }
 
-  public static bgGray(text: string | number): string {
-    return this.apply("100", text);
-  }
-
-  //Purple Colors
-  public static purple(text: string | number): string {
-    return this.apply("35", text);
-  }
-  
-  public static bgPurple(text: string | number): string {
-    return this.apply("45", text);
-  }
-
-  // Formatting
   public static bold(text: string | number): string {
     return this.apply("1", text);
   }
-
-  public static underline(text: string | number): string {
-    return this.apply("4", text);
-  }
 }
-
 
 // Initialize the color detection when the class is imported or used
 kleur.initialize();

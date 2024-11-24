@@ -80,7 +80,7 @@ export class Reporter {
     switch (type) {
       case "failed":
       case "softfailed":
-        const errorDetails = ErrorInspect.format({ error, file, maxLines: 10 });
+        const errorDetails = ErrorInspect.format({ error, file });
         return `${indicators[type]} ${description} ${kleur.gray(`retry: ${retries}`)}\n${errorDetails}`;
 
       case "benched":

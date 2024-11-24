@@ -20,7 +20,7 @@ export class Terminal {
         " " +
         kleur.gray(dirPath) +
         "/" +
-        kleur.white(fileName),
+      fileName
     );
   }
   // Function to render the current file statuses in the console
