@@ -24,10 +24,14 @@ interface ExecOptions {
 }
 
 export class Isolated {
-  constructor(private readonly filename: string) {}
+  constructor(
+    private readonly options: {
+      file: string;
+    },
+  ) {}
 
-  context(context: any = {}): vm.Context {
-    const testCase = new TestCase("Unnamed test");
+   context(context: any = {}): vm.Context {
+     const testCase = new TestCase("Unnamed test");
 
     return vm.createContext({
       assert,
@@ -35,6 +39,7 @@ export class Isolated {
       is,
       spy,
       ...context,
+    
       bench: testCase.bench.bind(testCase),
       it: testCase.it.bind(testCase),
       fail: testCase.fail.bind(testCase),
@@ -50,15 +55,15 @@ export class Isolated {
       beforeEach: testCase.beforeEach.bind(testCase),
       beforeAll: testCase.beforeAll.bind(testCase),
       run: testCase.run.bind(testCase),
-      require: createRequire(this.filename),
-      __filename: path.basename(this.filename),
-      __dirname: path.dirname(this.filename),
+      require: createRequire(this.options.file),
+      __filename: path.basename(this.options.file),
+      __dirname: path.dirname(this.options.file),
     });
   }
 
   script(code: string) {
     return new vm.Script(code, {
-      filename: this.filename,
+      filename: this.options.file,
     });
   }
 
@@ -73,13 +78,13 @@ export class Isolated {
       return {
         status: isValid,
         error: null,
-        report: isValid ? report : null,
+        report: isValid ? report : null
       };
     } catch (error: any) {
       return {
         status: false,
         error,
-        report: null,
+        report: null
       };
     }
   }

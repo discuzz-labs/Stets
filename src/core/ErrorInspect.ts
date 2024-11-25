@@ -1,4 +1,5 @@
 import esbuild from "esbuild";
+import { SourceMapConsumer } from "source-map";
 
 interface ParsedStack {
   file?: string;
@@ -14,17 +15,27 @@ export interface ErrorMetadata {
 interface ErrorInspectOptions {
   error: ErrorMetadata | Error | undefined;
   file?: string;
+  sourceMap?: SourceMapConsumer;
 }
 
 export class ErrorInspect {
-  private static regex = /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
+  private static regex =
+    /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
 
-  private static formatLine(parsed: ParsedStack): string {
+  private static formatLine(
+    parsed: ParsedStack,
+    options: ErrorInspectOptions,
+  ): string {
     const file = parsed.file?.padEnd(30) || "";
     const line = parsed.lineNumber ?? 0;
     const column = parsed.column ?? 0;
 
-    return `→ ${file} ${line}:${column}`;
+    const original = options.sourceMap?.originalPositionFor({
+      line,
+      column,
+    });
+
+    return `→ ${file} ${original?.line || line}:${original?.column || column}`;
   }
 
   private static parse(line: string): ParsedStack | null {
@@ -38,33 +49,39 @@ export class ErrorInspect {
     };
   }
 
-  private static stack(stack: string, options: ErrorInspectOptions): ParsedStack[] {
+  private static stack(
+    stack: string,
+    options: ErrorInspectOptions,
+  ): ParsedStack[] {
     const lines = stack.split("\n").slice(0);
 
     return lines
-      .map((line) => 
-        options.file && !line.includes(options.file) ? null : this.parse(line)
+      .map((line) =>
+        options.file && !line.includes(options.file) ? null : this.parse(line),
       )
-     .filter((parsed): parsed is ParsedStack => parsed !== null);
+      .filter((parsed): parsed is ParsedStack => parsed !== null);
   }
 
   private static show(stack: string, options: ErrorInspectOptions): string {
     const parsedStack = this.stack(stack, options);
-    return parsedStack.map((parsed) => this.formatLine(parsed)).join("");
+    return parsedStack
+      .map((parsed) => this.formatLine(parsed, options))
+      .join("");
   }
 
-  private static formatBuildMessages(messages: any[], type: "error" | "warning"): string {
+  private static formatBuildMessages(
+    messages: any[],
+    type: "error" | "warning",
+  ): string {
     if (!Array.isArray(messages) || messages.length === 0) return "";
 
     const prefix = type === "error" ? "✖" : "⚠";
-    const formattedMessages = esbuild.formatMessagesSync(messages, { 
+    const formattedMessages = esbuild.formatMessagesSync(messages, {
       kind: type,
       color: false, // Disable colors for cleaner output
     });
 
-    return formattedMessages
-      .map(msg => `${prefix} ${msg.trim()}`)
-      .join("\n");
+    return formattedMessages.map((msg) => `${prefix} ${msg.trim()}`).join("\n");
   }
 
   static format(options: ErrorInspectOptions): string {
@@ -86,14 +103,9 @@ export class ErrorInspect {
         .trim();
     }
 
-  
-    const output = [
-      divider,
-      header,
-      "",
-      buildOutput || body,
-      divider
-    ].join("\n");
+    const output = [divider, header, "", buildOutput || body, divider].join(
+      "\n",
+    );
 
     return output;
   }

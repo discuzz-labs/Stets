@@ -4,9 +4,14 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { promises as fs } from "fs";
 import { build, Plugin } from "esbuild";
 import path from "path";
+import { SourceMapConsumer } from "source-map";
+
+interface TransformResult {
+  code: string;
+  sourceMap: SourceMapConsumer;
+}
 
 export class Transform {
   constructor(
@@ -16,17 +21,15 @@ export class Transform {
   /**
    * Transform a file and all its imports into a single bundled string
    */
-  async transform(filename: string): Promise<string> {
+  async transform(filename: string): Promise<TransformResult> {
     // Validate file exists
-    await fs.access(filename);
-
-    // Use esbuild's build API to bundle the file with plugins
     const result = await build({
       entryPoints: [filename],
       bundle: true,
       format: "cjs",
-      sourcemap: true,
+      sourcemap: "external", // Generate separate sourcemap
       write: false,
+      outdir: "dist",
       loader: this.getLoaderConfig(),
       minify: false,
       plugins:
@@ -39,12 +42,18 @@ export class Transform {
       sourcesContent: true, // Ensure full source content is included
     });
 
-    if (result.outputFiles?.length) {
-      const bundledCode = result.outputFiles[0].text;
+    if (result.outputFiles?.length >= 2) {
+      // outputFiles[0] contains the bundled code
+      // outputFiles[1] contains the sourcemap
+      const bundledCode = result.outputFiles[1].text;
+      const sourceMap = result.outputFiles[0].text;
 
-      return bundledCode;
+      return {
+        code: bundledCode,
+        sourceMap: await new SourceMapConsumer(sourceMap)
+      };
     } else {
-      throw new Error("Failed to bundle file");
+      throw new Error("Failed to generate bundle and sourcemap");
     }
   }
 

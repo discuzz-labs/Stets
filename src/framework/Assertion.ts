@@ -112,7 +112,7 @@ class Assertion {
   toStrictEqual(expected: any) {
     const diff = new Diff(this.received, expected);
     const message = this.messages.diff({ diffFormatted: diff.format() });
-    return this.assert(!diff.has(), message, "toBe");
+    return this.assert(!diff.has(), message, "toStrictEqual");
   }
 
   toEqual(expected: any) {
@@ -121,7 +121,7 @@ class Assertion {
     return this.assert(equal(this.received, expected), message, "toEqual");
   }
 
-  toBeTracked(expected: any) {
+  toBeTracked() {
     const message = this.messages.type({
       received: this.received,
       expected: "tracked function.",

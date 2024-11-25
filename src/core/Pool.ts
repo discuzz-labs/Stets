@@ -14,12 +14,14 @@ import { Reporter } from "../reporters/Reporter.js";
 import { Plugin } from "esbuild";
 import path from "path";
 import { ErrorInspect } from "./ErrorInspect.js";
+import { SourceMapConsumer } from "source-map";
 
 export interface PoolResult {
   error: any;
   report: TestReport | null;
   duration: number;
   logs: LogEntry[];
+  sourceMap: SourceMapConsumer;
 }
 
 export class Pool {
@@ -67,17 +69,17 @@ export class Pool {
             const logger = new Console();
 
             // Load the test code
-            const code = await this.transformer.transform(file);
-
+            const {code, sourceMap} = await this.transformer.transform(file);
+            
             // Create isolated environment and context
-            const isolated = new Isolated(file);
+            const isolated = new Isolated({file});
 
-            const context = isolated.context({
+            const context =  isolated.context({
               ...this.options.context,
               ...this.processClone.context(),
               console: logger,
             });
-            const script = isolated.script(code);
+            const script =  isolated.script(code);
             const exec = await isolated.exec({
               script,
               context,
@@ -95,6 +97,7 @@ export class Pool {
               duration: (end - start) / 1000,
               report: exec.report,
               logs: logger.logs,
+              sourceMap
             });
           } catch (error: any) {
             const end = Date.now();
@@ -103,6 +106,7 @@ export class Pool {
               duration: (end - start) / 1000,
               report: null,
               logs: [],
+              sourceMap: {} as SourceMapConsumer
             });
             this.terminal.update(file, "failed");
           }
@@ -117,7 +121,7 @@ export class Pool {
   report() {
     //console.clear();
 
-    for (const [file, { logs, error, duration, report }] of this.reports) {
+    for (const [file, { logs, error, sourceMap, duration, report }] of this.reports) {
       const status = report ? report.status : "failed";
       const stats = report?.stats || {
         total: 0,
@@ -134,11 +138,11 @@ export class Pool {
       );
 
       if (report) {
-        process.stdout.write(Reporter.report({ file, report }));
+        process.stdout.write(Reporter.report({ file, report, sourceMap}));
       }
       if (error)
         process.stdout.write(
-          ErrorInspect.format({ error, file}),
+          ErrorInspect.format({ error, file }),
         );
 
       replay(logs);

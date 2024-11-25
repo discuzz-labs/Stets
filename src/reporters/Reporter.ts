@@ -11,10 +11,12 @@ import path from "path";
 import { Table } from "../utils/Table.js";
 import { BenchmarkMetrics } from "../core/Bench.js";
 import { Generate, GenerateOptions } from "./Generate.js";
+import { SourceMapConsumer } from "source-map";
 
 interface ReportOptions {
   file: string;
   report: TestReport;
+  sourceMap: SourceMapConsumer
 }
 
 interface LogArgs {
@@ -66,7 +68,7 @@ export class Reporter {
     return `${statusColors[status] || "-"} ${name}`;
   }
 
-  private static log(args: LogArgs, type: string): string {
+  private static log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): string {
     const { description, file, error, retries, bench } = args;
     const indicators = {
       failed: kleur.red("×"),
@@ -80,7 +82,7 @@ export class Reporter {
     switch (type) {
       case "failed":
       case "softfailed":
-        const errorDetails = ErrorInspect.format({ error, file });
+        const errorDetails = ErrorInspect.format({ error, file, sourceMap });
         return `${indicators[type]} ${description} ${kleur.gray(`retry: ${retries}`)}\n${errorDetails}`;
 
       case "benched":
@@ -96,7 +98,7 @@ export class Reporter {
     return `\n${kleur.bold(description)} ${this.details(stats!)} ${kleur.gray(`[${dir} | ${duration}s]`)}\n`;
   }
 
-  static report({ file, report }: ReportOptions): string {
+  static report({ file, report, sourceMap }: ReportOptions): string {
     const items = [...report.tests, ...report.hooks];
     if (items.length === 0) {
       return `${report.description} is empty`;
@@ -113,6 +115,7 @@ export class Reporter {
           bench: test.bench,
         },
         test.status,
+        sourceMap
       );
 
       test.status === "benched"
