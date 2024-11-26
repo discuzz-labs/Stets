@@ -1,15 +1,17 @@
 import esbuild from "esbuild";
 import { SourceMapConsumer } from "source-map";
+import { stripPath } from "../utils/index.js";
+import kleur from "../utils/kleur.js";
 
-interface ParsedStack {
+interface ParsedStackFrame {
   file?: string;
   lineNumber?: number;
   column?: number;
 }
 
 export interface ErrorMetadata {
-  message: string | undefined;
-  stack: string | undefined;
+  message: string;
+  stack?: string;
 }
 
 interface ErrorInspectOptions {
@@ -19,27 +21,31 @@ interface ErrorInspectOptions {
 }
 
 export class ErrorInspect {
-  private static regex =
+
+  private static readonly STACK_FRAME_REGEX =
     /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
 
-  private static formatLine(
-    parsed: ParsedStack,
+  private static readonly CONTEXT_LINES = 3;
+
+  private static line(
+    parsed: ParsedStackFrame,
     options: ErrorInspectOptions,
   ): string {
     const file = parsed.file?.padEnd(30) || "";
     const line = parsed.lineNumber ?? 0;
     const column = parsed.column ?? 0;
 
+    // Resolve original source location using source map
     const original = options.sourceMap?.originalPositionFor({
       line,
       column,
     });
 
-    return `→ ${file} ${original?.line || line}:${original?.column || column}`;
+    return `→ ${stripPath(file)} ${kleur.bold(original?.line || line)}:${kleur.bold(original?.column || column)}`;
   }
 
-  private static parse(line: string): ParsedStack | null {
-    const parts = this.regex.exec(line);
+  private static parse(line: string): ParsedStackFrame | null {
+    const parts = this.STACK_FRAME_REGEX.exec(line);
     if (!parts) return null;
 
     return {
@@ -49,62 +55,141 @@ export class ErrorInspect {
     };
   }
 
-  private static stack(
-    stack: string,
+  private static stack(stack: string, options: ErrorInspectOptions): string {
+    // Split stack trace into lines
+    const stackLines = stack.split("\n");
+    const formattedStackLines: string[] = [];
+
+    // Process each line of the stack trace
+    const processedStack = stackLines.reduce<string[]>((acc, line) => {
+      // Parse and format each line
+      const parsed = this.parse(line);
+      const formattedLine = parsed
+        ? this.line(parsed, options)
+        : `Parsing failed: ${line.trim()}`;
+
+      formattedStackLines.push(formattedLine);
+
+      // Filter lines based on optional file parameter
+      if (!options.file || line.includes(options.file)) {
+        acc.push(line.trim());
+      }
+
+      return acc;
+    }, []);
+
+    // Fallback to formatted lines if no matching lines found
+    return processedStack.length === 0
+      ? formattedStackLines.join("\n")
+      : this.context(processedStack[0], options) ||
+          formattedStackLines.join("\n");
+  }
+
+  private static context(
+    stackLine: string,
     options: ErrorInspectOptions,
-  ): ParsedStack[] {
-    const lines = stack.split("\n").slice(0);
+  ): string | null {
+    // Parse the raw stack line
+    const parsed = this.parse(stackLine);
+    if (!parsed || !options.sourceMap) return null;
 
-    return lines
-      .map((line) =>
-        options.file && !line.includes(options.file) ? null : this.parse(line),
-      )
-      .filter((parsed): parsed is ParsedStack => parsed !== null);
+    // Resolve original source location
+    const original =
+      parsed.lineNumber && parsed.column
+        ? options.sourceMap.originalPositionFor({
+            line: parsed.lineNumber,
+            column: parsed.column,
+          })
+        : null;
+
+    // Validate source map content
+    const sourcesContent = (options.sourceMap as any).sourcesContent;
+    if (!sourcesContent || !original || original.line === null) {
+      return null;
+    }
+
+    // Split source into lines
+    const sourceLines = sourcesContent[0].split("\n");
+
+    // Calculate line range with context
+    const targetLine = original.line - 1; // Convert to 0-indexed
+    const startLine = Math.max(0, targetLine - this.CONTEXT_LINES);
+    const endLine = Math.min(
+      sourceLines.length - 1,
+      targetLine + this.CONTEXT_LINES,
+    );
+
+    // Build formatted source context
+    const formattedLines: string[] = [this.line(parsed, options)];
+
+    for (let i = startLine; i <= endLine; i++) {
+      const lineNumber = (i + 1).toString().padStart(2, " ");
+      const isTargetLine = i === targetLine;
+
+      // Highlight target line in red
+      const line = isTargetLine ? kleur.red(sourceLines[i]) : sourceLines[i];
+
+      // Add line number and content
+      formattedLines.push(`${kleur.gray(lineNumber)}|${" ".repeat(2)}${line}`);
+
+      // Add column indicator for the target line
+      if (isTargetLine && original.column !== null) {
+        const underline =
+          " ".repeat(4 + 3 + original.column) + kleur.green("~~~~~~~~~~");
+        formattedLines.push(underline);
+      }
+    }
+
+    return formattedLines.join("\n");
   }
 
-  private static show(stack: string, options: ErrorInspectOptions): string {
-    const parsedStack = this.stack(stack, options);
-    return parsedStack
-      .map((parsed) => this.formatLine(parsed, options))
-      .join("");
-  }
-
-  private static formatBuildMessages(
+  private static buildMessage(
     messages: any[],
     type: "error" | "warning",
   ): string {
     if (!Array.isArray(messages) || messages.length === 0) return "";
 
+    // Use esbuild's message formatting
     const formattedMessages = esbuild.formatMessagesSync(messages, {
       kind: type,
-      color: false, // Disable colors for cleaner output
+      color: true, // Disable colors for cleaner output
     });
 
-    return formattedMessages.map((msg) => `${msg.trim()}`).join("\n");
+    return formattedMessages.map((msg) => msg.trim()).join("\n");
   }
 
   static format(options: ErrorInspectOptions): string {
+    // Create a divider for visual separation
     const divider = "─".repeat(60);
+
+    // Extract error message or use default
     const header = options.error?.message || "No message available.";
+
+    // Process stack trace
     const body = options.error?.stack
-      ? this.show(options.error.stack, options)
+      ? this.stack(options.error.stack, options)
       : "No stack trace available\n";
 
+    // Format build-related messages
     let buildOutput = "";
     if (options.error) {
       const { errors = [], warnings = [] } = options.error as any;
-      const errorMessages = this.formatBuildMessages(errors, "error");
-      const warningMessages = this.formatBuildMessages(warnings, "warning");
+      const errorMessages = this.buildMessage(errors, "error");
+      const warningMessages = this.buildMessage(warnings, "warning");
 
+      // Combine non-empty messages
       buildOutput = [errorMessages, warningMessages]
         .filter(Boolean)
         .join("\n\n")
         .trim();
     }
 
-    const output = [divider, buildOutput || `${header}\n\n${body}`, divider].join(
-      "\n",
-    );
+    // Construct final output
+    const output = [
+      divider,
+      buildOutput || `${header}\n\n${body}`,
+      divider,
+    ].join("\n");
 
     return output;
   }
