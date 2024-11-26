@@ -12,6 +12,7 @@ import { Table } from "../utils/Table.js";
 import { BenchmarkMetrics } from "../core/Bench.js";
 import { Generate, GenerateOptions } from "./Generate.js";
 import { SourceMapConsumer } from "source-map";
+import { stripPath } from "../utils/index.js";
 
 interface ReportOptions {
   file: string;
@@ -53,7 +54,7 @@ export class Reporter {
       stats.failed && kleur.red(`× ${stats.failed}`),
       stats.skipped && kleur.yellow(`- ${stats.skipped}`),
       stats.passed && kleur.green(`✓ ${stats.passed}`),
-      stats.total && kleur.gray(`total: ${stats.total}`),
+      stats.total && kleur.gray(`*: ${stats.total}`),
     ];
     return items.filter(Boolean).join(" ") || "Empty";
   }
@@ -93,9 +94,8 @@ export class Reporter {
     }
   }
 
-  static header({ description, file, duration, stats }: LogArgs): string {
-    const dir = path.dirname(file!);
-    return `\n${kleur.bold(description)} ${this.details(stats!)} ${kleur.gray(`[${dir} | ${duration}s]`)}\n`;
+  static header({ description, file, duration, status, stats }: LogArgs): string {
+    return `\n${this.status(stripPath(file!), status as any)} → ${kleur.bold(description)} ${this.details(stats!)} in ${duration}s\n`;
   }
 
   static report({ file, report, sourceMap }: ReportOptions): string {

@@ -1,7 +1,6 @@
-import path from "path";
 import { TestCaseStatus } from "../framework/TestCase.js";
-import kleur from "../utils/kleur.js";
 import { Reporter } from "../reporters/Reporter.js";
+import { stripPath } from "../utils/index.js";
 
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
@@ -12,15 +11,8 @@ export class Terminal {
   renderMap = new Map<string, TestCaseStatus>();
 
   draft(file: string, status: TestCaseStatus) {
-    const dirPath = path.dirname(file);
-    const fileName = path.basename(file);
-
     console.log(
-      Reporter.status(fileName, status) +
-        " " +
-        kleur.gray(dirPath) +
-        "/" +
-      fileName
+      Reporter.status(stripPath(file), status)
     );
   }
   // Function to render the current file statuses in the console

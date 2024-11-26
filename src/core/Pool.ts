@@ -140,6 +140,7 @@ export class Pool {
       if (report) {
         process.stdout.write(Reporter.report({ file, report, sourceMap}));
       }
+      
       if (error)
         process.stdout.write(
           ErrorInspect.format({ error, file }),

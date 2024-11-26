@@ -75,18 +75,17 @@ export class ErrorInspect {
   ): string {
     if (!Array.isArray(messages) || messages.length === 0) return "";
 
-    const prefix = type === "error" ? "✖" : "⚠";
     const formattedMessages = esbuild.formatMessagesSync(messages, {
       kind: type,
       color: false, // Disable colors for cleaner output
     });
 
-    return formattedMessages.map((msg) => `${prefix} ${msg.trim()}`).join("\n");
+    return formattedMessages.map((msg) => `${msg.trim()}`).join("\n");
   }
 
   static format(options: ErrorInspectOptions): string {
     const divider = "─".repeat(60);
-    const header = options.error?.message || "Unknown Error";
+    const header = options.error?.message || "No message available.";
     const body = options.error?.stack
       ? this.show(options.error.stack, options)
       : "No stack trace available\n";
@@ -103,7 +102,7 @@ export class ErrorInspect {
         .trim();
     }
 
-    const output = [divider, header, "", buildOutput || body, divider].join(
+    const output = [divider, buildOutput || `${header}\n\n${body}`, divider].join(
       "\n",
     );
 
