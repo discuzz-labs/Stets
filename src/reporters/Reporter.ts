@@ -8,7 +8,6 @@ import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
 import { ErrorMetadata, ErrorInspect } from "../core/ErrorInspect.js";
 import kleur from "../utils/kleur.js";
 import path from "path";
-import { Table } from "../utils/Table.js";
 import { BenchmarkMetrics } from "../core/Bench.js";
 import { Generate, GenerateOptions } from "./Generate.js";
 import { SourceMapConsumer } from "source-map";
@@ -87,7 +86,7 @@ export class Reporter {
         return `${indicators[type]} ${description} ${kleur.gray(`retry: ${retries}`)}\n${errorDetails}`;
 
       case "benched":
-        return `${indicators[type]} ${description}\n${Table([bench])}`;
+        return `${indicators[type]} ${description}\n${BenchMarks([bench])}`;
 
       default:
         return `${(indicators as any)[type] || "-"} ${description}`;
@@ -153,4 +152,16 @@ export class Reporter {
 
     return `\n${parts.filter(Boolean).join("\n")}\n\n✨ All Tests ran. ✨\n`;
   }
+}
+
+function BenchMarks(data: (BenchmarkMetrics | null | undefined)[]): string | void {
+  if (!Array.isArray(data) || data.length === 0) return;
+
+  return data
+    .map(item => 
+      item 
+        ? `✓ [${kleur.bold("TP")}: ${item.throughputMedian?.toFixed(2)} | ${kleur.bold("Lat")}: ${item.latencyMedian?.toFixed(2)} | ${kleur.bold("Samples")}: ${item.samples}]`
+        : '× [N/A]'
+    )
+    .join('\n');
 }
