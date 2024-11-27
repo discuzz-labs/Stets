@@ -21,19 +21,18 @@ export class Transform {
     },
   ) {}
 
-  /**
-   * Transform a file and all its imports into a single bundled string
-   */
-  async transform(filename: string): Promise<TransformResult> {
-    // Validate file exists
+  async transform(filenames: string[]): Promise<TransformResult> {
+    // Validate files exist and transform them together
     const result = await build({
-      entryPoints: [filename],
-      bundle: true,
+      entryPoints: filenames,
+      bundle: false, // Don't bundle, but process all files
+      splitting: false,
+      format: "cjs",
+      sourcemap: "external", // Generate separate sourcemaps
+
       write: false,
       minify: false,
       sourcesContent: true,
-      format: "cjs",
-      sourcemap: "external",
       outdir: "dist",
       logLevel: "silent",
       loader: this.getLoaderConfig(),
@@ -59,21 +58,22 @@ export class Transform {
       } : {}
     });
 
-    if (result.outputFiles?.length >= 2) {
-      // outputFiles[0] contains the bundled code
-      // outputFiles[1] contains the sourcemap
-      const bundledCode = result.outputFiles[1].text;
-      const sourceMap = result.outputFiles[0].text;
-
+    // Process output files
+    if (result.outputFiles?.length > 0) {
+      // Group output files by their corresponding input file
+      const bundledCode = result.outputFiles[1].text
+      const sourceMap = result.outputFiles[0].text
+      
       return {
         code: bundledCode,
         sourceMap: await new SourceMapConsumer(sourceMap),
       };
+
     } else {
-      throw new Error("Failed to generate bundle and sourcemap");
+      throw new Error("Failed to generate bundles and sourcemaps");
     }
   }
-
+  
   /**
    * Determine the loader configuration for esbuild
    */
