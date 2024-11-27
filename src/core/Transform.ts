@@ -21,10 +21,10 @@ export class Transform {
     },
   ) {}
 
-  async transform(filenames: string[]): Promise<TransformResult> {
+  async transform(file: string): Promise<TransformResult> {
     // Validate files exist and transform them together
     const result = await build({
-      entryPoints: filenames,
+      entryPoints: [file],
       bundle: false, // Don't bundle, but process all files
       splitting: false,
       format: "cjs",

@@ -10,7 +10,7 @@ import { Isolated } from "./Isolated.js";
 import { Transform } from "./Transform.js";
 import { Terminal } from "./Terminal.js";
 import { Reporter } from "../reporters/Reporter.js";
-import { Plugin, TransformResult } from "esbuild";
+import { Plugin } from "esbuild";
 import path from "path";
 import { ErrorInspect } from "./ErrorInspect.js";
 import { SourceMapConsumer } from "source-map";
@@ -52,11 +52,6 @@ export class Pool {
     let exitCode = 0;
     const startTimes = new Map<string, number>();
 
-    // Transform all test files at once
-    const transformedFiles = await this.transformer.transformMultiple(
-      this.options.testFiles,
-    );
-
     // Initialize terminal with "pending" state for all files
     this.options.testFiles.forEach((file) => {
       this.terminal.set(file, "pending");
@@ -65,26 +60,26 @@ export class Pool {
 
     // Limit the number of concurrent tests for efficiency
     const maxConcurrentTests = 4; // Adjust based on available resources
-    const chunks = this.chunkArray(transformedFiles, maxConcurrentTests);
+    const chunks = this.chunkArray(this.options.testFiles, maxConcurrentTests);
 
     for (const chunk of chunks) {
       await Promise.all(
-        chunk.map(async (transformedFile) => {
-          const file = transformedFile.file;
+        chunk.map(async (file) => {
           const start = Date.now();
           startTimes.set(file, start);
 
           try {
             const logger = new Console();
 
+            // Load the test code
+            const {code, sourceMap} = await this.transformer.transform(file);
+            
             // Create isolated environment and context
-            const isolated = new Isolated({ file });
-            const context = this.context
-              .VMContext(file)
-              .add(this.options.context)
-              .get();
+            const isolated = new Isolated({file});
 
-            const script = isolated.script(transformedFile.code);
+            const context =  this.context.VMContext(file).add(this.options.context).get()
+            
+            const script =  isolated.script(code);
             const exec = await isolated.exec({
               script,
               context,
@@ -102,7 +97,7 @@ export class Pool {
               duration: (end - start) / 1000,
               report: exec.report,
               logs: logger.logs,
-              sourceMap: transformedFile.sourceMap,
+              sourceMap
             });
           } catch (error: any) {
             const end = Date.now();
@@ -111,7 +106,7 @@ export class Pool {
               duration: (end - start) / 1000,
               report: null,
               logs: [],
-              sourceMap: {} as SourceMapConsumer,
+              sourceMap: {} as SourceMapConsumer
             });
             this.terminal.update(file, "failed");
           }
@@ -126,8 +121,7 @@ export class Pool {
   report() {
     //console.clear();
 
-    for (const [file, { logs, error, sourceMap, duration, report }] of this
-      .reports) {
+    for (const [file, { logs, error, sourceMap, duration, report }] of this.reports) {
       const status = report ? report.status : "failed";
       const stats = report?.stats || {
         total: 0,
@@ -144,10 +138,13 @@ export class Pool {
       );
 
       if (report) {
-        process.stdout.write(Reporter.report({ file, report, sourceMap }));
+        process.stdout.write(Reporter.report({ file, report, sourceMap}));
       }
-
-      if (error) process.stdout.write(ErrorInspect.format({ error, file }));
+      
+      if (error)
+        process.stdout.write(
+          ErrorInspect.format({ error, file }),
+        );
 
       replay(logs);
     }
@@ -156,8 +153,8 @@ export class Pool {
   }
 
   // Helper function to split files into chunks
-  private chunkArray(array: any[], chunkSize: number): TransformResult[][] {
-    const results: TransformResult[][] = [];
+  private chunkArray(array: string[], chunkSize: number): string[][] {
+    const results: string[][] = [];
     for (let i = 0; i < array.length; i += chunkSize) {
       results.push(array.slice(i, i + chunkSize));
     }
