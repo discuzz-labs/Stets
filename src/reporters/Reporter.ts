@@ -16,7 +16,7 @@ import { stripPath } from "../utils/index.js";
 interface ReportOptions {
   file: string;
   report: TestReport;
-  sourceMap: SourceMapConsumer
+  sourceMap: SourceMapConsumer;
 }
 
 interface LogArgs {
@@ -68,7 +68,11 @@ export class Reporter {
     return `${statusColors[status] || "-"} ${name}`;
   }
 
-  private static log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): string {
+  private static log(
+    args: LogArgs,
+    type: string,
+    sourceMap: SourceMapConsumer,
+  ): string {
     const { description, file, error, retries, bench } = args;
     const indicators = {
       failed: kleur.red("×"),
@@ -93,7 +97,13 @@ export class Reporter {
     }
   }
 
-  static header({ description, file, duration, status, stats }: LogArgs): string {
+  static header({
+    description,
+    file,
+    duration,
+    status,
+    stats,
+  }: LogArgs): string {
     return `\n${this.status(stripPath(file!), status as any)} → ${kleur.bold(description)} ${this.details(stats!)} in ${duration}s\n`;
   }
 
@@ -114,7 +124,7 @@ export class Reporter {
           bench: test.bench,
         },
         test.status,
-        sourceMap
+        sourceMap,
       );
 
       test.status === "benched"
@@ -134,7 +144,12 @@ export class Reporter {
     }
     this.stats.total += report.stats.total;
 
-    return output.filter(Boolean).join("\n") + "\n"
+    return (
+      output
+        .filter(Boolean)
+        .map((line) => "  " + line)
+        .join("\n") + "\n"
+    );
   }
 
   static summary(): string {
@@ -154,14 +169,16 @@ export class Reporter {
   }
 }
 
-function BenchMarks(data: (BenchmarkMetrics | null | undefined)[]): string | void {
+function BenchMarks(
+  data: (BenchmarkMetrics | null | undefined)[],
+): string | void {
   if (!Array.isArray(data) || data.length === 0) return;
 
   return data
-    .map(item => 
-      item 
+    .map((item) =>
+      item
         ? `✓ [${kleur.bold("TP")}: ${item.throughputMedian?.toFixed(2)} | ${kleur.bold("Lat")}: ${item.latencyMedian?.toFixed(2)} | ${kleur.bold("Samples")}: ${item.samples}]`
-        : '× [N/A]'
+        : "× [N/A]",
     )
-    .join('\n');
+    .join("\n");
 }

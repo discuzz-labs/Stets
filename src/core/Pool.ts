@@ -146,6 +146,10 @@ export class Pool {
           ErrorInspect.format({ error, file }),
         );
 
+      if(!error && !report) {
+        console.log("🤫 You forgot to call run() at the end of the file!")
+      }
+
       replay(logs);
     }
 
