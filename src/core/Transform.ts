@@ -11,6 +11,7 @@ import { SourceMapConsumer } from "source-map";
 interface TransformResult {
   code: string;
   sourceMap: SourceMapConsumer;
+  file: string;
 }
 
 export class Transform {
@@ -18,16 +19,14 @@ export class Transform {
     private readonly options: { plugins: Plugin[]; tsconfig: string },
   ) {}
 
-  /**
-   * Transform a file and all its imports into a single bundled string
-   */
-  async transform(filename: string): Promise<TransformResult> {
-    // Validate file exists
+  async transformMultiple(filenames: string[]): Promise<TransformResult[]> {
+    // Validate files exist and transform them together
     const result = await build({
-      entryPoints: [filename],
-      bundle: true,
+      entryPoints: filenames,
+      bundle: false, // Don't bundle, but process all files
+      splitting: false,
       format: "cjs",
-      sourcemap: "external", // Generate separate sourcemap
+      sourcemap: "external", // Generate separate sourcemaps
       write: false,
       outdir: "dist",
       loader: this.getLoaderConfig(),
@@ -42,21 +41,32 @@ export class Transform {
       sourcesContent: true, // Ensure full source content is included
     });
 
-    if (result.outputFiles?.length >= 2) {
-      // outputFiles[0] contains the bundled code
-      // outputFiles[1] contains the sourcemap
-      const bundledCode = result.outputFiles[1].text;
-      const sourceMap = result.outputFiles[0].text;
+    // Process output files
+    if (result.outputFiles?.length > 0) {
+      // Group output files by their corresponding input file
+      const transformResults: TransformResult[] = [];
 
-      return {
-        code: bundledCode,
-        sourceMap: await new SourceMapConsumer(sourceMap)
-      };
+      for (let i = 0; i < filenames.length; i++) {
+        const codeFile = result.outputFiles[i * 2 + 1];
+        const mapFile = result.outputFiles[i * 2];
+
+        if (!codeFile || !mapFile) {
+          throw new Error(`Failed to process file: ${filenames[i]}`);
+        }
+
+        transformResults.push({
+          file: filenames[i],
+          code: codeFile.text,
+          sourceMap: await new SourceMapConsumer(mapFile.text)
+        });
+      }
+
+      return transformResults;
     } else {
-      throw new Error("Failed to generate bundle and sourcemap");
+      throw new Error("Failed to generate bundles and sourcemaps");
     }
   }
-
+  
   /**
    * Determine the loader configuration for esbuild
    */
