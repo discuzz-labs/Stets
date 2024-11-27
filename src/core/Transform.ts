@@ -5,8 +5,8 @@
  */
 
 import { build, Plugin } from "esbuild";
-import path from "path";
 import { SourceMapConsumer } from "source-map";
+import { Tsconfig } from "../config/types";
 
 interface TransformResult {
   code: string;
@@ -15,7 +15,10 @@ interface TransformResult {
 
 export class Transform {
   constructor(
-    private readonly options: { plugins: Plugin[]; tsconfig: string },
+    private readonly options: {
+      plugins: Plugin[];
+      tsconfig: Tsconfig;
+    },
   ) {}
 
   /**
@@ -26,20 +29,34 @@ export class Transform {
     const result = await build({
       entryPoints: [filename],
       bundle: true,
-      format: "cjs",
-      sourcemap: "external", // Generate separate sourcemap
       write: false,
-      outdir: "dist",
-      loader: this.getLoaderConfig(),
       minify: false,
+      sourcesContent: true,
+      format: "cjs",
+      sourcemap: "external",
+      outdir: "dist",
+      logLevel: "silent",
+      loader: this.getLoaderConfig(),
       plugins:
         this.options.plugins.length > 0 ? this.options.plugins : undefined,
-      tsconfig:
-        this.options.tsconfig !== ""
-          ? path.join(process.cwd(), this.options.tsconfig)
-          : undefined,
-      logLevel: "silent",
-      sourcesContent: true, // Ensure full source content is included
+      tsconfigRaw: Object.keys(this.options.tsconfig).length > 0 ? {
+        compilerOptions: {
+          alwaysStrict: this.options.tsconfig.alwaysStrict,
+          baseUrl: this.options.tsconfig.baseUrl,
+          experimentalDecorators: this.options.tsconfig.experimentalDecorators,
+          importsNotUsedAsValues: this.options.tsconfig.importsNotUsedAsValues,
+          jsx: this.options.tsconfig.jsx,
+          jsxFactory: this.options.tsconfig.jsxFactory,
+          jsxFragmentFactory: this.options.tsconfig.jsxFragmentFactory,
+          jsxImportSource: this.options.tsconfig.jsxImportSource,
+          paths: this.options.tsconfig.paths,
+          preserveValueImports: this.options.tsconfig.preserveValueImports,
+          strict: this.options.tsconfig.strict,
+          useDefineForClassFields:
+            this.options.tsconfig.useDefineForClassFields,
+          verbatimModuleSyntax: this.options.tsconfig.verbatimModuleSyntax,
+        },
+      } : {}
     });
 
     if (result.outputFiles?.length >= 2) {
@@ -50,7 +67,7 @@ export class Transform {
 
       return {
         code: bundledCode,
-        sourceMap: await new SourceMapConsumer(sourceMap)
+        sourceMap: await new SourceMapConsumer(sourceMap),
       };
     } else {
       throw new Error("Failed to generate bundle and sourcemap");

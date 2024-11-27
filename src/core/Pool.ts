@@ -15,6 +15,7 @@ import path from "path";
 import { ErrorInspect } from "./ErrorInspect.js";
 import { SourceMapConsumer } from "source-map";
 import { Context } from "./Context.js";
+import { Tsconfig } from "../config/types.js";
 
 export interface PoolResult {
   error: any;
@@ -36,12 +37,14 @@ export class Pool {
       timeout: number;
       plugins: Plugin[];
       context: Record<any, any>;
-      tsconfig: string;
+      tsconfig: Tsconfig;
+      
     },
   ) {
     this.transformer = new Transform({
       plugins: options.plugins,
       tsconfig: this.options.tsconfig,
+      
     });
   }
 

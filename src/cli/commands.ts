@@ -61,14 +61,6 @@ const COMMANDS: Record<
     shortValue: "c",
     type: "string",
   },
-  tsconfig: {
-    description:
-      "Specify the path to your TypeScript configuration file (tsconfig.json).",
-    requiresValue: true,
-    isArray: false,
-    shortValue: "ts",
-    type: "path",
-  },
   timeout: {
     description:
       "Set the maximum execution time (in milliseconds) for each individual test file.",

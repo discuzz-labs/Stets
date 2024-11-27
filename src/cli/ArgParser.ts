@@ -17,7 +17,6 @@ export type CLIOptions = {
   exclude?: string[];
   envs?: string[];
   timeout?: number;
-  tsconfig?: string;
   outputDir?: string;
   formats?: string[];
   timestamp?: boolean;

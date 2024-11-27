@@ -11,6 +11,7 @@ import config from "../veve.config.js";
 import "esbuild-register";
 import { createRequire } from "module";
 import { ErrorInspect } from "../core/ErrorInspect.js";
+import { Tsconfig } from "./types.js";
 
 export type Veve = {
     pattern: string[];
@@ -19,7 +20,7 @@ export type Veve = {
     plugins: Plugin[];
     timeout: number;
     context: Record<any, any>;
-    tsconfig: string;
+    tsconfig: Tsconfig;
     outputDir: string;
     formats: string[];
     timestamp: boolean;

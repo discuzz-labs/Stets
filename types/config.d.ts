@@ -4,6 +4,26 @@
  * See the LICENSE file in the project root for license information.
  */
 
+/// Copied form esbuild https://esbuild.github.io/
+interface Tsconfig {
+  alwaysStrict?: boolean;
+  baseUrl?: string;
+  experimentalDecorators?: boolean;
+  importsNotUsedAsValues?: "remove" | "preserve" | "error";
+  jsx?: "preserve" | "react-native" | "react" | "react-jsx" | "react-jsxdev";
+  jsxFactory?: string;
+  jsxFragmentFactory?: string;
+  jsxImportSource?: string;
+  paths?: Record<string, string[]>;
+  preserveValueImports?: boolean;
+  strict?: boolean;
+  target?: string;
+  useDefineForClassFields?: boolean;
+  verbatimModuleSyntax?: boolean;
+}
+
+///
+
 /**
  * The configuration type used by the system. It defines the structure of the configuration
  * object, including patterns to match, exclusion rules, environment settings, plugins, and
@@ -65,4 +85,13 @@ export type Veve = {
    * @type {Record<any, any>}
    */
   context: Record<any, any>;
+
+  /**
+   * Represents the configuration for the TypeScript compiler.
+   * This configuration is commonly loaded from a `tsconfig.json` file.
+   *
+   * @since v1.0.0
+   * @type {Tsconfig}
+   */
+  tsconfig: Tsconfig;
 };

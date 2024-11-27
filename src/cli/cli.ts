@@ -10,42 +10,42 @@ import { Config } from "../config/Config.js";
 import { Env } from "../core/Env.js";
 import { Pool } from "../core/Pool.js";
 import { Glob } from "../glob/Glob.js";
-import { help} from "./commands.js";
+import { help } from "./commands.js";
 import { Reporter } from "../reporters/Reporter.js";
 
 (async () => {
   const args = new ArgsParser();
-  const config = await new Config().load(args.get("config"))
+  const config = await new Config().load(args.get("config"));
 
-  if(args.get("help")) {
-    console.log(help())
-    return 
+  if (args.get("help")) {
+    console.log(help());
+    return;
   }
 
-  if(args.get("version")) {
-    console.log(version())
-    return 
+  if (args.get("version")) {
+    console.log(version());
+    return;
   }
-  
+
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
   const envs = args.get("envs") || config.get("envs");
   const timeout = args.get("timeout") || config.get("timeout");
-  const plugins = config.get("plugins")
+  const plugins = config.get("plugins");
   const files = args.get("file");
-  const context = config.get("context")
-  const tsconfig = config.get("tsconfig")
+  const context = config.get("context");
+  const tsconfig = config.get("tsconfig");
   const timestamp = args.get("timestamp") || config.get("timestamp");
   const outputDir = args.get("outputDir") || config.get("outputDir");
   const formats = args.get("formats") || config.get("formats");
-  
+
   new Env(envs).load();
   new Reporter({
     timestamp,
     // Todo: Add Type validtion on all passed values
-    formats: (formats as any),
-    outputDir
-  })
+    formats: formats as any,
+    outputDir,
+  });
 
   const testFiles = await new Glob({ files, exclude, pattern }).collect();
   const pool = new Pool({
@@ -53,11 +53,11 @@ import { Reporter } from "../reporters/Reporter.js";
     context,
     plugins,
     tsconfig,
-    timeout: parseInt(timeout as unknown as string),
+    timeout: parseInt(timeout as unknown as string)
   });
 
   const exitCode = await pool.run();
-  pool.report()
+  pool.report();
 
   process.exit(exitCode);
 })();
