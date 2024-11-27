@@ -2,16 +2,38 @@
   "name": "veve",
   "version": "1.0.0",
   "description": "Veve - Run tests with ease.",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
   "type": "module",
   "bin": {
     "veve": "./bin/index.js"
   },
   "files": [
-    "dist",
-    "core"
+    "dist"
   ],
-  "keywords": [],
+  "keywords": [
+    "testing",
+    "cli",
+    "javascript",
+    "typescript",
+    "esm",
+    "commonjs",
+    "unit-testing",
+    "test-runner",
+    "automation",
+    "developer-tools",
+    "open-source",
+    "nodejs",
+    "veve",
+    "jest",
+    "mocha",
+    "ava",
+    "uvu"
+  ],
   "author": "A. Shaheen",
   "license": "ISC",
   "workspaces": [
@@ -19,7 +41,7 @@
     "src"
   ],
   "scripts": {
-    "build:typescript": "tsc",
+    "build": "tsc",
     "build:watch": "tsc -w"
   },
   "devDependencies": {
@@ -28,11 +50,21 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@types/veve": "file:types",
     "diff": "^7.0.0",
     "dotenv": "^16.4.5",
     "esbuild": "^0.24.0",
     "esbuild-register": "^3.6.0",
     "source-map": "^0.7.4"
-  }
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/discuzz-labs/veve.git"
+  },
+  "bugs": {
+    "url": "https://github.com/discuzz-labs/veve/issues"
+  },
+  "homepage": "https://github.com/username/veve#readme"
 }
