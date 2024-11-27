@@ -71,7 +71,7 @@ export class Create {
     const typeAssertionSyntax = this.runtime === "ts" ? ": number" : "";
     const importStatement =
       this.runtime === "ts"
-        ? 'import type { type } from "veve"'
+        ? 'import "veve"'
         : '/** @typedef {import("veve").type} */';
 
     // Generate test boilerplate

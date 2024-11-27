@@ -2,7 +2,8 @@
   "name": "veve",
   "version": "1.0.0",
   "description": "Veve - Run tests with ease.",
-  "main": "dist/index.cjs.js",
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js"
@@ -13,7 +14,8 @@
     "veve": "./bin/index.js"
   },
   "files": [
-    "dist"
+    "dist/*",
+    "types/*"
   ],
   "keywords": [
     "testing",
@@ -36,10 +38,6 @@
   ],
   "author": "A. Shaheen",
   "license": "ISC",
-  "workspaces": [
-    "core",
-    "src"
-  ],
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w"
