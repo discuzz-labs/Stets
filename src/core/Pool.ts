@@ -7,7 +7,6 @@
 import { Console, LogEntry, replay } from "./Console.js";
 import { TestReport } from "../framework/TestCase";
 import { Isolated } from "./Isolated.js";
-import { Process } from "./Process.js";
 import { Transform } from "./Transform.js";
 import { Terminal } from "./Terminal.js";
 import { Reporter } from "../reporters/Reporter.js";
@@ -15,6 +14,7 @@ import { Plugin } from "esbuild";
 import path from "path";
 import { ErrorInspect } from "./ErrorInspect.js";
 import { SourceMapConsumer } from "source-map";
+import { Context } from "./Context.js";
 
 export interface PoolResult {
   error: any;
@@ -26,7 +26,7 @@ export interface PoolResult {
 
 export class Pool {
   private readonly terminal = new Terminal();
-  private readonly processClone = new Process();
+  private readonly context = new Context();
   private transformer;
   private reports = new Map<string, PoolResult>();
 
@@ -74,11 +74,8 @@ export class Pool {
             // Create isolated environment and context
             const isolated = new Isolated({file});
 
-            const context =  isolated.context({
-              ...this.options.context,
-              ...this.processClone.context(),
-              console: logger,
-            });
+            const context =  this.context.VMContext(file).add(this.options.context).get()
+            
             const script =  isolated.script(code);
             const exec = await isolated.exec({
               script,

@@ -43,7 +43,14 @@ export class Config {
                 process.exit(1);
             }
         } else {
-            const possibleFiles = ["veve.config.js", "veve.config.ts"];
+            const possibleFiles = [
+                "veve.config.js",
+                "veve.config.ts",
+                "veve.js",
+                "veve.ts",
+                "test.config.js",
+                "test.config.ts",
+            ];
             const foundFile = possibleFiles.find((file) =>
                 existsSync(join(process.cwd(), file)),
             );
@@ -60,7 +67,7 @@ export class Config {
         const ext = extname(filePath);
 
         // Directly import the configuration file
-        if (ext === ".ts" || ext === ".js" ) {
+        if (ext === ".ts" || ext === ".js") {
             try {
                 const module = await this.require(filePath);
                 this.applyConfig(module.default);

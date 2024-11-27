@@ -30,37 +30,6 @@ export class Isolated {
     },
   ) {}
 
-   context(context: any = {}): vm.Context {
-     const testCase = new TestCase("Unnamed test");
-
-    return vm.createContext({
-      assert,
-      Fn,
-      is,
-      spy,
-      ...context,
-    
-      bench: testCase.bench.bind(testCase),
-      it: testCase.it.bind(testCase),
-      fail: testCase.fail.bind(testCase),
-      sequence: testCase.sequence.bind(testCase),
-      timeout: testCase.timeout.bind(testCase),
-      todo: testCase.todo.bind(testCase),
-      retry: testCase.retry.bind(testCase),
-      itIf: testCase.itIf.bind(testCase),
-      should: testCase.should.bind(testCase),
-      only: testCase.only.bind(testCase),
-      skip: testCase.skip.bind(testCase),
-      each: testCase.each.bind(testCase),
-      beforeEach: testCase.beforeEach.bind(testCase),
-      beforeAll: testCase.beforeAll.bind(testCase),
-      run: testCase.run.bind(testCase),
-      require: createRequire(this.options.file),
-      __filename: path.basename(this.options.file),
-      __dirname: path.dirname(this.options.file),
-    });
-  }
-
   script(code: string) {
     return new vm.Script(code, {
       filename: this.options.file,
