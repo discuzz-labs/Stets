@@ -1,3 +1,5 @@
+import { exec } from "child_process";
+
 export function getType(value: unknown): string {
   return {}.toString.call(value).split(" ")[1].slice(0, -1).toLowerCase();
 }
@@ -104,3 +106,10 @@ export function stripPath(path: string) {
   }
   return path;
 }
+
+export const isTs = exec('tsc --version', (error: any, stdout: any, stderr: any) => {
+  if (error || stderr) {
+    return false
+  }
+  return true
+});

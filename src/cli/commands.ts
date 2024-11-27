@@ -25,8 +25,23 @@ const COMMANDS: Record<
     shortValue: "h",
     type: "",
   },
+  create: {
+    description: "",
+    requiresValue: true,
+    isArray: false,
+    shortValue: "cr",
+    type: "path",
+  },
+  runtime: {
+    description: "",
+      requiresValue: true,
+      isArray: false,
+      shortValue: "rt",
+      type: "ts | js",
+  },
   outputDir: {
-    description: "Specify the directory where output files will be saved realtive to cwd.",
+    description:
+      "Specify the directory where output files will be saved realtive to cwd.",
     requiresValue: true,
     isArray: false,
     shortValue: "o",

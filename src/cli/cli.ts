@@ -6,12 +6,14 @@
 
 import { version } from "./commands.js";
 import { ArgsParser } from "../cli/ArgParser.js";
-import { Config } from "../config/Config.js";
+import { Config, isValidConfig } from "../config/Config.js";
 import { Env } from "../core/Env.js";
 import { Pool } from "../core/Pool.js";
 import { Glob } from "../glob/Glob.js";
 import { help } from "./commands.js";
 import { Reporter } from "../reporters/Reporter.js";
+import { Create } from "./Create.js";
+import { isTs } from "../utils/index.js";
 
 (async () => {
   const args = new ArgsParser();
@@ -27,6 +29,14 @@ import { Reporter } from "../reporters/Reporter.js";
     return;
   }
 
+  if(args.get("create")) {
+    new Create({
+      runtime: args.get("runtime") ? args.get("runtime")! : isTs ? "ts" : "js",
+      file: args.get("create")!
+    })
+    return
+  }
+
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
   const envs = args.get("envs") || config.get("envs");
@@ -39,6 +49,24 @@ import { Reporter } from "../reporters/Reporter.js";
   const outputDir = args.get("outputDir") || config.get("outputDir");
   const formats = args.get("formats") || config.get("formats");
 
+  try{
+  isValidConfig({
+    exclude,
+    pattern,
+    envs,
+    timeout,
+    plugins,
+    files,
+    context,
+    tsconfig,
+    timestamp,
+    outputDir,
+    formats
+  })
+  } catch(error: any) {
+    console.log("📛 " + error.message)
+    process.exit(1)
+  }
   new Env(envs).load();
   new Reporter({
     timestamp,
