@@ -39,6 +39,13 @@ const COMMANDS: Record<
       shortValue: "rt",
       type: "ts | js",
   },
+  watch: {
+    description: "",
+      requiresValue: false,
+      isArray: false,
+      shortValue: "w",
+      type: "boolean",
+  },
   outputDir: {
     description:
       "Specify the directory where output files will be saved realtive to cwd.",

@@ -38,13 +38,11 @@ export class Pool {
       plugins: Plugin[];
       context: Record<any, any>;
       tsconfig: Tsconfig;
-      
     },
   ) {
     this.transformer = new Transform({
       plugins: options.plugins,
       tsconfig: this.options.tsconfig,
-      
     });
   }
 
@@ -73,18 +71,20 @@ export class Pool {
 
             // Load the test code
             const {code, sourceMap} = await this.transformer.transform(file);
-            
+
             // Create isolated environment and context
             const isolated = new Isolated({file});
 
-            const context =  this.context.VMContext(file).add(this.options.context).get()
-            
-            const script =  isolated.script(code);
+            const context = this.context.VMContext(file).add(this.options.context).get()
+
+            const script = isolated.script(code);
             const exec = await isolated.exec({
               script,
               context,
               timeout: this.options.timeout,
             });
+
+            
 
             const end = Date.now();
 
@@ -118,10 +118,22 @@ export class Pool {
     return exitCode;
   }
 
-  report() {
-    //console.clear();
+  // Method to get all reports
+  getReports(): Map<string, PoolResult> {
+    return this.reports;
+  }
 
-    for (const [file, { logs, error, sourceMap, duration, report }] of this.reports) {
+  // Helper function to split files into chunks
+  private chunkArray(array: string[], chunkSize: number): string[][] {
+    const results: string[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      results.push(array.slice(i, i + chunkSize));
+    }
+    return results;
+  }
+
+  static report(reports: Map<string, PoolResult>) {
+    for (const [file, { logs, error, sourceMap, duration, report }] of reports) {
       const status = report ? report.status : "failed";
       const stats = report?.stats || {
         total: 0,
@@ -140,28 +152,19 @@ export class Pool {
       if (report) {
         process.stdout.write(Reporter.report({ file, report, sourceMap}));
       }
-      
+
       if (error)
         process.stdout.write(
           ErrorInspect.format({ error, file }),
         );
 
-      if(!error && !report) {
+      /*if(!error && !report) {
         console.log("🤫 You forgot to call run() at the end of the file!")
-      }
+      }*/
 
       replay(logs);
     }
 
     process.stdout.write(Reporter.summary());
-  }
-
-  // Helper function to split files into chunks
-  private chunkArray(array: string[], chunkSize: number): string[][] {
-    const results: string[][] = [];
-    for (let i = 0; i < array.length; i += chunkSize) {
-      results.push(array.slice(i, i + chunkSize));
-    }
-    return results;
   }
 }

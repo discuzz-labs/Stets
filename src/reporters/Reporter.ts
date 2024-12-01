@@ -7,7 +7,6 @@
 import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
 import { ErrorMetadata, ErrorInspect } from "../core/ErrorInspect.js";
 import kleur from "../utils/kleur.js";
-import path from "path";
 import { BenchmarkMetrics } from "../core/Bench.js";
 import { Generate, GenerateOptions } from "./Generate.js";
 import { SourceMapConsumer } from "source-map";

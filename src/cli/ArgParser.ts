@@ -14,6 +14,7 @@ export type CLIOptions = {
   runtime?: "ts" | "js";
   version?: boolean;
   help?: boolean;
+  watch?: boolean;
   
   pattern?: string[];
   exclude?: string[];

@@ -102,7 +102,7 @@ class Assertion {
       expected,
     });
     return this.assert(
-      getType(this.received) === getType(expected),
+      getType(this.received) === expected,
       message,
       matcher,
     );
@@ -130,7 +130,7 @@ class Assertion {
     return this.assert(this.isTracked, message, "toBeTracked");
   }
 
-  toBeType(expected: string) {
+  toBeTypeOf(expected: string) {
     return this.typeOf(expected, "toBeType");
   }
 

@@ -25,6 +25,7 @@ export type Veve = {
     outputDir: string;
     formats: string[];
     timestamp: boolean;
+    watch: boolean;
 };
 
 export function veve(config: Partial<Veve>): Partial<Veve> {

@@ -1,14 +1,9 @@
 {
   "name": "veve",
-  "version": "1.0.0",
+  "version": "1.0.0-dev",
   "description": "Veve - Run tests with ease.",
   "main": "dist/index.js",
   "types": "types/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js"
-    }
-  },
   "type": "module",
   "bin": {
     "veve": "./bin/index.js"
@@ -52,7 +47,8 @@
     "dotenv": "^16.4.5",
     "esbuild": "^0.24.0",
     "esbuild-register": "^3.6.0",
-    "source-map": "^0.7.4"
+    "source-map": "^0.7.4",
+    "watcher": "^2.3.1"
   },
   "engines": {
     "node": ">=14.0.0"

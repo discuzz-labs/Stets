@@ -10,7 +10,8 @@ const config: Veve = {
   tsconfig: {},
   timestamp: false,
   outputDir: "",
-  formats: ["json"]
+  formats: ["json"],
+  watch: false
 };
 
 export default config;
