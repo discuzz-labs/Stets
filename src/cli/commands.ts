@@ -25,49 +25,6 @@ const COMMANDS: Record<
     shortValue: "h",
     type: "",
   },
-  create: {
-    description: "",
-    requiresValue: true,
-    isArray: false,
-    shortValue: "cr",
-    type: "path",
-  },
-  runtime: {
-    description: "",
-      requiresValue: true,
-      isArray: false,
-      shortValue: "rt",
-      type: "ts | js",
-  },
-  watch: {
-    description: "",
-      requiresValue: false,
-      isArray: false,
-      shortValue: "w",
-      type: "boolean",
-  },
-  outputDir: {
-    description:
-      "Specify the directory where output files will be saved realtive to cwd.",
-    requiresValue: true,
-    isArray: false,
-    shortValue: "o",
-    type: "path",
-  },
-  formats: {
-    description: "List of formats for output (JSON, JUnit, HTML).",
-    requiresValue: true,
-    isArray: true,
-    shortValue: "rf",
-    type: "json, junit, html",
-  },
-  timestamp: {
-    description: "Include a timestamp in the report path.",
-    requiresValue: false,
-    isArray: false,
-    shortValue: "",
-    type: "boolean",
-  },
   version: {
     description: "Display current version",
     requiresValue: false,
@@ -82,6 +39,13 @@ const COMMANDS: Record<
     isArray: false,
     shortValue: "c",
     type: "string",
+  },
+  watch: {
+    description: "Watch testing files (recommended)",
+    requiresValue: false,
+    isArray: false,
+    shortValue: "w",
+    type: "",
   },
   timeout: {
     description:

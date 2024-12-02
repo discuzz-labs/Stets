@@ -1,6 +1,5 @@
 import esbuild from "esbuild";
 import { SourceMapConsumer } from "source-map";
-import { stripPath } from "../utils/index.js";
 import kleur from "../utils/kleur.js";
 
 interface ParsedStackFrame {
@@ -21,7 +20,6 @@ interface ErrorInspectOptions {
 }
 
 export class ErrorInspect {
-
   private static readonly STACK_FRAME_REGEX =
     /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
 
@@ -41,7 +39,7 @@ export class ErrorInspect {
       column,
     });
 
-    return `→ ${stripPath(file)} ${kleur.bold(original?.line || line)}:${kleur.bold(original?.column || column)}`;
+    return `→ ${file} ${kleur.bold(original?.line || line)}:${kleur.bold(original?.column || column)}`;
   }
 
   private static parse(line: string): ParsedStackFrame | null {

@@ -22,9 +22,6 @@ export type Veve = {
     timeout: number;
     context: Record<any, any>;
     tsconfig: Tsconfig;
-    outputDir: string;
-    formats: string[];
-    timestamp: boolean;
     watch: boolean;
 };
 

@@ -4,15 +4,12 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Console, LogEntry, replay } from "./Console.js";
+import { Console, LogEntry } from "./Console.js";
 import { TestReport } from "../framework/TestCase";
 import { Isolated } from "./Isolated.js";
 import { Transform } from "./Transform.js";
 import { Terminal } from "./Terminal.js";
-import { Reporter } from "../reporters/Reporter.js";
 import { Plugin } from "esbuild";
-import path from "path";
-import { ErrorInspect } from "./ErrorInspect.js";
 import { SourceMapConsumer } from "source-map";
 import { Context } from "./Context.js";
 import { Tsconfig } from "../config/types.js";
@@ -130,41 +127,5 @@ export class Pool {
       results.push(array.slice(i, i + chunkSize));
     }
     return results;
-  }
-
-  static report(reports: Map<string, PoolResult>) {
-    for (const [file, { logs, error, sourceMap, duration, report }] of reports) {
-      const status = report ? report.status : "failed";
-      const stats = report?.stats || {
-        total: 0,
-        passed: 0,
-        failed: 0,
-        softfailed: 0,
-        skipped: 0,
-        todo: 0,
-      };
-      const description = report?.description || path.basename(file);
-
-      process.stdout.write(
-        Reporter.header({ description, file, duration, status, stats }),
-      );
-
-      if (report) {
-        process.stdout.write(Reporter.report({ file, report, sourceMap}));
-      }
-
-      if (error)
-        process.stdout.write(
-          ErrorInspect.format({ error, file }),
-        );
-
-      /*if(!error && !report) {
-        console.log("🤫 You forgot to call run() at the end of the file!")
-      }*/
-
-      replay(logs);
-    }
-
-    process.stdout.write(Reporter.summary());
   }
 }

@@ -96,20 +96,3 @@ export function equal(
 
   return false; // If none of the above checks return, they are not equal
 }
-
-export function stripPath(path: string) {
-  const cwd = process.cwd();
-
-  if (path.startsWith(cwd)) {
-    // Remove the current working directory and the following path separator
-    return path.slice(cwd.length + 1);
-  }
-  return path;
-}
-
-export const isTs = exec('tsc --version', (error: any, stdout: any, stderr: any) => {
-  if (error || stderr) {
-    return false
-  }
-  return true
-});

@@ -1,6 +1,5 @@
 import { TestCaseStatus } from "../framework/TestCase.js";
-import { Reporter } from "../reporters/Reporter.js";
-import { stripPath } from "../utils/index.js";
+import { UI } from "../reporter/UI.js";
 
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
@@ -12,7 +11,7 @@ export class Terminal {
 
   draft(file: string, status: TestCaseStatus) {
     console.log(
-      Reporter.status(stripPath(file), status)
+      UI.status(file, status)
     );
   }
   // Function to render the current file statuses in the console

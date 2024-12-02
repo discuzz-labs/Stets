@@ -9,9 +9,6 @@ import { Config, isValidConfig } from "../config/Config.js";
 import { Env } from "../core/Env.js";
 import { Glob } from "../glob/Glob.js";
 import { help } from "./commands.js";
-import { Reporter } from "../reporters/Reporter.js";
-import { Create } from "./Create.js";
-import { isTs } from "../utils/index.js";
 import { Start } from "../core/Start.js";
 
 (async () => {
@@ -29,14 +26,6 @@ import { Start } from "../core/Start.js";
     return;
   }
 
-  if (args.get("create")) {
-    new Create({
-      runtime: args.get("runtime") ? args.get("runtime")! : isTs ? "ts" : "js",
-      file: args.get("create")!,
-    });
-    return;
-  }
-
   // Validate and load configuration
   const exclude = args.get("exclude") || config.get("exclude");
   const pattern = args.get("pattern") || config.get("pattern");
@@ -46,9 +35,6 @@ import { Start } from "../core/Start.js";
   const files = args.get("file");
   const context = config.get("context");
   const tsconfig = config.get("tsconfig");
-  const timestamp = args.get("timestamp") || config.get("timestamp");
-  const outputDir = args.get("outputDir") || config.get("outputDir");
-  const formats = args.get("formats") || config.get("formats");
   const watch = args.get("watch") || config.get("watch");
 
   // Validate configuration
@@ -61,10 +47,7 @@ import { Start } from "../core/Start.js";
       plugins,
       files,
       context,
-      tsconfig,
-      timestamp,
-      outputDir,
-      formats,
+      tsconfig
     });
   } catch (error: any) {
     console.log("📛 " + error.message);
@@ -74,16 +57,9 @@ import { Start } from "../core/Start.js";
   // Load environment variables
   new Env(envs).load();
 
-  // Setup reporter
-  new Reporter({
-    timestamp,
-    formats: formats as any,
-    outputDir,
-  });
-
   // Collect test files
   const testfiles = await new Glob({ files, exclude, pattern }).collect();
 
   // Create and run test runner
-  await new Start({ watch, config, files: testfiles }).start();
+  await new Start({ watch, config, files: testfiles, pattern, exclude}).start();
 })();

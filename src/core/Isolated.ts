@@ -5,11 +5,7 @@
  */
 
 import * as vm from "vm";
-import { createRequire } from "module";
-import TestCase, { TestReport } from "../framework/TestCase.js";
-import path from "path";
-import { assert, is } from "../framework/Assertion.js";
-import { Fn, spy } from "../framework/Fn.js";
+import { TestReport } from "../framework/TestCase.js";
 
 export interface ExecResult {
   status: boolean;

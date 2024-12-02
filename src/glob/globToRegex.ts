@@ -1,5 +1,4 @@
-export class GlobBuilder {
-  convert(glob: string | RegExp): RegExp {
+export function globToRegex(glob: string | RegExp): RegExp {
     if (typeof glob !== "string") {
       throw new TypeError("Expected a string");
     }
@@ -114,4 +113,3 @@ export class GlobBuilder {
 
     return new RegExp(reStr);
   }
-}

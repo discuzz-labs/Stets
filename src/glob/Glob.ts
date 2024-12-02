@@ -6,7 +6,7 @@
 
 import { readdir, stat } from "fs/promises";
 import { resolve, join } from "path";
-import { GlobBuilder } from "./GlobBuilder.js";
+import { globToRegex } from "./globToRegex.js";
 
 interface GlobOptions {
     files: string[] | undefined;
@@ -14,32 +14,55 @@ interface GlobOptions {
     pattern: string[];
 }
 
+export function isValidFile(
+    filePath: string,
+    patterns: string[],
+    excludes: string[],
+): boolean {
+    // Ignore files containing node_modules in their path
+    if (filePath.includes("node_modules")) return false;
+
+    // Convert patterns and excludes to regex
+    const regexPatterns = patterns.map((pattern) => globToRegex(pattern));
+    const regexExcludes = excludes.map((pattern) => globToRegex(pattern));
+
+    // Check exclusions first
+    const matchesExclude = regexExcludes.some((regex) => regex.test(filePath));
+    if (matchesExclude) {
+        return false;
+    }
+
+    const matchesPattern = regexPatterns.some((regex) => regex.test(filePath));
+    return matchesPattern;
+}
+
 export class Glob {
-    private maxFiles: number = 4000; // Default max file limit
+    private maxFiles: number = 2; // Default max file limit
     private fileCount: number = 0;
-    private globBuilder = new GlobBuilder();
 
     constructor(private readonly options: GlobOptions) {}
 
-    /**
-     * Parse the current working directory to collect matching files based on patterns.
-     * @returns A promise that resolves to an array of absolute file paths.
-     */
     async collect(): Promise<string[]> {
         const absoluteDir = process.cwd();
-        const regexPattern = this.options.pattern.map((p) =>
-            this.globBuilder.convert(p),
-        );
-        const regexExclude = this.options.exclude.map((p) =>
-            this.globBuilder.convert(p),
-        );
-
         const collected = await this.collectFiles(
             absoluteDir,
-            regexPattern,
-            regexExclude,
+            this.options.pattern,
+            this.options.exclude,
         );
-        this.options.files?.map((file) => collected.push(resolve(file)));
+
+        // Add explicitly specified files
+        this.options.files?.forEach((file) => {
+            const resolvedFile = resolve(file);
+            if (
+                isValidFile(
+                    resolvedFile,
+                    this.options.pattern,
+                    this.options.exclude,
+                )
+            ) {
+                collected.push(resolvedFile);
+            }
+        });
 
         if (collected.length === 0) {
             console.log(
@@ -51,17 +74,10 @@ export class Glob {
         return collected;
     }
 
-    /**
-     * Recursively collect files matching the given patterns and options.
-     * Stops when the maximum file count is reached.
-     * @param dir - The directory to search within.
-     * @param pattern - The file matching patterns (array of RegExps).
-     * @returns A promise that resolves to an array of absolute file paths.
-     */
     private async collectFiles(
         dir: string,
-        pattern: RegExp[],
-        exclude: RegExp[],
+        patterns: string[],
+        excludes: string[],
     ): Promise<string[]> {
         let results: string[] = [];
         const entries = await readdir(dir);
@@ -69,22 +85,20 @@ export class Glob {
         await Promise.all(
             entries.map(async (entry) => {
                 if (this.fileCount >= this.maxFiles) return; // Stop if maxFiles is reached
-
                 const filePath = join(dir, entry);
-
-                // Check if file should be excluded (including dotfiles/directories)
-                if (this.shouldExclude(exclude, entry)) return;
-
                 const stats = await stat(filePath);
 
                 if (stats.isDirectory()) {
-                    const nestedFiles = await this.collectFiles(
-                        filePath,
-                        pattern,
-                        exclude,
-                    );
-                    results.push(...nestedFiles);
-                } else if (pattern.some((p) => p.test(entry))) {
+                    // Skip node_modules directories
+                    if (!filePath.includes("node_modules")) {
+                        const nestedFiles = await this.collectFiles(
+                            filePath,
+                            patterns,
+                            excludes,
+                        );
+                        results.push(...nestedFiles);
+                    }
+                } else if (isValidFile(filePath, patterns, excludes)) {
                     this.fileCount++; // Increment the file count
                     if (this.fileCount <= this.maxFiles) {
                         results.push(resolve(filePath)); // Return absolute path
@@ -94,19 +108,5 @@ export class Glob {
         );
 
         return results;
-    }
-
-    /**
-     * Helper function to check if a file matches the excluded pattern.
-     * This method also ignores dotfiles and dot directories.
-     * @param entry - The file name.
-     * @returns true if the file matches any excluded pattern or is a dotfile/directory.
-     */
-    private shouldExclude(exclude: RegExp[], entry: string): boolean {
-        // Ignore dotfiles and dot directories
-        if (entry.startsWith(".") || entry === "node_modules") return true;
-
-        // Check if the entry matches the exclude pattern
-        return exclude.some((pattern) => pattern.test(entry));
     }
 }

@@ -10,8 +10,6 @@ import {COMMANDS} from "./commands.js";
 export type CLIOptions = {
   config?: string;
   file?: string[];
-  create?: string;
-  runtime?: "ts" | "js";
   version?: boolean;
   help?: boolean;
   watch?: boolean;
@@ -20,9 +18,6 @@ export type CLIOptions = {
   exclude?: string[];
   envs?: string[];
   timeout?: number;
-  outputDir?: string;
-  formats?: string[];
-  timestamp?: boolean;
 };
 ////
 

@@ -8,9 +8,6 @@ const config: Veve = {
   context: {},
   plugins: [],
   tsconfig: {},
-  timestamp: false,
-  outputDir: "",
-  formats: ["json"],
   watch: false
 };
 

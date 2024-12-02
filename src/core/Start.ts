@@ -7,6 +7,8 @@
 import Watcher from "watcher";
 import { Pool, PoolResult } from "./Pool.js";
 import { Config } from "../config/Config.js";
+import { Reporter } from "../reporter/Reporter.js";
+import { isValidFile } from "../glob/Glob.js";
 
 export class Start {
   private reports: Map<string, PoolResult> = new Map();
@@ -16,6 +18,8 @@ export class Start {
       watch: boolean;
       config: Config;
       files: string[];
+      pattern: string[];
+      exclude: string[];
     },
   ) {}
 
@@ -37,20 +41,18 @@ export class Start {
   }
 
   async start() {
+    const reporter = new Reporter();
     if (this.options.watch) {
       // Run initial tests
       const { reports } = await this.exec(this.options.files);
       this.reports = reports;
-      Pool.report(this.reports);
+      reporter.report(this.reports);
 
       // Setup and start watching
       this.watch();
-
-      // Keep the process running
-      await new Promise(() => {});
     } else {
       const { exitCode, reports } = await this.exec(this.options.files);
-      Pool.report(reports);
+      reporter.report(reports);
       process.exit(exitCode);
     }
   }
@@ -66,10 +68,11 @@ export class Start {
   watch() {
     const watcher = new Watcher(this.options.files, {
       recursive: true,
-      ignoreInitial: true
+      ignoreInitial: true,
     });
 
     watcher.on("change", async (file: string) => {
+      const reporter = new Reporter();
       console.clear();
 
       try {
@@ -78,7 +81,7 @@ export class Start {
 
         if (fileReport) {
           this.change(file, fileReport);
-          Pool.report(this.reports);
+          reporter.report(this.reports);
         }
       } catch (error) {
         console.error(`Error processing changed file ${file}:`, error);
@@ -87,14 +90,16 @@ export class Start {
 
     // Optional: Handle other file system events
     watcher.on("add", async (file: string) => {
-      if (this.isTestFile(file)) {
+      const reporter = new Reporter();
+      if (isValidFile(file, this.options.pattern, this.options.exclude)) {
+        console.clear();
         try {
           const { reports } = await this.exec([file]);
           const fileReport = reports.get(file) as PoolResult;
 
           if (fileReport) {
             this.add(file, fileReport);
-            Pool.report(this.reports);
+            reporter.report(this.reports);
           }
         } catch (error) {
           console.error(`Error processing new file ${file}:`, error);
@@ -103,15 +108,16 @@ export class Start {
     });
 
     watcher.on("unlink", (file: string) => {
-      console.clear()
+      const reporter = new Reporter();
+      console.clear();
       if (this.reports.has(file)) {
         this.reports.delete(file);
-        Pool.report(this.reports);
+        reporter.report(this.reports);
       }
     });
-  }
 
-  private isTestFile(file: string): boolean {
-    return true
+    watcher.on("error", (error: Error) => {
+      console.error(`Error occured while watching:`, error);
+    });
   }
 }
