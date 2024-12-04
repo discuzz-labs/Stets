@@ -155,41 +155,39 @@ export class TrackFn<T extends any[], R> {
 
   // Method to track the behavior of the function
   track = (): ((...args: T) => R) => {
-    const self = this;
-
     // Create the tracked function
     const trackedFunction: any = function (this: any, ...args: T): R {
       try {
-        const result = self._implementation.apply(this, args);
-        self.recordCall(args, result, this);
+        const result = this._implementation(this, args);
+        this.recordCall(args, result, this);
         return result;
       } catch (error) {
         const normalizedError =
           error instanceof Error ? error : new Error(String(error));
-        self.recordException(normalizedError);
+        this.recordException(normalizedError);
         throw normalizedError;
       }
     };
 
     // Attach chainable tracking and behavior-modifying methods
-    trackedFunction.return = self.returns.bind(self);
-    trackedFunction.throw = self.throws.bind(self);
-    trackedFunction.use = self.use.bind(self);
-    trackedFunction.reset = self.reset.bind(self);
-    trackedFunction.clear = self.reset.bind(self);
+    trackedFunction.return = this.returns.bind(self);
+    trackedFunction.throw = this.throws.bind(self);
+    trackedFunction.use = this.use.bind(self);
+    trackedFunction.reset = this.reset.bind(self);
+    trackedFunction.clear = this.reset.bind(self);
 
     // Attach tracking methods
-    trackedFunction.getCalls = self.getCalls.bind(self);
-    trackedFunction.getCall = self.getCall.bind(self);
-    trackedFunction.getLatestCall = self.getLatestCall.bind(self);
-    trackedFunction.getCallCount = self.getCallCount.bind(self);
-    trackedFunction.getAllArgs = self.getAllArgs.bind(self);
-    trackedFunction.getArgsForCall = self.getArgsForCall.bind(self);
-    trackedFunction.getReturnValues = self.getReturnValues.bind(self);
-    trackedFunction.getExceptions = self.getExceptions.bind(self);
-    trackedFunction.wasCalled = self.wasCalled.bind(self);
-    trackedFunction.wasCalledWith = self.wasCalledWith.bind(self);
-    trackedFunction.wasCalledTimes = self.wasCalledTimes.bind(self);
+    trackedFunction.getCalls = this.getCalls.bind(self);
+    trackedFunction.getCall = this.getCall.bind(self);
+    trackedFunction.getLatestCall = this.getLatestCall.bind(self);
+    trackedFunction.getCallCount = this.getCallCount.bind(self);
+    trackedFunction.getAllArgs = this.getAllArgs.bind(self);
+    trackedFunction.getArgsForCall = this.getArgsForCall.bind(self);
+    trackedFunction.getReturnValues = this.getReturnValues.bind(self);
+    trackedFunction.getExceptions = this.getExceptions.bind(self);
+    trackedFunction.wasCalled = this.wasCalled.bind(self);
+    trackedFunction.wasCalledWith = this.wasCalledWith.bind(self);
+    trackedFunction.wasCalledTimes = this.wasCalledTimes.bind(self);
 
     return trackedFunction;
   };
@@ -302,7 +300,7 @@ export class TrackFn<T extends any[], R> {
  */
 export function Fn<T extends any[], R>(
   implementation: (...args: T) => R,
-): (...args: T) => R {
+): ((...args: T) => R){
   return new TrackFn(implementation).track();
 }
 

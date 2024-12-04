@@ -15,20 +15,20 @@ export function diff(received: any, expected: any) {
   const formattedExpected = format(expected, {
     printFunctionName: true,
   });
-  let diff = diffTrimmedLines(formattedExpected, formattedReceived, {
+  const diff = diffTrimmedLines(formattedExpected, formattedReceived, {
     ignoreWhitespace: true,
   });
 
   let diffFormatted = `${kleur.bgRed("- Expected")}\n${kleur.bgGreen("+ Received")}\n\n`
   diff.forEach((part) => {
     // green for additions, red for deletions
-    let diff = part.added
+    const diffParts = part.added
       ? kleur.bgGreen(" + ") +
         part.value.replace(/([^\s])/g, kleur.bgGreen("$1"))
       : part.removed
         ? kleur.bgRed(" - ") + part.value.replace(/([^\s])/g, kleur.bgRed("$1"))
         : part.value;
-    diffFormatted += diff;
+    diffFormatted += diffParts;
   });
 
   return diffFormatted;

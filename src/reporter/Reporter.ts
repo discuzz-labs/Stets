@@ -42,7 +42,6 @@ export class Reporter {
     todo: 0,
   };
 
-  
   private log(
     args: LogArgs,
     type: string,
@@ -72,8 +71,6 @@ export class Reporter {
     }
   }
 
-  
-
   private generate({ file, report, sourceMap }: ReportOptions): string {
     const items = [...report.tests, ...report.hooks];
     if (items.length === 0) {
@@ -94,9 +91,12 @@ export class Reporter {
         sourceMap,
       );
 
-      test.status === "benched"
-        ? this.stats.passed++
-        : this.stats[test.status]++;
+      if (test.status === "benched") {
+        this.stats.passed++;
+      } else {
+        this.stats[test.status]++;
+      }
+
       return logEntry;
     });
 

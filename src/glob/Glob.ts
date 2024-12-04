@@ -79,7 +79,7 @@ export class Glob {
         patterns: string[],
         excludes: string[],
     ): Promise<string[]> {
-        let results: string[] = [];
+        const results: string[] = [];
         const entries = await readdir(dir);
 
         await Promise.all(

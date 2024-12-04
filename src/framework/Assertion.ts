@@ -90,7 +90,7 @@ export interface Assertion {
    * assert(new Date()).toBeInstanceOf(Date); // Passes
    * assert({}).toBeInstanceOf(Date); // Fails
    */
-  toBeInstanceOf(expectedClass: Function): Assertion | boolean;
+  toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean;
   /**
    * Checks if the received value is less than or equal to the expected value
    * @param {number | bigint} expected - The value to compare against
@@ -453,7 +453,7 @@ export class Assertion {
     );
   }
 
-  toBeInstanceOf(expectedClass: Function): Assertion | boolean {
+  toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean {
     return this.assert(
       this.received instanceof expectedClass,
       `Expected value to be an instance of ${expectedClass.name}, but received ${this.received.constructor.name}`,

@@ -44,7 +44,7 @@ export class Pool {
   }
 
   async run(): Promise<number> {
-    let exitCode = 0;
+    const exitCode = 0;
     const startTimes = new Map<string, number>();
 
     // Initialize terminal with "pending" state for all files

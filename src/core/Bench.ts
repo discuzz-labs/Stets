@@ -41,7 +41,11 @@ export class Bench {
 
     // Warmup phase
     for (let i = 0; i < config.warmup; i++) {
-      isAsync ? await fn() : fn();
+      if (isAsync) {
+        void (await fn()); // Use void to explicitly ignore the return value
+      } else {
+        void fn(); // Use void for synchronous functions too
+      }
     }
 
     const startTime = performance.now();
@@ -52,7 +56,11 @@ export class Bench {
       const iterStart = performance.now();
 
       try {
-        isAsync ? await fn() : fn();
+        if (isAsync) {
+          void (await fn()); // Use void to explicitly ignore the return value
+        } else {
+          void fn(); // Use void for synchronous functions too
+        }
       } catch (error) {
         console.error(`Benchmark error in ${name}:`, error);
         break;
