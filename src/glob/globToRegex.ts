@@ -1,12 +1,12 @@
 export function globToRegex(glob: string | RegExp): RegExp {
-  if (typeof glob !== "string") {
-    throw new TypeError("Expected a string");
+  if (typeof glob !== 'string') {
+    throw new TypeError('Expected a string');
   }
 
   const str = String(glob);
 
   // This will hold the regular expression pattern as a string.
-  let reStr = "";
+  let reStr = '';
 
   const extended = true;
 
@@ -25,59 +25,59 @@ export function globToRegex(glob: string | RegExp): RegExp {
     c = str[i];
 
     switch (c) {
-      case "/":
-      case "$":
-      case "^":
-      case "+":
-      case ".":
-      case "(":
-      case ")":
-      case "=":
-      case "!":
-      case "|":
-        reStr += "\\" + c; // Escape special regex characters
+      case '/':
+      case '$':
+      case '^':
+      case '+':
+      case '.':
+      case '(':
+      case ')':
+      case '=':
+      case '!':
+      case '|':
+        reStr += '\\' + c; // Escape special regex characters
         break;
 
-      case "?":
+      case '?':
         if (extended) {
-          reStr += "."; // `?` matches any single character if extended globbing is enabled
+          reStr += '.'; // `?` matches any single character if extended globbing is enabled
           break;
         }
 
-      case "[":
-      case "]":
+      case '[':
+      case ']':
         if (extended) {
           reStr += c; // Preserve square brackets for character classes if extended globbing is enabled
           break;
         }
 
-      case "{":
+      case '{':
         if (extended) {
           inGroup = true;
-          reStr += "("; // Start a group for `{a,b}` patterns
+          reStr += '('; // Start a group for `{a,b}` patterns
           break;
         }
 
-      case "}":
+      case '}':
         if (extended) {
           inGroup = false;
-          reStr += ")"; // Close the group for `{a,b}` patterns
+          reStr += ')'; // Close the group for `{a,b}` patterns
           break;
         }
 
-      case ",":
+      case ',':
         if (inGroup) {
-          reStr += "|"; // Use `|` as a separator within groups `{a,b}`
+          reStr += '|'; // Use `|` as a separator within groups `{a,b}`
           break;
         }
-        reStr += "\\" + c; // Escape comma if not in a group
+        reStr += '\\' + c; // Escape comma if not in a group
         break;
 
-      case "*":
+      case '*':
         // Count consecutive "*" characters and determine if we have a globstar pattern
         const prevChar = str[i - 1];
         let starCount = 1;
-        while (str[i + 1] === "*") {
+        while (str[i + 1] === '*') {
           starCount++;
           i++;
         }
@@ -85,21 +85,21 @@ export function globToRegex(glob: string | RegExp): RegExp {
 
         if (!globstar) {
           // When `globstar` is disabled, treat any number of "*" as `.*`
-          reStr += ".*";
+          reStr += '.*';
         } else {
           // `globstar` is enabled, so decide if this is a globstar pattern
           const isGlobstar =
             starCount > 1 && // Multiple "*"
-            (prevChar === "/" || prevChar === undefined) && // At the start of a segment
-            (nextChar === "/" || nextChar === undefined); // At the end of a segment
+            (prevChar === '/' || prevChar === undefined) && // At the start of a segment
+            (nextChar === '/' || nextChar === undefined); // At the end of a segment
 
           if (isGlobstar) {
             // Match zero or more path segments
-            reStr += "((?:[^/]*(?:/|$))*)";
+            reStr += '((?:[^/]*(?:/|$))*)';
             i++; // Move past the "/"
           } else {
             // Not a globstar, so match a single path segment
-            reStr += "([^/]*)";
+            reStr += '([^/]*)';
           }
         }
         break;
@@ -109,7 +109,7 @@ export function globToRegex(glob: string | RegExp): RegExp {
     }
   }
 
-  reStr = "^" + reStr + "$";
+  reStr = '^' + reStr + '$';
 
   return new RegExp(reStr);
 }

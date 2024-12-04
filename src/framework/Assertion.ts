@@ -4,12 +4,12 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { AssertionError } from "./AssertionError.js";
-import { diff } from "./Diff.js";
-import { isFn } from "./Fn.js";
-import { isDeepStrictEqual } from "util";
-import { format } from "pretty-format";
-import { getOrdinal } from "../utils/index.js";
+import { AssertionError } from './AssertionError.js';
+import { diff } from './Diff.js';
+import { isFn } from './Fn.js';
+import { isDeepStrictEqual } from 'util';
+import { format } from 'pretty-format';
+import { getOrdinal } from '../utils/index.js';
 
 /**
  * A class providing assertion methods for testing.
@@ -340,7 +340,7 @@ export class Assertion {
   get resolves() {
     return new Proxy(this, {
       get: (target, prop) => {
-        if (prop === "not") return target.not;
+        if (prop === 'not') return target.not;
         return async (...args: any[]) => {
           try {
             const resolvedValue = await this.received;
@@ -359,11 +359,11 @@ export class Assertion {
   get rejects() {
     return new Proxy(this, {
       get: (target, prop) => {
-        if (prop === "not") return target.not;
+        if (prop === 'not') return target.not;
         return async (...args: any[]) => {
           try {
             await this.received;
-            throw new Error("Expected Promise to reject but it resolved.");
+            throw new Error('Expected Promise to reject but it resolved.');
           } catch (err) {
             target.received = err;
             return (target as any)[prop](...args);
@@ -392,40 +392,40 @@ export class Assertion {
   toBeDefined(): Assertion | boolean {
     return this.assert(
       this.received !== undefined,
-      "Expected value to be defined",
-      "toBeDefined",
+      'Expected value to be defined',
+      'toBeDefined',
     );
   }
 
   toBeUndefined(): Assertion | boolean {
     return this.assert(
       this.received === undefined,
-      "Expected value to be undefined, but received a defined value",
-      "toBeUndefined",
+      'Expected value to be undefined, but received a defined value',
+      'toBeUndefined',
     );
   }
 
   toBeNull(): Assertion | boolean {
     return this.assert(
       this.received === null,
-      "Expected value to be null, but received a non-null value",
-      "toBeNull",
+      'Expected value to be null, but received a non-null value',
+      'toBeNull',
     );
   }
 
   toBeTruthy(): Assertion | boolean {
     return this.assert(
       Boolean(this.received),
-      "Expected value to be truthy, but received a falsy value",
-      "toBeTruthy",
+      'Expected value to be truthy, but received a falsy value',
+      'toBeTruthy',
     );
   }
 
   toBeFalsy(): Assertion | boolean {
     return this.assert(
       !this.received,
-      "Expected value to be falsy",
-      "toBeFalsy",
+      'Expected value to be falsy',
+      'toBeFalsy',
     );
   }
 
@@ -433,7 +433,7 @@ export class Assertion {
     return this.assert(
       this.received > expected,
       `Expected ${this.received} to be greater than ${expected}`,
-      "toBeGreaterThan",
+      'toBeGreaterThan',
     );
   }
 
@@ -441,7 +441,7 @@ export class Assertion {
     return this.assert(
       this.received >= expected,
       `Expected ${this.received} to be greater than or equal to ${expected}`,
-      "toBeGreaterThanOrEqual",
+      'toBeGreaterThanOrEqual',
     );
   }
 
@@ -449,7 +449,7 @@ export class Assertion {
     return this.assert(
       this.received < expected,
       `Expected ${this.received} to be less than ${expected}`,
-      "toBeLessThan",
+      'toBeLessThan',
     );
   }
 
@@ -457,7 +457,7 @@ export class Assertion {
     return this.assert(
       this.received instanceof expectedClass,
       `Expected value to be an instance of ${expectedClass.name}, but received ${this.received.constructor.name}`,
-      "toBeInstanceOf",
+      'toBeInstanceOf',
     );
   }
 
@@ -465,15 +465,15 @@ export class Assertion {
     return this.assert(
       this.received <= expected,
       `Expected ${this.received} to be less than or equal to ${expected}`,
-      "toBeLessThanOrEqual",
+      'toBeLessThanOrEqual',
     );
   }
 
   toBeNaN(): Assertion | boolean {
     return this.assert(
       Number.isNaN(this.received),
-      "Expected value to be NaN",
-      "toBeNaN",
+      'Expected value to be NaN',
+      'toBeNaN',
     );
   }
 
@@ -485,7 +485,7 @@ export class Assertion {
     return this.assert(
       pass,
       `Expected ${this.received} to match ${expected}`,
-      "toMatch",
+      'toMatch',
     );
   }
 
@@ -493,7 +493,7 @@ export class Assertion {
     return this.assert(
       Object.is(this.received, expected),
       diff(this.received, expected),
-      "toBe",
+      'toBe',
     );
   }
 
@@ -501,19 +501,19 @@ export class Assertion {
     return this.assert(
       isDeepStrictEqual(expected, this.received),
       diff(this.received, expected),
-      "toEqual",
+      'toEqual',
     );
   }
 
   toContain(expected: any): Assertion | boolean {
-    const isString = typeof this.received === "string";
+    const isString = typeof this.received === 'string';
     const isArray = Array.isArray(this.received);
 
     if (!isString && !isArray) {
       return this.assert(
         false,
         `Expected value to be an array or string, but received: ${typeof this.received}`,
-        "toContain",
+        'toContain',
       );
     }
 
@@ -526,7 +526,7 @@ export class Assertion {
     return this.assert(
       contains,
       `Expected ${isString ? `"${this.received}"` : JSON.stringify(this.received)} to contain ${JSON.stringify(expected)}`,
-      "toContain",
+      'toContain',
     );
   }
 
@@ -538,113 +538,113 @@ export class Assertion {
     return this.assert(
       actualRounded === expectedRounded,
       `Expected ${this.received} to be close to ${expected} within ${numDigits} decimal places`,
-      "toBeCloseTo",
+      'toBeCloseTo',
     );
   }
 
   toBeTracked(): Assertion | boolean {
     return this.assert(
       this.isTracked,
-      "Expected function to be tracked",
-      "toBeTracked",
+      'Expected function to be tracked',
+      'toBeTracked',
     );
   }
 
   toHaveBeenCalled(): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveBeenCalled can only be used with tracked functions",
+        'toHaveBeenCalled can only be used with tracked functions',
       );
     }
     return this.assert(
       this.received.wasCalled(),
-      "Expected function to have been called",
-      "toHaveBeenCalled",
+      'Expected function to have been called',
+      'toHaveBeenCalled',
     );
   }
 
   toHaveBeenCalledTimes(times: number): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveBeenCalledTimes can only be used with tracked functions",
+        'toHaveBeenCalledTimes can only be used with tracked functions',
       );
     }
     return this.assert(
       this.received.wasCalledTimes(times),
       `Expected function to have been called ${times} times, but was called ${this.received.getCallCount()} times`,
-      "toHaveBeenCalledTimes",
+      'toHaveBeenCalledTimes',
     );
   }
 
   toHaveBeenCalledWith(...args: any[]): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveBeenCalledWith can only be used with tracked functions",
+        'toHaveBeenCalledWith can only be used with tracked functions',
       );
     }
     return this.assert(
       this.received.wasCalledWith(...args),
       `Expected function to have been called with ${format(args)}.`,
-      "toHaveBeenCalledWith",
+      'toHaveBeenCalledWith',
     );
   }
 
   toHaveBeenLastCalledWith(...args: any[]): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveBeenLastCalledWith can only be used with tracked functions",
+        'toHaveBeenLastCalledWith can only be used with tracked functions',
       );
     }
     const latestCall = this.received.getLatestCall();
     return this.assert(
       latestCall && isDeepStrictEqual(latestCall.args, args),
       `Function's last call differences: \n\n${diff(latestCall.args, args)}`,
-      "toHaveBeenLastCalledWith",
+      'toHaveBeenLastCalledWith',
     );
   }
 
   toHaveBeenNthCalledWith(n: number, ...args: any[]): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveBeenNthCalledWith can only be used with tracked functions",
+        'toHaveBeenNthCalledWith can only be used with tracked functions',
       );
     }
     const call = this.received.getCall(n - 1);
     return this.assert(
       call && isDeepStrictEqual(call.args, args),
       `Function's ${n}${getOrdinal(n)} call differences: \n\n${diff(call.args, args)}`,
-      "toHaveBeenNthCalledWith",
+      'toHaveBeenNthCalledWith',
     );
   }
 
   toHaveReturned(): Assertion | boolean {
     if (!this.isTracked) {
-      throw new Error("toHaveReturned can only be used with tracked functions");
+      throw new Error('toHaveReturned can only be used with tracked functions');
     }
     return this.assert(
       this.received.getReturnValues().length > 0,
-      "Expected function to have returned",
-      "toHaveReturned",
+      'Expected function to have returned',
+      'toHaveReturned',
     );
   }
 
   toHaveReturnedTimes(times: number): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveReturnedTimes can only be used with tracked functions",
+        'toHaveReturnedTimes can only be used with tracked functions',
       );
     }
     return this.assert(
       this.received.getReturnValues().length === times,
       `Expected function to have returned ${times} times, but returned ${this.received.getReturnValues().length} times`,
-      "toHaveReturnedTimes",
+      'toHaveReturnedTimes',
     );
   }
 
   toHaveReturnedWith(value: any): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveReturnedWith can only be used with tracked functions",
+        'toHaveReturnedWith can only be used with tracked functions',
       );
     }
     return this.assert(
@@ -652,14 +652,14 @@ export class Assertion {
         .getReturnValues()
         .some((rv: any) => isDeepStrictEqual(rv, value)),
       `Expected function to have returned with ${format(value)}`,
-      "toHaveReturnedWith",
+      'toHaveReturnedWith',
     );
   }
 
   toHaveLastReturnedWith(value: any): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveLastReturnedWith can only be used with tracked functions",
+        'toHaveLastReturnedWith can only be used with tracked functions',
       );
     }
     const returnValues = this.received.getReturnValues();
@@ -667,21 +667,21 @@ export class Assertion {
       returnValues.length > 0 &&
         isDeepStrictEqual(returnValues[returnValues.length - 1], value),
       `Function's last return differences: \n\n${diff(returnValues, value)}`,
-      "toHaveLastReturnedWith",
+      'toHaveLastReturnedWith',
     );
   }
 
   toHaveNthReturnedWith(n: number, value: any): Assertion | boolean {
     if (!this.isTracked) {
       throw new Error(
-        "toHaveNthReturnedWith can only be used with tracked functions",
+        'toHaveNthReturnedWith can only be used with tracked functions',
       );
     }
     const returnValues = this.received.getReturnValues();
     return this.assert(
       returnValues.length >= n && isDeepStrictEqual(returnValues[n - 1], value),
       `Function's ${n}${getOrdinal(n)} return differences: \n\n ${diff(returnValues, value)}`,
-      "toHaveNthReturnedWith",
+      'toHaveNthReturnedWith',
     );
   }
 
@@ -689,20 +689,20 @@ export class Assertion {
     return this.assert(
       this.received.length === length,
       `Expected length to be ${length}, but got ${this.received.length}`,
-      "toHaveLength",
+      'toHaveLength',
     );
   }
 
   toHaveProperty(keyPath: string, value?: any): Assertion | boolean {
-    const keys = keyPath.split(".");
+    const keys = keyPath.split('.');
     let obj = this.received;
 
     for (const key of keys) {
-      if (obj === null || typeof obj !== "object" || !(key in obj)) {
+      if (obj === null || typeof obj !== 'object' || !(key in obj)) {
         return this.assert(
           false,
           `Property ${keyPath} not found`,
-          "toHaveProperty",
+          'toHaveProperty',
         );
       }
       obj = obj[key];
@@ -712,11 +712,11 @@ export class Assertion {
       return this.assert(
         isDeepStrictEqual(obj, value),
         `Property ${keyPath} does not have expected value`,
-        "toHaveProperty",
+        'toHaveProperty',
       );
     }
 
-    return this.assert(true, "", "toHaveProperty");
+    return this.assert(true, '', 'toHaveProperty');
   }
 }
 

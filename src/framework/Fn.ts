@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { isDeepStrictEqual } from "util";
+import { isDeepStrictEqual } from 'util';
 
 /**
  * Interface representing a tracking function with utilities for inspecting calls, arguments, and results.
@@ -300,7 +300,7 @@ export class TrackFn<T extends any[], R> {
  */
 export function Fn<T extends any[], R>(
   implementation: (...args: T) => R,
-): ((...args: T) => R){
+): (...args: T) => R {
   return new TrackFn(implementation).track();
 }
 
@@ -315,27 +315,27 @@ export function Fn<T extends any[], R>(
  * console.log(isFn(trackedAdd)); // true
  */
 export function isFn(value: any): boolean {
-  if (typeof value !== "function") return false;
+  if (typeof value !== 'function') return false;
   const methods = [
-    "getCalls",
-    "getCall",
-    "getLatestCall",
-    "getCallCount",
-    "getAllArgs",
-    "getArgsForCall",
-    "getReturnValues",
-    "getExceptions",
-    "wasCalled",
-    "wasCalledWith",
-    "wasCalledTimes",
-    "return",
-    "throw",
-    "use",
-    "reset",
-    "clear",
+    'getCalls',
+    'getCall',
+    'getLatestCall',
+    'getCallCount',
+    'getAllArgs',
+    'getArgsForCall',
+    'getReturnValues',
+    'getExceptions',
+    'wasCalled',
+    'wasCalledWith',
+    'wasCalledTimes',
+    'return',
+    'throw',
+    'use',
+    'reset',
+    'clear',
   ];
 
-  return methods.every((method) => typeof value[method] === "function");
+  return methods.every((method) => typeof value[method] === 'function');
 }
 
 /**
@@ -359,7 +359,7 @@ export function spy<T extends any[], R>(
   obj: { [key: string]: (...args: T) => R },
   method: string,
 ) {
-  if (!obj || typeof obj[method] !== "function") {
+  if (!obj || typeof obj[method] !== 'function') {
     throw new Error(`Method '${method}' not found on the object.`);
   }
 

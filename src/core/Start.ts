@@ -4,11 +4,11 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import Watcher from "watcher";
-import { Pool, PoolResult } from "./Pool.js";
-import { Config } from "../config/Config.js";
-import { Reporter } from "../reporter/Reporter.js";
-import { isValidFile } from "../glob/Glob.js";
+import Watcher from 'watcher';
+import { Pool, PoolResult } from './Pool.js';
+import { Config } from '../config/Config.js';
+import { Reporter } from '../reporter/Reporter.js';
+import { isValidFile } from '../glob/Glob.js';
 
 export class Start {
   private reports: Map<string, PoolResult> = new Map();
@@ -26,11 +26,11 @@ export class Start {
   async exec(files: string[]) {
     const pool = new Pool({
       testFiles: files,
-      context: this.options.config.get("context"),
-      plugins: this.options.config.get("plugins"),
-      tsconfig: this.options.config.get("tsconfig"),
+      context: this.options.config.get('context'),
+      plugins: this.options.config.get('plugins'),
+      tsconfig: this.options.config.get('tsconfig'),
       timeout: parseInt(
-        this.options.config.get("timeout") as unknown as string,
+        this.options.config.get('timeout') as unknown as string,
       ),
     });
     const exitCode = await pool.run();
@@ -71,7 +71,7 @@ export class Start {
       ignoreInitial: true,
     });
 
-    watcher.on("change", async (file: string) => {
+    watcher.on('change', async (file: string) => {
       const reporter = new Reporter();
       console.clear();
 
@@ -89,7 +89,7 @@ export class Start {
     });
 
     // Optional: Handle other file system events
-    watcher.on("add", async (file: string) => {
+    watcher.on('add', async (file: string) => {
       const reporter = new Reporter();
       if (isValidFile(file, this.options.pattern, this.options.exclude)) {
         console.clear();
@@ -107,7 +107,7 @@ export class Start {
       }
     });
 
-    watcher.on("unlink", (file: string) => {
+    watcher.on('unlink', (file: string) => {
       const reporter = new Reporter();
       console.clear();
       if (this.reports.has(file)) {
@@ -116,7 +116,7 @@ export class Start {
       }
     });
 
-    watcher.on("error", (error: Error) => {
+    watcher.on('error', (error: Error) => {
       console.error(`Error occured while watching:`, error);
     });
   }

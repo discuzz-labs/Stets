@@ -4,8 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { performance } from "node:perf_hooks";
-import { TestFunction } from "../framework/TestCase";
+import { performance } from 'node:perf_hooks';
+import { TestFunction } from '../framework/TestCase';
 
 export interface BenchmarkOptions {
   iterations?: number;
@@ -37,7 +37,7 @@ export class Bench {
   ): Promise<BenchmarkMetrics> {
     const config = { ...this.DEFAULT_OPTIONS, ...options };
     const latencies: number[] = [];
-    const isAsync = fn.constructor.name === "AsyncFunction";
+    const isAsync = fn.constructor.name === 'AsyncFunction';
 
     // Warmup phase
     for (let i = 0; i < config.warmup; i++) {
@@ -122,7 +122,7 @@ export class Bench {
    * @returns Best benchmark result
    */
   static getBestResult(
-    metric: keyof BenchmarkMetrics = "throughputAvg",
+    metric: keyof BenchmarkMetrics = 'throughputAvg',
   ): BenchmarkMetrics | undefined {
     return this.benchmarkResults.reduce(
       (best, current) =>

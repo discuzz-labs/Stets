@@ -4,8 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import * as vm from "vm";
-import { TestReport } from "../framework/TestCase.js";
+import * as vm from 'vm';
+import { TestReport } from '../framework/TestCase.js';
 
 export interface ExecResult {
   status: boolean;
@@ -43,13 +43,13 @@ export class Isolated {
       return {
         status: isValid,
         error: null,
-        report: isValid ? report : null
+        report: isValid ? report : null,
       };
     } catch (error: any) {
       return {
         status: false,
         error,
-        report: null
+        report: null,
       };
     }
   }
@@ -57,14 +57,14 @@ export class Isolated {
   isValidReport(report: any): report is TestReport {
     return (
       report !== null &&
-      typeof report === "object" &&
-      typeof report.status === "string" &&
-      typeof report.stats === "object" &&
+      typeof report === 'object' &&
+      typeof report.status === 'string' &&
+      typeof report.stats === 'object' &&
       report.stats !== null &&
-      typeof report.stats.total === "number" &&
-      typeof report.stats.passed === "number" &&
-      typeof report.stats.failed === "number" &&
-      typeof report.stats.skipped === "number" &&
+      typeof report.stats.total === 'number' &&
+      typeof report.stats.passed === 'number' &&
+      typeof report.stats.failed === 'number' &&
+      typeof report.stats.skipped === 'number' &&
       Array.isArray(report.tests) &&
       Array.isArray(report.hooks)
     );

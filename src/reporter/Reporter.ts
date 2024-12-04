@@ -4,15 +4,15 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Stats, TestCaseStatus, TestReport } from "../framework/TestCase.js";
-import { ErrorMetadata, ErrorInspect } from "../core/ErrorInspect.js";
-import { BenchmarkMetrics } from "../core/Bench.js";
-import { SourceMapConsumer } from "source-map";
-import { PoolResult } from "../core/Pool.js";
-import { replay } from "../core/Console.js";
-import path from "path";
-import kleur from "kleur";
-import { UI } from "./UI.js";
+import { Stats, TestCaseStatus, TestReport } from '../framework/TestCase.js';
+import { ErrorMetadata, ErrorInspect } from '../core/ErrorInspect.js';
+import { BenchmarkMetrics } from '../core/Bench.js';
+import { SourceMapConsumer } from 'source-map';
+import { PoolResult } from '../core/Pool.js';
+import { replay } from '../core/Console.js';
+import path from 'path';
+import kleur from 'kleur';
+import { UI } from './UI.js';
 
 interface ReportOptions {
   file: string;
@@ -49,25 +49,25 @@ export class Reporter {
   ): string {
     const { description, file, error, retries, bench } = args;
     const indicators = {
-      failed: kleur.red("×"),
-      softfailed: kleur.red("!"),
-      skipped: kleur.yellow("-"),
-      passed: kleur.green("✓"),
-      todo: kleur.blue("□"),
-      benched: kleur.cyan("⚡"),
+      failed: kleur.red('×'),
+      softfailed: kleur.red('!'),
+      skipped: kleur.yellow('-'),
+      passed: kleur.green('✓'),
+      todo: kleur.blue('□'),
+      benched: kleur.cyan('⚡'),
     };
 
     switch (type) {
-      case "failed":
-      case "softfailed":
+      case 'failed':
+      case 'softfailed':
         const errorDetails = ErrorInspect.format({ error, file, sourceMap });
         return `${indicators[type]} ${description} ${kleur.gray(`retry: ${retries}`)}\n${errorDetails}`;
 
-      case "benched":
+      case 'benched':
         return `${indicators[type]} ${description}\n${this.benchMarks([bench])}`;
 
       default:
-        return `${(indicators as any)[type] || "-"} ${description}`;
+        return `${(indicators as any)[type] || '-'} ${description}`;
     }
   }
 
@@ -84,14 +84,14 @@ export class Reporter {
           error: test.error,
           file,
           retries: test.retries,
-          softFail: test.status === "softfailed",
+          softFail: test.status === 'softfailed',
           bench: test.bench,
         },
         test.status,
         sourceMap,
       );
 
-      if (test.status === "benched") {
+      if (test.status === 'benched') {
         this.stats.passed++;
       } else {
         this.stats[test.status]++;
@@ -105,15 +105,15 @@ export class Reporter {
     return (
       output
         .filter(Boolean)
-        .map((line) => "  " + line)
-        .join("\n") + "\n"
+        .map((line) => '  ' + line)
+        .join('\n') + '\n'
     );
   }
 
   private summary(): string {
     const { total, passed, failed, skipped, softfailed } = this.stats;
     const percent = (count: number) =>
-      total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
+      total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
 
     const parts = [
       `Total: ${total}`,
@@ -123,7 +123,7 @@ export class Reporter {
       skipped && kleur.yellow(`- ${skipped} (${percent(skipped)}%)`),
     ];
 
-    return `\n${parts.filter(Boolean).join("\n")}\n\n✨ All Tests ran. ✨\n`;
+    return `\n${parts.filter(Boolean).join('\n')}\n\n✨ All Tests ran. ✨\n`;
   }
 
   private benchMarks(
@@ -134,10 +134,10 @@ export class Reporter {
     return data
       .map((item) =>
         item
-          ? `✓ [${kleur.bold("TP")}: ${item.throughputMedian?.toFixed(2)} | ${kleur.bold("Lat")}: ${item.latencyMedian?.toFixed(2)} | ${kleur.bold("Samples")}: ${item.samples}]`
-          : "× [N/A]",
+          ? `✓ [${kleur.bold('TP')}: ${item.throughputMedian?.toFixed(2)} | ${kleur.bold('Lat')}: ${item.latencyMedian?.toFixed(2)} | ${kleur.bold('Samples')}: ${item.samples}]`
+          : '× [N/A]',
       )
-      .join("\n");
+      .join('\n');
   }
 
   report(reports: Map<string, PoolResult>) {
@@ -145,7 +145,7 @@ export class Reporter {
       file,
       { logs, error, sourceMap, duration, report },
     ] of reports) {
-      const status = report ? report.status : "failed";
+      const status = report ? report.status : 'failed';
       const stats = report?.stats || {
         total: 0,
         passed: 0,

@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { diffTrimmedLines } from "diff";
-import kleur from "kleur";
-import { format } from "pretty-format";
+import { diffTrimmedLines } from 'diff';
+import kleur from 'kleur';
+import { format } from 'pretty-format';
 
 export function diff(received: any, expected: any) {
   const formattedReceived = format(received, {
@@ -19,14 +19,14 @@ export function diff(received: any, expected: any) {
     ignoreWhitespace: true,
   });
 
-  let diffFormatted = `${kleur.bgRed("- Expected")}\n${kleur.bgGreen("+ Received")}\n\n`
+  let diffFormatted = `${kleur.bgRed('- Expected')}\n${kleur.bgGreen('+ Received')}\n\n`;
   diff.forEach((part) => {
     // green for additions, red for deletions
     const diffParts = part.added
-      ? kleur.bgGreen(" + ") +
-        part.value.replace(/([^\s])/g, kleur.bgGreen("$1"))
+      ? kleur.bgGreen(' + ') +
+        part.value.replace(/([^\s])/g, kleur.bgGreen('$1'))
       : part.removed
-        ? kleur.bgRed(" - ") + part.value.replace(/([^\s])/g, kleur.bgRed("$1"))
+        ? kleur.bgRed(' - ') + part.value.replace(/([^\s])/g, kleur.bgRed('$1'))
         : part.value;
     diffFormatted += diffParts;
   });

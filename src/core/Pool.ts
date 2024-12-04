@@ -4,15 +4,15 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Console, LogEntry } from "./Console.js";
-import { TestReport } from "../framework/TestCase";
-import { Isolated } from "./Isolated.js";
-import { Transform } from "./Transform.js";
-import { Terminal } from "./Terminal.js";
-import { Plugin } from "esbuild";
-import { SourceMapConsumer } from "source-map";
-import { Context } from "./Context.js";
-import { Tsconfig } from "../config/Config.js";
+import { Console, LogEntry } from './Console.js';
+import { TestReport } from '../framework/TestCase';
+import { Isolated } from './Isolated.js';
+import { Transform } from './Transform.js';
+import { Terminal } from './Terminal.js';
+import { Plugin } from 'esbuild';
+import { SourceMapConsumer } from 'source-map';
+import { Context } from './Context.js';
+import { Tsconfig } from '../config/Config.js';
 
 export interface PoolResult {
   error: any;
@@ -49,7 +49,7 @@ export class Pool {
 
     // Initialize terminal with "pending" state for all files
     this.options.testFiles.forEach((file) => {
-      this.terminal.set(file, "pending");
+      this.terminal.set(file, 'pending');
     });
     this.terminal.render(); // Initial render
 
@@ -67,12 +67,15 @@ export class Pool {
             const logger = new Console();
 
             // Load the test code
-            const {code, sourceMap} = await this.transformer.transform(file);
+            const { code, sourceMap } = await this.transformer.transform(file);
 
             // Create isolated environment and context
-            const isolated = new Isolated({file});
+            const isolated = new Isolated({ file });
 
-            const context = this.context.VMContext(file).add(this.options.context).get()
+            const context = this.context
+              .VMContext(file)
+              .add(this.options.context)
+              .get();
 
             const script = isolated.script(code);
             const exec = await isolated.exec({
@@ -81,20 +84,18 @@ export class Pool {
               timeout: this.options.timeout,
             });
 
-            
-
             const end = Date.now();
 
             // Update terminal and report results
             const status =
-              exec.status && exec.report ? exec.report.status : "failed";
+              exec.status && exec.report ? exec.report.status : 'failed';
             this.terminal.update(file, status);
             this.reports.set(file, {
               error: null,
               duration: (end - start) / 1000,
               report: exec.report,
               logs: logger.logs,
-              sourceMap
+              sourceMap,
             });
           } catch (error: any) {
             const end = Date.now();
@@ -103,9 +104,9 @@ export class Pool {
               duration: (end - start) / 1000,
               report: null,
               logs: [],
-              sourceMap: {} as SourceMapConsumer
+              sourceMap: {} as SourceMapConsumer,
             });
-            this.terminal.update(file, "failed");
+            this.terminal.update(file, 'failed');
           }
         }),
       );

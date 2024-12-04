@@ -1,5 +1,5 @@
-import { TestCaseStatus } from "../framework/TestCase.js";
-import { UI } from "../reporter/UI.js";
+import { TestCaseStatus } from '../framework/TestCase.js';
+import { UI } from '../reporter/UI.js';
 
 /*
  * Copyright (c) 2024 Discuzz Labs Organization
@@ -10,9 +10,7 @@ export class Terminal {
   renderMap = new Map<string, TestCaseStatus>();
 
   draft(file: string, status: TestCaseStatus) {
-    console.log(
-      UI.status(file, status)
-    );
+    console.log(UI.status(file, status));
   }
   // Function to render the current file statuses in the console
   render() {

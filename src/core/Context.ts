@@ -1,10 +1,10 @@
-import * as vm from "vm";
-import * as path from "path";
-import { EventEmitter } from "events";
-import { createRequire } from "module";
-import { Fn, spy } from "../framework/Fn.js";
-import { is, assert } from "../framework/Assertion.js";
-import TestCase from "../framework/TestCase.js";
+import * as vm from 'vm';
+import * as path from 'path';
+import { EventEmitter } from 'events';
+import { createRequire } from 'module';
+import { Fn, spy } from '../framework/Fn.js';
+import { is, assert } from '../framework/Assertion.js';
+import TestCase from '../framework/TestCase.js';
 
 export class Context extends EventEmitter {
   private context: any;
@@ -38,12 +38,12 @@ export class Context extends EventEmitter {
   add(context: any) {
     this.context = { ...context, ...this.context };
 
-    return this
+    return this;
   }
 
   // Create a VM context with testing utilities
   VMContext(file: string) {
-    const testCase = new TestCase("Unnamed test");
+    const testCase = new TestCase('Unnamed test');
 
     this.context = {
       assert,

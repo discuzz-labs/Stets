@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import {COMMANDS} from "./commands.js";
+import { COMMANDS } from './commands.js';
 
 ////types
 export type CLIOptions = {
@@ -13,7 +13,7 @@ export type CLIOptions = {
   version?: boolean;
   help?: boolean;
   watch?: boolean;
-  
+
   pattern?: string[];
   exclude?: string[];
   envs?: string[];
@@ -39,12 +39,12 @@ export class ArgsParser {
       let value: string | boolean = true; // Default value for flags without `=`
 
       // Handle key=value pairs and flags
-      if (arg.includes("=")) {
-        const [key, val] = arg.split("=");
+      if (arg.includes('=')) {
+        const [key, val] = arg.split('=');
         flagKey = this.normalizeFlag(key);
         value = val; // Assign the value from the argument
         currentOption = null; // Reset current option after a key=value pair
-      } else if (arg.startsWith("-")) {
+      } else if (arg.startsWith('-')) {
         // It's a flag, so normalize it
         flagKey = this.normalizeFlag(arg);
         currentOption = flagKey;
@@ -74,7 +74,6 @@ export class ArgsParser {
         } else {
           this.options[flagKey] = value as any;
         }
-
       } else if (flagKey) {
         console.warn(`Unknown or unsupported option: ${arg}`);
         process.exit(1);
@@ -87,9 +86,9 @@ export class ArgsParser {
    */
   private normalizeFlag(flag: string): keyof CLIOptions | null {
     // Remove "--" for long options and "-" for short options
-    const normalizedFlag = flag.startsWith("--")
+    const normalizedFlag = flag.startsWith('--')
       ? flag.slice(2) // For long options: --flag => flag
-      : flag.startsWith("-")
+      : flag.startsWith('-')
         ? this.getLongOptionFromShort(flag.slice(1)) // For short options: -f => corresponding long option
         : flag; // If no prefix, treat it as-is
 
@@ -127,4 +126,3 @@ export class ArgsParser {
     return this.options[key];
   }
 }
-

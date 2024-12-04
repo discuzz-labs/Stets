@@ -4,22 +4,22 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { format } from "util";
-import RunTime from "./RunTime.js";
-import { ErrorMetadata } from "../core/ErrorInspect.js";
-import { BenchmarkMetrics } from "../core/Bench.js";
+import { format } from 'util';
+import RunTime from './RunTime.js';
+import { ErrorMetadata } from '../core/ErrorInspect.js';
+import { BenchmarkMetrics } from '../core/Bench.js';
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
 export type Status =
-  | "passed"
-  | "failed"
-  | "softfailed"
-  | "skipped"
-  | "todo"
-  | "benched"
-export type TestCaseStatus = "passed" | "failed" | "pending" |"empty"
-export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
+  | 'passed'
+  | 'failed'
+  | 'softfailed'
+  | 'skipped'
+  | 'todo'
+  | 'benched';
+export type TestCaseStatus = 'passed' | 'failed' | 'pending' | 'empty';
+export type HookTypes = 'afterAll' | 'afterEach' | 'beforeAll' | 'beforeEach';
 
 export interface Test {
   description: string;
@@ -38,7 +38,7 @@ export type TestResult = {
   status: Status;
   retries: number;
   error?: ErrorMetadata;
-  bench: BenchmarkMetrics | null
+  bench: BenchmarkMetrics | null;
 };
 
 export type HookResult = {
@@ -74,7 +74,7 @@ const DEFAULT_OPTIONS: Options = {
   retry: 0,
   sequencial: false,
   bench: false,
-  todo: false
+  todo: false,
 };
 
 // Merge the provided options with the default options
@@ -200,7 +200,11 @@ export interface TestCase {
    * @param options - Additional test options.
    * @example testCase.bench('Measure performance', () => doWork());
    */
-  bench(description: string, fn: TestFunction, options?: Partial<Options>): void;
+  bench(
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
 
   /**
    * Defines a parameterized test for each entry in the provided table.
@@ -234,7 +238,11 @@ export interface TestCase {
    * @param options - Additional test options.
    * @example testCase.sequence('processes data sequentially', () => processData());
    */
-  sequence(description: string, fn: TestFunction, options?: Partial<Options>): void;
+  sequence(
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
 
   /**
    * Defines a test with retry logic.
@@ -360,7 +368,6 @@ export interface TestCase {
   run(): Promise<TestReport>;
 }
 
-
 // Top Level API
 export class TestCase {
   public description: string;
@@ -389,7 +396,7 @@ export class TestCase {
   }
 
   bench(description: string, fn: TestFunction, options?: Partial<Options>) {
-    const mergedOptions = mergeOptions({ ...options,  bench: true });
+    const mergedOptions = mergeOptions({ ...options, bench: true });
     if (options?.sequencial)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
@@ -526,7 +533,7 @@ export class TestCase {
   // Define 'beforeAll' hook
   public beforeAll(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.beforeAll = {
-      description: "beforeAll",
+      description: 'beforeAll',
       fn,
       options: mergeOptions(options),
     };
@@ -535,7 +542,7 @@ export class TestCase {
   // Define 'beforeEach' hook
   public beforeEach(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.beforeEach = {
-      description: "beforeEach",
+      description: 'beforeEach',
       fn,
       options: mergeOptions(options),
     };
@@ -544,7 +551,7 @@ export class TestCase {
   // Define 'afterAll' hook
   public afterAll(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.afterAll = {
-      description: "afterAll",
+      description: 'afterAll',
       fn,
       options: mergeOptions(options),
     };
@@ -553,7 +560,7 @@ export class TestCase {
   // Define 'afterEach' hook
   public afterEach(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.afterEach = {
-      description: "afterEach",
+      description: 'afterEach',
       fn,
       options: mergeOptions(options),
     };
