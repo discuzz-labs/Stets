@@ -4,7 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { deepEqual } from "../utils/index.js";
+import { isDeepStrictEqual } from "util";
+import { getType } from "../utils";
 
 // Define the types for the tracking function calls
 export interface FunctionCall<T extends any[], R> {
@@ -177,7 +178,7 @@ export class TrackFn<T extends any[], R> {
     return this._calls.some(
       (call) =>
         call.args.length === args.length &&
-        call.args.every((arg, index) => deepEqual(arg, args[index])),
+        call.args.every((arg, index) => isDeepStrictEqual(arg, args[index])),
     );
   }
 
@@ -194,6 +195,7 @@ export function Fn<T extends any[], R>(
 }
 
 export function isFn(value: any): boolean {
+  if(typeof value !== "function") return false
   const methods = [
     "getCalls",
     "getCall",

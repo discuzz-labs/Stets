@@ -4,8 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
+import kleur from "kleur";
 import type { CLIOptions } from "../cli/ArgParser.js";
-import kleur from "../utils/kleur.js";
 
 const COMMANDS: Record<
   keyof CLIOptions,

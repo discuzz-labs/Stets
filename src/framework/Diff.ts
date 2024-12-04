@@ -5,38 +5,31 @@
  */
 
 import { diffWords } from "diff";
-import { Format } from "../utils/Format.js";
-import kleur from "../utils/kleur.js";
+import kleur from "kleur";
+import { format } from "pretty-format";
 
-export class Diff {
-  diff;
+export function diff(received: any, expected: any) {
+  const formattedReceived = format(received, {
+    printFunctionName: true,
+  });
+  const formattedExpected = format(expected, {
+    printFunctionName: true,
+  });
+  let diff = diffWords(formattedExpected, formattedReceived, {
+    ignoreWhitespace: true,
+  });
 
-  constructor(received: any, expected: any) {
-    const formattedReceived = new Format().format(received);
-    const formattedExpected = new Format().format(expected);
-    this.diff = diffWords(formattedExpected, formattedReceived, {
-      ignoreWhitespace: true,
-    });
-  }
+  let diffFormatted = `${kleur.bgRed("- Expected")}\n${kleur.bgGreen("+ Received")}\n\n`
+  diff.forEach((part) => {
+    // green for additions, red for deletions
+    let diff = part.added
+      ? kleur.bgGreen(" + ") +
+        part.value.replace(/([^\s])/g, kleur.bgGreen("$1"))
+      : part.removed
+        ? kleur.bgRed(" - ") + part.value.replace(/([^\s])/g, kleur.bgRed("$1"))
+        : part.value;
+    diffFormatted += diff;
+  });
 
-  has() {
-    return this.diff.length > 0;
-  }
-
-  format() {
-    let diffFormatted = "";
-    this.diff.forEach((part) => {
-      // green for additions, red for deletions
-      let diff = part.added
-        ? kleur.bgGreen(" + ") +
-          part.value.replace(/([^\s])/g, kleur.bgGreen("$1"))
-        : part.removed
-          ? kleur.bgRed(" - ") +
-            part.value.replace(/([^\s])/g, kleur.bgRed("$1"))
-          : part.value;
-      diffFormatted += diff;
-    });
-
-    return diffFormatted;
-  }
+  return diffFormatted;
 }

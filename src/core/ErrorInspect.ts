@@ -1,6 +1,6 @@
 import esbuild from "esbuild";
 import { SourceMapConsumer } from "source-map";
-import kleur from "../utils/kleur.js";
+import kleur from "kleur";
 
 interface ParsedStackFrame {
   file?: string;
@@ -121,21 +121,15 @@ export class ErrorInspect {
     const formattedLines: string[] = [this.line(parsed, options)];
 
     for (let i = startLine; i <= endLine; i++) {
-      const lineNumber = (i + 1).toString().padStart(2, " ");
       const isTargetLine = i === targetLine;
+      const lineNumber = (i + 1).toString().padStart(2, " ");
+      const line = isTargetLine
+        ? kleur.bold(sourceLines[i])
+        : kleur.dim(sourceLines[i]);
 
-      // Highlight target line in red
-      const line = isTargetLine ? kleur.red(sourceLines[i]) : sourceLines[i];
-
-      // Add line number and content
-      formattedLines.push(`${kleur.gray(lineNumber)}|${" ".repeat(2)}${line}`);
-
-      // Add column indicator for the target line
-      if (isTargetLine && original.column !== null) {
-        const underline =
-          " ".repeat(4 + 3 + original.column) + kleur.green("~~~~~~~~~~");
-        formattedLines.push(underline);
-      }
+      formattedLines.push(
+        `${isTargetLine ? kleur.red(">") : ""} ${kleur.gray(lineNumber)}|${" ".repeat(2)}${line}`,
+      );
     }
 
     return formattedLines.join("\n");

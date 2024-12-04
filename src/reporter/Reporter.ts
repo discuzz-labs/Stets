@@ -11,7 +11,7 @@ import { SourceMapConsumer } from "source-map";
 import { PoolResult } from "../core/Pool.js";
 import { replay } from "../core/Console.js";
 import path from "path";
-import kleur from "../utils/kleur.js";
+import kleur from "kleur";
 import { UI } from "./UI.js";
 
 interface ReportOptions {
@@ -119,7 +119,7 @@ export class Reporter {
       `Total: ${total}`,
       passed && kleur.green(`✓ ${passed} (${percent(passed)}%)`),
       failed && kleur.red(`× ${failed} (${percent(failed)}%)`),
-      softfailed && kleur.lightRed(`! ${softfailed} (${percent(softfailed)}%)`),
+      softfailed && kleur.red(`! ${softfailed} (${percent(softfailed)}%)`),
       skipped && kleur.yellow(`- ${skipped} (${percent(skipped)}%)`),
     ];
 

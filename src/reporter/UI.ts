@@ -6,7 +6,7 @@
 
 import { Stats } from "../framework/TestCase.js";
 import { TestCaseStatus } from "../framework/TestCase.js";
-import kleur from "../utils/kleur.js";
+import kleur from "kleur";
 import { LogArgs } from "./Reporter.js";
 
 export class UI {

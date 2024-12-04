@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import kleur from "../utils/kleur.js";
+import kleur from "kleur";
 
 export class AssertionError extends Error {
   constructor(message: any, methodName: string) {
