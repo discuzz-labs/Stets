@@ -6,7 +6,7 @@
 
 import { build, Plugin } from "esbuild";
 import { SourceMapConsumer } from "source-map";
-import { Tsconfig } from "../config/types";
+import { Tsconfig } from "../config/Config.js";
 
 interface TransformResult {
   code: string;

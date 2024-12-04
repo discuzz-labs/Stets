@@ -21,21 +21,6 @@ export type Status =
 export type TestCaseStatus = "passed" | "failed" | "pending" |"empty"
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
-export interface Options {
-  timeout: number;
-  skip: boolean;
-  if:
-    | boolean
-    | undefined
-    | null
-    | (() => boolean | Promise<boolean> | null | undefined);
-  retry: number;
-  softfail: boolean;
-  sequencial: boolean;
-  bench: boolean;
-  todo: boolean;
-}
-
 export interface Test {
   description: string;
   fn: TestFunction;
@@ -97,8 +82,287 @@ function mergeOptions(options?: Partial<Options>): Options {
   return { ...DEFAULT_OPTIONS, ...options };
 }
 
+/**
+ * Interface representing configuration options for a test case.
+ */
+export interface Options {
+  /**
+   * The maximum time (in milliseconds) a test is allowed to run before timing out.
+   * @example 5000 // 5 seconds timeout
+   */
+  timeout: number;
+
+  /**
+   * Indicates whether the test should be skipped.
+   * @example true // Test will be skipped
+   */
+  skip: boolean;
+
+  /**
+   * A condition to determine whether the test should run.
+   * Can be a boolean, a function returning a boolean, or a promise resolving to a boolean.
+   * @example
+   * true // Test will run
+   * () => environment === 'production' // Conditional test execution
+   */
+  if:
+    | boolean
+    | undefined
+    | null
+    | (() => boolean | Promise<boolean> | null | undefined);
+
+  /**
+   * The number of times the test should be retried upon failure.
+   * @example 3 // Retry the test 3 times
+   */
+  retry: number;
+
+  /**
+   * Indicates whether the test should allow soft failures without halting the test suite.
+   * @example true // Test can fail without breaking the suite
+   */
+  softfail: boolean;
+
+  /**
+   * Indicates whether the test should be run sequentially.
+   * @example true // Test will run in sequence with others
+   */
+  sequencial: boolean;
+
+  /**
+   * Indicates whether the test is a benchmark test.
+   * @example true // Marks the test as a benchmark
+   */
+  bench: boolean;
+
+  /**
+   * Indicates whether the test is marked as a 'to-do' item.
+   * @example true // Test is marked as a to-do
+   */
+  todo: boolean;
+}
+
+/**
+ * Interface representing a test case and its associated methods and properties.
+ */
+export interface TestCase {
+  /**
+   * The description of the test case.
+   * @example 'User login tests'
+   */
+  description: string;
+
+  /**
+   * The list of standard tests in this test case.
+   * @example [{ description: 'should login with valid credentials', fn: () => {} }]
+   */
+  tests: Test[];
+
+  /**
+   * The list of tests marked to run in sequence.
+   * @example [{ description: 'should process payments sequentially', fn: () => {} }]
+   */
+  sequenceTests: Test[];
+
+  /**
+   * The list of tests marked as 'only' to execute exclusively.
+   * @example [{ description: 'should only run this critical test', fn: () => {} }]
+   */
+  onlyTests: Test[];
+
+  /**
+   * The list of tests marked as both 'only' and sequential.
+   * @example [{ description: 'critical sequential test', fn: () => {} }]
+   */
+  sequenceOnlyTests: Test[];
+
+  /**
+   * The hooks defined for the test case.
+   */
+  hooks: {
+    beforeAll?: Hook;
+    beforeEach?: Hook;
+    afterAll?: Hook;
+    afterEach?: Hook;
+  };
+
+  /**
+   * Updates the description of the test case.
+   * @param description - The new description for the test case.
+   * @example testCase.should('Updated description');
+   */
+  should(description: string): void;
+
+  /**
+   * Defines a benchmark test.
+   * @param description - The description of the test.
+   * @param fn - The function to benchmark.
+   * @param options - Additional test options.
+   * @example testCase.bench('Measure performance', () => doWork());
+   */
+  bench(description: string, fn: TestFunction, options?: Partial<Options>): void;
+
+  /**
+   * Defines a parameterized test for each entry in the provided table.
+   * @param table - An array of test data.
+   * @param description - The description template.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example
+   * testCase.each([[1, 2], [3, 4]], 'adds %d and %d', (a, b) => expect(a + b).toBeGreaterThan(0));
+   */
+  each(
+    table: any[],
+    description: string,
+    fn: (...args: any[]) => void | Promise<void>,
+    options?: Partial<Options>,
+  ): void;
+
+  /**
+   * Defines a standard test.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.it('should login successfully', () => login());
+   */
+  it(description: string, fn: TestFunction, options?: Partial<Options>): void;
+
+  /**
+   * Defines a test to run in sequence.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.sequence('processes data sequentially', () => processData());
+   */
+  sequence(description: string, fn: TestFunction, options?: Partial<Options>): void;
+
+  /**
+   * Defines a test with retry logic.
+   * @param retry - The number of retries.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.retry(3, 'retryable test', () => flakyTest());
+   */
+  retry(
+    retry: number,
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
+
+  /**
+   * Defines a test with a timeout.
+   * @param timeout - The timeout in milliseconds.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.timeout(5000, 'should finish within 5 seconds', () => quickTest());
+   */
+  timeout(
+    timeout: number,
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
+
+  /**
+   * Adds a todo test.
+   * @param description - The description of the test.
+   * @param options - Additional test options.
+   * @example testCase.todo('Implement this later');
+   */
+  todo(description: string, options?: Partial<Options>): void;
+
+  /**
+   * Conditionally runs a test if the condition is met.
+   * @param condition - A boolean or function returning a boolean.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.itIf(true, 'conditionally run this test', () => doTest());
+   */
+  itIf(
+    condition:
+      | boolean
+      | undefined
+      | null
+      | (() => boolean | Promise<boolean> | null | undefined),
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ): void;
+
+  /**
+   * Marks a test to allow soft failures.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.fail('non-critical test', () => flakyTest());
+   */
+  fail(description: string, fn: TestFunction, options?: Partial<Options>): void;
+
+  /**
+   * Marks a test to run exclusively.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.only('critical test', () => runCriticalTest());
+   */
+  only(description: string, fn: TestFunction, options?: Partial<Options>): void;
+
+  /**
+   * Skips a test.
+   * @param description - The description of the test.
+   * @param fn - The test function.
+   * @param options - Additional test options.
+   * @example testCase.skip('skipped test', () => doNotRun());
+   */
+  skip(description: string, fn: TestFunction, options?: Partial<Options>): void;
+
+  /**
+   * Adds a 'beforeAll' hook to the test case.
+   * @param fn - The hook function.
+   * @param options - Additional options.
+   * @example testCase.beforeAll(() => setup());
+   */
+  beforeAll(fn: HookFunction, options?: Partial<Options>): void;
+
+  /**
+   * Adds a 'beforeEach' hook to the test case.
+   * @param fn - The hook function.
+   * @param options - Additional options.
+   * @example testCase.beforeEach(() => setupEach());
+   */
+  beforeEach(fn: HookFunction, options?: Partial<Options>): void;
+
+  /**
+   * Adds an 'afterAll' hook to the test case.
+   * @param fn - The hook function.
+   * @param options - Additional options.
+   * @example testCase.afterAll(() => teardown());
+   */
+  afterAll(fn: HookFunction, options?: Partial<Options>): void;
+
+  /**
+   * Adds an 'afterEach' hook to the test case.
+   * @param fn - The hook function.
+   * @param options - Additional options.
+   * @example testCase.afterEach(() => cleanupEach());
+   */
+  afterEach(fn: HookFunction, options?: Partial<Options>): void;
+
+  /**
+   * Runs the test case and returns a test report.
+   * @returns {Promise<TestReport>} The test report after execution.
+   * @example const report = await testCase.run();
+   */
+  run(): Promise<TestReport>;
+}
+
+
 // Top Level API
-class TestCase {
+export class TestCase {
   public description: string;
   public tests: Test[];
   public sequenceTests: Test[];

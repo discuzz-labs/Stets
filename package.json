@@ -3,7 +3,7 @@
   "version": "1.0.0-dev",
   "description": "Veve - Run tests with ease.",
   "main": "dist/index.js",
-  "types": "types/index.d.ts",
+  "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
     "veve": "./bin/index.js"
@@ -35,11 +35,13 @@
   "license": "ISC",
   "scripts": {
     "build": "tsc",
-    "build:watch": "tsc -w"
+    "build:watch": "tsc -w",
+    "build:dts": "dts-bundle-generator src/index.ts -o index.d.ts"
   },
   "devDependencies": {
     "@types/diff": "^6.0.0",
     "@types/node": "^22.9.0",
+    "dts-bundle-generator": "^9.5.1",
     "typescript": "^5.6.3"
   },
   "dependencies": {

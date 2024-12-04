@@ -12,7 +12,7 @@ import { Terminal } from "./Terminal.js";
 import { Plugin } from "esbuild";
 import { SourceMapConsumer } from "source-map";
 import { Context } from "./Context.js";
-import { Tsconfig } from "../config/types.js";
+import { Tsconfig } from "../config/Config.js";
 
 export interface PoolResult {
   error: any;

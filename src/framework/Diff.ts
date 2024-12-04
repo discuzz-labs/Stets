@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { diffTrimmedLines, diffWords } from "diff";
+import { diffTrimmedLines } from "diff";
 import kleur from "kleur";
 import { format } from "pretty-format";
 
