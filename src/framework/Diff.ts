@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { diffWords } from "diff";
+import { diffTrimmedLines, diffWords } from "diff";
 import kleur from "kleur";
 import { format } from "pretty-format";
 
@@ -15,7 +15,7 @@ export function diff(received: any, expected: any) {
   const formattedExpected = format(expected, {
     printFunctionName: true,
   });
-  let diff = diffWords(formattedExpected, formattedReceived, {
+  let diff = diffTrimmedLines(formattedExpected, formattedReceived, {
     ignoreWhitespace: true,
   });
 
