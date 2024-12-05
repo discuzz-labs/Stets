@@ -10,6 +10,7 @@ import { Env } from '../core/Env.js';
 import { Glob } from '../glob/Glob.js';
 import { help } from './commands.js';
 import { Start } from '../core/Start.js';
+import 'esbuild-register';
 
 (async () => {
   const args = new ArgsParser();

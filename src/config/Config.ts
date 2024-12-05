@@ -8,7 +8,6 @@ import { Plugin } from 'esbuild';
 import { existsSync } from 'fs';
 import { join, extname } from 'path';
 import config from '../veve.config.js';
-import 'esbuild-register';
 import { createRequire } from 'module';
 import { ErrorInspect } from '../core/ErrorInspect.js';
 import { getType } from '../utils/index.js';

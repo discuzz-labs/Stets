@@ -145,6 +145,7 @@ export class Reporter {
       file,
       { logs, error, sourceMap, duration, report },
     ] of reports) {
+      
       const status = report ? report.status : 'failed';
       const stats = report?.stats || {
         total: 0,

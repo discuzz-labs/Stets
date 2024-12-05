@@ -89,9 +89,11 @@ export class Pool {
             // Update terminal and report results
             const status =
               exec.status && exec.report ? exec.report.status : 'failed';
+            
             this.terminal.update(file, status);
+            
             this.reports.set(file, {
-              error: null,
+              error: exec.error,
               duration: (end - start) / 1000,
               report: exec.report,
               logs: logger.logs,

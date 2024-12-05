@@ -3,7 +3,7 @@
   "version": "1.0.0-dev",
   "description": "Veve - Run tests with ease.",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "types/index.d.ts",
   "type": "module",
   "bin": {
     "veve": "./bin/index.js"
@@ -31,7 +31,7 @@
     "uvu"
   ],
   "author": "A. Shaheen",
-  "license": "ISC",
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
