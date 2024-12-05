@@ -74,6 +74,9 @@ export class Pool {
 
             const context = this.context
               .VMContext(file)
+              .add({
+                console: logger
+              })
               .add(this.options.context)
               .get();
 
