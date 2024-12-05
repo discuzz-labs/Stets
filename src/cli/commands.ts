@@ -40,6 +40,14 @@ const COMMANDS: Record<
     shortValue: 'c',
     type: 'string',
   },
+  require: {
+    description:
+      'Module names to require globally inside the testing files!',
+    requiresValue: true,
+    isArray: true,
+    shortValue: 'r',
+    type: 'string',
+  },
   watch: {
     description: 'Watch testing files (recommended)',
     requiresValue: false,

@@ -62,6 +62,12 @@ export interface Veve {
    * @example true
    */
   watch: boolean;
+
+  /**
+   * List of modules to auto require inside the testing files
+   * @example ["jsdom-global/register"]
+   */
+  require: string[]
 }
 
 /**
@@ -256,7 +262,7 @@ export function isValidConfig(veve: any): boolean {
     veve.plugins !== undefined &&
     (!Array.isArray(veve.plugins) ||
       !veve.plugins.every(
-        (item: any) => getType(item) === 'object' && item.name && item.version,
+        (item: any) => getType(item) === 'object' && item.name,
       ))
   ) {
     throw new Error(

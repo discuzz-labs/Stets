@@ -9,6 +9,7 @@ const config: Veve = {
   plugins: [],
   tsconfig: {},
   watch: false,
+  require: []
 };
 
 export default config;

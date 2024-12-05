@@ -35,6 +35,7 @@ export class Pool {
       plugins: Plugin[];
       context: Record<any, any>;
       tsconfig: Tsconfig;
+      requires: string[];
     },
   ) {
     this.transformer = new Transform({
@@ -70,7 +71,7 @@ export class Pool {
             const { code, sourceMap } = await this.transformer.transform(file);
 
             // Create isolated environment and context
-            const isolated = new Isolated({ file });
+            const isolated = new Isolated({ file, requires: this.options.requires });
 
             const context = this.context
               .VMContext(file)

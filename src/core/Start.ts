@@ -20,6 +20,7 @@ export class Start {
       files: string[];
       pattern: string[];
       exclude: string[];
+      requires: string[];
     },
   ) {}
 
@@ -32,6 +33,7 @@ export class Start {
       timeout: parseInt(
         this.options.config.get('timeout') as unknown as string,
       ),
+      requires: this.options.requires
     });
     const exitCode = await pool.run();
     return {

@@ -18,6 +18,7 @@ export type CLIOptions = {
   exclude?: string[];
   envs?: string[];
   timeout?: number;
+  require?: string[];
 };
 ////
 

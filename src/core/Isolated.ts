@@ -23,11 +23,21 @@ export class Isolated {
   constructor(
     private readonly options: {
       file: string;
+      requires: string[]
     },
   ) {}
 
+  injectRequires(code: string) {
+    const requireStack = []
+    for(const require of this.options.requires) {
+      requireStack.push(`require("${require}")`)
+    }
+    requireStack.push(code)
+    return requireStack.join("\n")
+  }
+
   script(code: string) {
-    return new vm.Script(code, {
+    return new vm.Script(this.injectRequires(code), {
       filename: this.options.file,
     });
   }
