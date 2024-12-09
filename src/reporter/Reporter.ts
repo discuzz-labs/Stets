@@ -4,172 +4,78 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Stats, TestCaseStatus, TestReport } from '../framework/TestCase.js';
-import { ErrorMetadata, ErrorInspect } from '../core/ErrorInspect.js';
-import { BenchmarkMetrics } from '../core/Bench.js';
-import { SourceMapConsumer } from 'source-map';
+import { ErrorInspect } from '../core/ErrorInspect.js';
 import { PoolResult } from '../core/Pool.js';
-import { replay } from '../core/Console.js';
-import path from 'path';
-import kleur from 'kleur';
-import { UI } from './UI.js';
 
-interface ReportOptions {
-  file: string;
-  report: TestReport;
-  sourceMap: SourceMapConsumer;
+export interface ReporterPlugin {
+  /** Name of the reporter plugin */
+  name: string;
+
+  /**
+   * The type of the reporter plugin.
+   * 
+   * - `"file"`: Writes the report to a file.
+   * - `"console"`: Outputs the report to the console.
+   */
+  type: "file" | "console";
+
+  /**
+   * Generates a report based on the provided options.
+   *
+   * @param {Object} options - Configuration for generating the report.
+   * @param {Map<string, PoolResult>} options.reports - A map containing report data where the key is a string identifier and the value is a `PoolResult`.
+   * @param {string} [options.outputDir] - Directory where the report should be saved. Required if the plugin type is `"file"`.
+   * 
+   * @example
+   * const plugin: ReporterPlugin = {
+   *   name: "FileReporter",
+   *   type: "file",
+   *   report: async (options) => {
+   *     console.log("Generating report...");
+   *     // Implementation here...
+   *   },
+   * };
+   *
+   * @returns {Promise<void>} Resolves when the report is successfully generated.
+   */
+  report(options: {
+    /**
+     * A map containing report data where:
+     * - The key is a unique string identifier for the report.
+     * - The value is an object of type `PoolResult`.
+     */
+    reports: Map<string, PoolResult>;
+
+    /**
+     * The directory where the report should be saved.
+     * Required when the reporter type is `"file"`.
+     */
+    outputDir?: string;
+  }): Promise<void>;
 }
 
-export interface LogArgs {
-  description: string;
-  file?: string;
-  duration?: number;
-  status?: TestCaseStatus;
-  stats?: Stats;
-  error?: ErrorMetadata;
-  retries?: number;
-  softFail?: boolean;
-  bench?: BenchmarkMetrics | null;
-}
 
-export class Reporter {
-  private stats = {
-    total: 0,
-    passed: 0,
-    failed: 0,
-    skipped: 0,
-    softfailed: 0,
-    todo: 0,
-  };
+export async function report(reports: Map<string, PoolResult>, plugins: ReporterPlugin[]) {
+  try {
+    // Separate the plugins by type
+    const filePlugins = plugins.filter((plugin) => plugin.type === 'file');
+    const consolePlugins = plugins.filter((plugin) => plugin.type === 'console');
 
-  private log(
-    args: LogArgs,
-    type: string,
-    sourceMap: SourceMapConsumer,
-  ): string {
-    const { description, file, error, retries, bench } = args;
-    const indicators = {
-      failed: kleur.red('×'),
-      softfailed: kleur.red('!'),
-      skipped: kleur.yellow('-'),
-      passed: kleur.green('✓'),
-      todo: kleur.blue('□'),
-      benched: kleur.cyan('⚡'),
-    };
-
-    switch (type) {
-      case 'failed':
-      case 'softfailed':
-        const errorDetails = ErrorInspect.format({ error, file, sourceMap });
-        return `${indicators[type]} ${description} ${kleur.gray(`retry: ${retries}`)}\n${errorDetails}`;
-
-      case 'benched':
-        return `${indicators[type]} ${description}\n${this.benchMarks([bench])}`;
-
-      default:
-        return `${(indicators as any)[type] || '-'} ${description}`;
-    }
-  }
-
-  private generate({ file, report, sourceMap }: ReportOptions): string {
-    const items = [...report.tests, ...report.hooks];
-    if (items.length === 0) {
-      return `${report.description} is empty`;
-    }
-
-    const output = items.map((test) => {
-      const logEntry = this.log(
-        {
-          description: test.description,
-          error: test.error,
-          file,
-          retries: test.retries,
-          softFail: test.status === 'softfailed',
-          bench: test.bench,
-        },
-        test.status,
-        sourceMap,
-      );
-
-      if (test.status === 'benched') {
-        this.stats.passed++;
-      } else {
-        this.stats[test.status]++;
-      }
-
-      return logEntry;
-    });
-
-    this.stats.total += report.stats.total;
-
-    return (
-      output
-        .filter(Boolean)
-        .map((line) => '  ' + line)
-        .join('\n') + '\n'
+    // Start running file plugins in the background
+    const filePluginsPromise = Promise.all(
+      filePlugins.map((plugin) => plugin.report({ reports }))
     );
-  }
 
-  private summary(): string {
-    const { total, passed, failed, skipped, softfailed } = this.stats;
-    const percent = (count: number) =>
-      total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
-
-    const parts = [
-      `Total: ${total}`,
-      passed && kleur.green(`✓ ${passed} (${percent(passed)}%)`),
-      failed && kleur.red(`× ${failed} (${percent(failed)}%)`),
-      softfailed && kleur.red(`! ${softfailed} (${percent(softfailed)}%)`),
-      skipped && kleur.yellow(`- ${skipped} (${percent(skipped)}%)`),
-    ];
-
-    return `\n${parts.filter(Boolean).join('\n')}\n\n✨ All Tests ran. ✨\n`;
-  }
-
-  private benchMarks(
-    data: (BenchmarkMetrics | null | undefined)[],
-  ): string | void {
-    if (!Array.isArray(data) || data.length === 0) return;
-
-    return data
-      .map((item) =>
-        item
-          ? `✓ [${kleur.bold('TP')}: ${item.throughputMedian?.toFixed(2)} | ${kleur.bold('Lat')}: ${item.latencyMedian?.toFixed(2)} | ${kleur.bold('Samples')}: ${item.samples}]`
-          : '× [N/A]',
-      )
-      .join('\n');
-  }
-
-  report(reports: Map<string, PoolResult>) {
-    for (const [
-      file,
-      { logs, error, sourceMap, duration, report },
-    ] of reports) {
-      
-      const status = report ? report.status : 'failed';
-      const stats = report?.stats || {
-        total: 0,
-        passed: 0,
-        failed: 0,
-        softfailed: 0,
-        skipped: 0,
-        todo: 0,
-      };
-      const description = report?.description || path.basename(file);
-
-      process.stdout.write(
-        UI.header({ description, file, duration, status, stats }),
-      );
-
-      if (report) {
-        process.stdout.write(this.generate({ file, report, sourceMap }));
-      }
-
-      if (error) process.stdout.write(ErrorInspect.format({ error, file }));
-
-      replay(logs);
+    // Run console plugins synchronously
+    for (const plugin of consolePlugins) {
+      await plugin.report({ reports });
     }
 
-    process.stdout.write(this.summary());
+    // Wait for file plugins to complete (optional)
+    await filePluginsPromise;
+  } catch (error: any) {
+    console.log(ErrorInspect.format({
+      error
+    }))
   }
 }

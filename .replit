@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "nix"]
+modules = ["nix", "nodejs-22", "typescript-language-server"]
 hidden = [".config", "package-lock.json"]
 run = "npm run build:watch"
 
@@ -12,6 +12,6 @@ channel = "stable-24_05"
 language = "nodejs"
 
 [deployment]
-run = ["sh", "-c", "npm run build:watch"]
+run = ["sh", "-c", "npm build:watch"]
 deploymentTarget = "cloudrun"
 ignorePorts = false

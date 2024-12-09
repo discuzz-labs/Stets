@@ -7,8 +7,9 @@
 import Watcher from 'watcher';
 import { Pool, PoolResult } from './Pool.js';
 import { Config } from '../config/Config.js';
-import { Reporter } from '../reporter/Reporter.js';
+import { report } from '../reporter/Reporter.js';
 import { isValidFile } from '../glob/Glob.js';
+import { ReporterPlugin } from '../reporter/Reporter.js';
 
 export class Start {
   private reports: Map<string, PoolResult> = new Map();
@@ -21,6 +22,7 @@ export class Start {
       pattern: string[];
       exclude: string[];
       requires: string[];
+      reporters: ReporterPlugin[]
     },
   ) {}
 
@@ -43,18 +45,16 @@ export class Start {
   }
 
   async start() {
-    const reporter = new Reporter();
     if (this.options.watch) {
       // Run initial tests
       const { reports } = await this.exec(this.options.files);
       this.reports = reports;
-      reporter.report(this.reports);
-
+      await report(this.reports, this.options.reporters);
       // Setup and start watching
       this.watch();
     } else {
       const { exitCode, reports } = await this.exec(this.options.files);
-      reporter.report(reports);
+      await report(reports, this.options.reporters);
       process.exit(exitCode);
     }
   }
@@ -74,7 +74,6 @@ export class Start {
     });
 
     watcher.on('change', async (file: string) => {
-      const reporter = new Reporter();
       console.clear();
 
       try {
@@ -83,7 +82,7 @@ export class Start {
 
         if (fileReport) {
           this.change(file, fileReport);
-          reporter.report(this.reports);
+          await report(this.reports, this.options.reporters);
         }
       } catch (error) {
         console.error(`Error processing changed file ${file}:`, error);
@@ -92,7 +91,6 @@ export class Start {
 
     // Optional: Handle other file system events
     watcher.on('add', async (file: string) => {
-      const reporter = new Reporter();
       if (isValidFile(file, this.options.pattern, this.options.exclude)) {
         console.clear();
         try {
@@ -101,7 +99,7 @@ export class Start {
 
           if (fileReport) {
             this.add(file, fileReport);
-            reporter.report(this.reports);
+             await report(this.reports, this.options.reporters);
           }
         } catch (error) {
           console.error(`Error processing new file ${file}:`, error);
@@ -109,12 +107,11 @@ export class Start {
       }
     });
 
-    watcher.on('unlink', (file: string) => {
-      const reporter = new Reporter();
+    watcher.on('unlink',  async (file: string) => {
       console.clear();
       if (this.reports.has(file)) {
         this.reports.delete(file);
-        reporter.report(this.reports);
+         await report(this.reports, this.options.reporters);
       }
     });
 

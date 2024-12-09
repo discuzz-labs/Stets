@@ -307,40 +307,6 @@ export function Fn<T extends any[], R>(
 }
 
 /**
- * Checks if a value is a tracked function.
- *
- * @param {any} value - The value to check.
- * @returns {boolean} True if the value is a tracked function, otherwise false.
- *
- * @example
- * const trackedAdd = Fn((a: number, b: number) => a + b);
- * console.log(isFn(trackedAdd)); // true
- */
-export function isFn(value: any): boolean {
-  if (typeof value !== "function") return false;
-  const methods = [
-    "getCalls",
-    "getCall",
-    "getLatestCall",
-    "getCallCount",
-    "getAllArgs",
-    "getArgsForCall",
-    "getReturnValues",
-    "getExceptions",
-    "wasCalled",
-    "wasCalledWith",
-    "wasCalledTimes",
-    "return",
-    "throw",
-    "use",
-    "reset",
-    "clear",
-  ];
-
-  return methods.every((method) => typeof value[method] === "function");
-}
-
-/**
  * Replaces a method on an object with a tracked version of the method.
  *
  * @template T - The argument types of the method.
@@ -375,4 +341,38 @@ export function spy<T extends any[], R>(
   obj[method] = trackedFn;
 
   return trackedFn;
+}
+
+/**
+ * Checks if a value is a tracked function.
+ *
+ * @param {any} value - The value to check.
+ * @returns {boolean} True if the value is a tracked function, otherwise false.
+ *
+ * @example
+ * const trackedAdd = Fn((a: number, b: number) => a + b);
+ * console.log(isFn(trackedAdd)); // true
+ */
+export function isFn(value: any): boolean {
+  if (typeof value !== "function") return false;
+  const methods = [
+    "getCalls",
+    "getCall",
+    "getLatestCall",
+    "getCallCount",
+    "getAllArgs",
+    "getArgsForCall",
+    "getReturnValues",
+    "getExceptions",
+    "wasCalled",
+    "wasCalledWith",
+    "wasCalledTimes",
+    "return",
+    "throw",
+    "use",
+    "reset",
+    "clear",
+  ];
+
+  return methods.every((method) => typeof value[method] === "function");
 }

@@ -1,4 +1,5 @@
 import type { Veve } from './config/Config.js';
+import { consoleReporter } from './reporter/plugins/consoleReporter.js';
 
 const config: Veve = {
   pattern: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js'],
@@ -9,7 +10,8 @@ const config: Veve = {
   plugins: [],
   tsconfig: {},
   watch: false,
-  require: []
+  require: [],
+  reporters: [consoleReporter]
 };
 
 export default config;

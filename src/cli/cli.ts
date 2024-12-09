@@ -37,7 +37,8 @@ import 'esbuild-register';
   const context = config.get('context');
   const tsconfig = config.get('tsconfig');
   const watch = args.get('watch') || config.get('watch');
-  const requires = config.get("require")
+  const requires = config.get("require") || args.get("require")
+  const reporters = config.get("reporters")
 
   // Validate configuration
   try {
@@ -69,6 +70,7 @@ import 'esbuild-register';
     files: testfiles,
     pattern,
     exclude,
-    requires
+    requires,
+    reporters
   }).start();
 })();

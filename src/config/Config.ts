@@ -11,6 +11,7 @@ import config from '../veve.config.js';
 import { createRequire } from 'module';
 import { ErrorInspect } from '../core/ErrorInspect.js';
 import { getType } from '../utils/index.js';
+import { ReporterPlugin } from '../reporter/Reporter.js';
 
 /**
  * Type representing the configuration options for Veve.
@@ -67,7 +68,13 @@ export interface Veve {
    * List of modules to auto require inside the testing files
    * @example ["jsdom-global/register"]
    */
-  require: string[]
+  require: string[],
+
+  /**
+   * List of reporter plugins
+   * @example ["jsdom-global/register"]
+   */
+  reporters: ReporterPlugin[],
 }
 
 /**

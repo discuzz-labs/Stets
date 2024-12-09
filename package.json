@@ -35,7 +35,7 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
-    "build:dts": "dts-bundle-generator src/index.ts -o index.d.ts",
+    "build:dts": "dts-bundle-generator src/index.ts -o types/index.d.ts",
     "lint": "eslint",
     "fmt": "prettier --write '**/*.ts'"
   },
@@ -60,7 +60,7 @@
     "watcher": "^2.3.1"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.16.0"
   },
   "repository": {
     "type": "git",
