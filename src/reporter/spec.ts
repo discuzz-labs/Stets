@@ -7,13 +7,13 @@
 import kleur from "kleur";
 import path from "path";
 import { SourceMapConsumer } from "source-map";
-import { BenchmarkMetrics } from "../../core/Bench.js";
-import { replay } from "../../core/Console.js";
-import { ErrorInspect, ErrorMetadata } from "../../core/ErrorInspect.js";
-import { PoolResult } from "../../core/Pool.js";
-import { TestCaseStatus, TestReport, Stats } from "../../framework/TestCase.js";
-import { testReportHeader } from "../../utils/ui.js";
-import { ReporterPlugin } from "../Reporter.js";
+import { BenchmarkMetrics } from "../core/Bench.js";
+import { replay } from "../core/Console.js";
+import { ErrorInspect, ErrorInspectOptions, ErrorMetadata } from "../core/ErrorInspect.js";
+import { PoolResult } from "../core/Pool.js";
+import { TestCaseStatus, TestReport, Stats } from "../framework/TestCase.js";
+import { testReportHeader } from "../utils/ui.js";
+import { ReporterPlugin } from "./Reporter.js";
 
 export interface LogArgs {
   description: string;
@@ -47,7 +47,7 @@ export function log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): 
   switch (type) {
     case "failed":
     case "softfailed":
-      const errorDetails = ErrorInspect.format({ error, file, sourceMap });
+      const errorDetails = ErrorInspect.format({ error: error as any, file, sourceMap });
       return `${indicators[type]} ${description} ${kleur.gray(
         `retry: ${retries}`
       )}\n${errorDetails}`;
@@ -130,9 +130,9 @@ function summary(stats: {
   return `\n${parts.filter(Boolean).join("\n")}\n\n✨ All Tests ran. ✨\n`;
 }
 
-export interface consoleReporter extends ReporterPlugin {};
+export interface spec extends ReporterPlugin {};
 
-export const consoleReporter: consoleReporter = {
+export const spec: spec = {
   name: "consoleReporter",
   type: "console",
   report: async function(options: {

@@ -2,7 +2,7 @@
 
 import { Plugin as Plugin$1 } from 'esbuild';
 import { SourceMapConsumer } from 'source-map';
-import "global"
+import "./global"
 
 export interface LogEntry {
 	type: string;

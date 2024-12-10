@@ -5,12 +5,13 @@
  */
 import { version } from './commands.js';
 import { ArgsParser } from '../cli/ArgParser.js';
-import { Config, isValidConfig } from '../config/Config.js';
+import { Config } from '../config/Config.js';
 import { Env } from '../core/Env.js';
 import { Glob } from '../glob/Glob.js';
 import { help } from './commands.js';
 import { Start } from '../core/Start.js';
 import 'esbuild-register';
+import { isValidConfig } from '../config/isValidConfig.js';
 
 (async () => {
   const args = new ArgsParser();
@@ -38,10 +39,10 @@ import 'esbuild-register';
   const tsconfig = config.get('tsconfig');
   const watch = args.get('watch') || config.get('watch');
   const requires = config.get("require") || args.get("require")
+  const output = config.get("output")
   const reporters = config.get("reporters")
 
   // Validate configuration
-  try {
     isValidConfig({
       exclude,
       pattern,
@@ -51,11 +52,9 @@ import 'esbuild-register';
       files,
       context,
       tsconfig,
+      reporters,
     });
-  } catch (error: any) {
-    console.log('📛 ' + error.message);
-    process.exit(1);
-  }
+  
 
   // Load environment variables
   new Env(envs).load();

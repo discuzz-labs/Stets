@@ -40,6 +40,14 @@ const COMMANDS: Record<
     shortValue: 'c',
     type: 'string',
   },
+  output: {
+    description:
+      'Defines the file path for reporters to save their outputs.',
+    requiresValue: true,
+    isArray: false,
+    shortValue: 'o',
+    type: 'string',
+  },
   require: {
     description:
       'Module names to require globally inside the testing files!',

@@ -15,6 +15,7 @@ export type CLIOptions = {
   watch?: boolean;
 
   pattern?: string[];
+  output?: string;
   exclude?: string[];
   envs?: string[];
   timeout?: number;

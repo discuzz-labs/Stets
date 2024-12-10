@@ -4,8 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { ErrorInspect } from '../core/ErrorInspect.js';
+import { ErrorInspect, ErrorInspectOptions, ErrorMetadata } from '../core/ErrorInspect.js';
 import { PoolResult } from '../core/Pool.js';
+import { getType } from '../utils/index.js';
 
 export interface ReporterPlugin {
   /** Name of the reporter plugin */
@@ -48,12 +49,29 @@ export interface ReporterPlugin {
 
     /**
      * The directory where the report should be saved.
-     * Required when the reporter type is `"file"`.
      */
     outputDir?: string;
   }): Promise<void>;
 }
 
+// Type guard for ReporterPlugin with descriptive error reporting
+export function isReporterPlugin(object: any, index: number): object is ReporterPlugin {
+  if (typeof object !== "object" || object === null) {
+    throw new Error(`Reporter at index ${index} is not an object.`);
+  }
+  if (typeof object.name !== "string") {
+    throw new Error(`Reporter at index ${index} is missing a valid "name" property (expected a string).`);
+  }
+  if (object.type !== "file" && object.type !== "console") {
+    throw new Error(`Reporter "${object.name}" at index ${index} has an invalid "type" property (expected "file" or "console").`);
+  }
+  if (typeof object.report !== "function") {
+    throw new Error(`Reporter "${object.name}" at index ${index} is missing a valid "report" method (expected a function).`);
+  }
+  return true;
+}
+
+// Validation logic for `veve.reporters`
 
 export async function report(reports: Map<string, PoolResult>, plugins: ReporterPlugin[]) {
   try {
@@ -63,12 +81,12 @@ export async function report(reports: Map<string, PoolResult>, plugins: Reporter
 
     // Start running file plugins in the background
     const filePluginsPromise = Promise.all(
-      filePlugins.map((plugin) => plugin.report({ reports }))
+      filePlugins.map((plugin) => plugin.report({ reports, outputDir: process.cwd() }))
     );
 
     // Run console plugins synchronously
     for (const plugin of consolePlugins) {
-      await plugin.report({ reports });
+      await plugin.report({ reports, outputDir: process.cwd() });
     }
 
     // Wait for file plugins to complete (optional)

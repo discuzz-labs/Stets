@@ -13,8 +13,8 @@ export interface ErrorMetadata {
   stack?: string;
 }
 
-interface ErrorInspectOptions {
-  error: ErrorMetadata | Error | undefined;
+export interface ErrorInspectOptions {
+  error: ErrorMetadata | Error;
   file?: string;
   sourceMap?: SourceMapConsumer;
 }

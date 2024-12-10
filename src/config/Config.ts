@@ -10,7 +10,6 @@ import { join, extname } from 'path';
 import config from '../veve.config.js';
 import { createRequire } from 'module';
 import { ErrorInspect } from '../core/ErrorInspect.js';
-import { getType } from '../utils/index.js';
 import { ReporterPlugin } from '../reporter/Reporter.js';
 
 /**
@@ -75,6 +74,12 @@ export interface Veve {
    * @example ["jsdom-global/register"]
    */
   reporters: ReporterPlugin[],
+
+  /**
+   * Defines the file path for reporters to save their outputs.
+   * @example "./reports"
+   */
+  output: string;
 }
 
 /**
@@ -231,96 +236,4 @@ export class Config {
   public get<K extends keyof Veve>(key: K): Veve[K] {
     return this.config[key];
   }
-}
-
-export function isValidConfig(veve: any): boolean {
-  // Check pattern (required)
-  if (
-    !Array.isArray(veve.pattern) ||
-    !veve.pattern.every((item: any) => getType(item) === 'string')
-  ) {
-    throw new Error(
-      'Invalid type for "pattern". Expected an array of strings.',
-    );
-  }
-
-  // Check exclude (optional)
-  if (
-    veve.exclude !== undefined &&
-    (!Array.isArray(veve.exclude) ||
-      !veve.exclude.every((item: any) => getType(item) === 'string'))
-  ) {
-    throw new Error(
-      'Invalid type for "exclude". Expected an array of strings.',
-    );
-  }
-
-  // Check envs (optional)
-  if (
-    veve.envs !== undefined &&
-    (!Array.isArray(veve.envs) ||
-      !veve.envs.every((item: any) => getType(item) === 'string'))
-  ) {
-    throw new Error('Invalid type for "envs". Expected an array of strings.');
-  }
-
-  // Check plugins (optional)
-  if (
-    veve.plugins !== undefined &&
-    (!Array.isArray(veve.plugins) ||
-      !veve.plugins.every(
-        (item: any) => getType(item) === 'object' && item.name,
-      ))
-  ) {
-    throw new Error(
-      'Invalid type for "plugins". Expected an array of Plugin objects with "name" and "version" properties.',
-    );
-  }
-
-  // Check timeout (optional)
-  if (veve.timeout !== undefined && getType(veve.timeout) !== 'number') {
-    throw new Error('Invalid type for "timeout". Expected a number.');
-  }
-
-  // Check context (optional)
-  if (
-    veve.context !== undefined &&
-    (getType(veve.context) !== 'object' || veve.context === null)
-  ) {
-    throw new Error('Invalid type for "context". Expected an object.');
-  }
-
-  // Check tsconfig (optional)
-  if (
-    veve.tsconfig !== undefined &&
-    (getType(veve.tsconfig) !== 'object' || veve.tsconfig === null)
-  ) {
-    throw new Error(
-      'Invalid type for "tsconfig". Expected an object with "compilerOptions" property.',
-    );
-  }
-
-  // Check outputDir (optional)
-  if (veve.outputDir !== undefined && getType(veve.outputDir) !== 'string') {
-    throw new Error('Invalid type for "outputDir". Expected a string.');
-  }
-
-  // Check formats (optional)
-  if (
-    veve.formats !== undefined &&
-    (!Array.isArray(veve.formats) ||
-      !veve.formats.every((item: any) => getType(item) === 'string'))
-  ) {
-    throw new Error(
-      'Invalid type for "formats". Expected an array of strings.',
-    );
-  }
-
-  // Check timestamp (optional)
-  if (veve.timestamp !== undefined && getType(veve.timestamp) !== 'boolean') {
-    throw new Error('Invalid type for "timestamp". Expected a boolean.');
-  }
-
-  // If all checks pass, return true
-  return true;
 }
