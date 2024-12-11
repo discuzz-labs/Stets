@@ -19,7 +19,6 @@ export interface StatusColorMap {
   [key: string]: (text: string) => string;
 }
 
-
 export function formatTestStatisticsSummary(stats: Stats): string {
   const items = [
     stats.failed && kleur.red(`× ${stats.failed}`),
@@ -27,23 +26,25 @@ export function formatTestStatisticsSummary(stats: Stats): string {
     stats.passed && kleur.green(`✓ ${stats.passed}`),
     stats.total && kleur.gray(`*: ${stats.total}`),
   ];
-  return items.filter(Boolean).join(' ') || 'Empty';
+  return items.filter(Boolean).join(" ") || "Empty";
 }
 
-export function formatTestStatus(testName: string, testStatus: TestCaseStatus): string {
+export function formatTestStatus(
+  testName: string,
+  testStatus: TestCaseStatus,
+): string {
   const statusColors = {
-    pending: kleur.yellow('⋯'),
-    empty: kleur.gray('-'),
-    failed: kleur.red('×'),
-    passed: kleur.green('✓'),
+    pending: kleur.yellow("⋯"),
+    empty: kleur.gray("-"),
+    failed: kleur.red("×"),
+    passed: kleur.green("✓"),
   };
-  return `${statusColors[testStatus] || '-'} ${normalizeFilePath(testName)}`
+  return `${statusColors[testStatus] || "-"} ${normalizeFilePath(testName)}`;
 }
-
 
 export function testReportHeader({
   description,
-  file = '',
+  file = "",
   duration = 0,
   status,
   stats,
@@ -51,10 +52,9 @@ export function testReportHeader({
   return `\n${formatTestStatus(file, status as TestCaseStatus)} → ${kleur.bold(description)} ${formatTestStatisticsSummary(stats!)} in ${duration}s\n`;
 }
 
-
 export function normalizeFilePath(filePath: string): string {
   const cwd = process.cwd();
-  return filePath.startsWith(cwd) 
-    ? filePath.slice(cwd.length + 1)  // Remove CWD and path separator
+  return filePath.startsWith(cwd)
+    ? filePath.slice(cwd.length + 1) // Remove CWD and path separator
     : filePath;
 }

@@ -302,7 +302,7 @@ export class TrackFn<T extends any[], R> {
  */
 export function Fn<T extends any[], R>(
   implementation: (...args: T) => R,
-): ((...args: T) => R){
+): (...args: T) => R {
   return new TrackFn(implementation).track();
 }
 

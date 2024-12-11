@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { build, Plugin } from 'esbuild';
-import { SourceMapConsumer } from 'source-map';
-import { Tsconfig } from '../config/Config.js';
+import { build, Plugin } from "esbuild";
+import { SourceMapConsumer } from "source-map";
+import { Tsconfig } from "../config/Config.js";
 
 interface TransformResult {
   code: string;
@@ -27,14 +27,14 @@ export class Transform {
       entryPoints: [file],
       bundle: false, // Don't bundle, but process all files
       splitting: false,
-      format: 'cjs',
-      sourcemap: 'external', // Generate separate sourcemaps
+      format: "cjs",
+      sourcemap: "external", // Generate separate sourcemaps
 
       write: false,
       minify: false,
       sourcesContent: true,
-      outdir: 'dist',
-      logLevel: 'silent',
+      outdir: "dist",
+      logLevel: "silent",
       loader: this.getLoaderConfig(),
       plugins:
         this.options.plugins.length > 0 ? this.options.plugins : undefined,
@@ -76,19 +76,19 @@ export class Transform {
         sourceMap: await new SourceMapConsumer(sourceMap),
       };
     } else {
-      throw new Error('Failed to generate bundles and sourcemaps');
+      throw new Error("Failed to generate bundles and sourcemaps");
     }
   }
 
   /**
    * Determine the loader configuration for esbuild
    */
-  private getLoaderConfig(): Record<string, 'js' | 'ts' | 'jsx' | 'tsx'> {
+  private getLoaderConfig(): Record<string, "js" | "ts" | "jsx" | "tsx"> {
     return {
-      '.ts': 'ts',
-      '.tsx': 'tsx',
-      '.js': 'js',
-      '.jsx': 'jsx',
+      ".ts": "ts",
+      ".tsx": "tsx",
+      ".js": "js",
+      ".jsx": "jsx",
     };
   }
 }

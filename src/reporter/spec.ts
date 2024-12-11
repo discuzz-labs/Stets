@@ -9,7 +9,10 @@ import path from "path";
 import { SourceMapConsumer } from "source-map";
 import { BenchmarkMetrics } from "../core/Bench.js";
 import { replay } from "../core/Console.js";
-import { ErrorInspect, ErrorInspectOptions, ErrorMetadata } from "../core/ErrorInspect.js";
+import {
+  ErrorInspect,
+  ErrorMetadata,
+} from "../core/ErrorInspect.js";
 import { PoolResult } from "../core/Pool.js";
 import { TestCaseStatus, TestReport, Stats } from "../framework/TestCase.js";
 import { testReportHeader } from "../utils/ui.js";
@@ -33,7 +36,11 @@ export interface ReportOptions {
   sourceMap: SourceMapConsumer;
 }
 
-export function log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): string {
+export function log(
+  args: LogArgs,
+  type: string,
+  sourceMap: SourceMapConsumer,
+): string {
   const { description, file, error, retries, bench, duration } = args;
   const indicators = {
     failed: kleur.red("×"),
@@ -47,9 +54,13 @@ export function log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): 
   switch (type) {
     case "failed":
     case "softfailed":
-      const errorDetails = ErrorInspect.format({ error: error as any, file, sourceMap });
+      const errorDetails = ErrorInspect.format({
+        error: error as any,
+        file,
+        sourceMap,
+      });
       return `${indicators[type]} ${description} in ${duration}ms ${kleur.gray(
-        `retry: ${retries}`
+        `retry: ${retries}`,
       )}\n${errorDetails}`;
 
     case "benched":
@@ -60,18 +71,20 @@ export function log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): 
   }
 }
 
-export function benchMarks(data: (BenchmarkMetrics | null | undefined)[]): string | void {
+export function benchMarks(
+  data: (BenchmarkMetrics | null | undefined)[],
+): string | void {
   if (!Array.isArray(data) || data.length === 0) return;
 
   return data
     .map((item) =>
       item
         ? `✓ [${kleur.bold("TP")}: ${item.throughputMedian?.toFixed(2)} | ${kleur.bold(
-            "Lat"
+            "Lat",
           )}: ${item.latencyMedian?.toFixed(2)} | ${kleur.bold(
-            "Samples"
+            "Samples",
           )}: ${item.samples}]`
-        : "× [N/A]"
+        : "× [N/A]",
     )
     .join("\n");
 }
@@ -94,9 +107,9 @@ export function generate({ file, report, sourceMap }: ReportOptions): string {
         bench: test.bench,
       },
       test.status,
-      sourceMap
+      sourceMap,
     );
-    
+
     return logEntry;
   });
 
@@ -108,7 +121,7 @@ export function generate({ file, report, sourceMap }: ReportOptions): string {
   );
 }
 
-function summary(stats: { 
+function summary(stats: {
   total: number;
   passed: number;
   failed: number;
@@ -132,12 +145,12 @@ function summary(stats: {
   return `\n${parts.filter(Boolean).join("\n")}\n\n✨ All Tests ran. ✨\n`;
 }
 
-export interface spec extends Reporter {};
+export interface spec extends Reporter {}
 
 export const spec: spec = {
   name: "consoleReporter",
   type: "console",
-  report: async function(options: {
+  report: async function (options: {
     reports: Map<string, PoolResult>;
     outputDir?: string;
   }) {
@@ -148,10 +161,13 @@ export const spec: spec = {
       softfailed: 0,
       skipped: 0,
       todo: 0,
-      duration:0
+      duration: 0,
     };
 
-    for (const [file, { logs, error, sourceMap, duration, report }] of options.reports) {
+    for (const [
+      file,
+      { logs, error, sourceMap, duration, report },
+    ] of options.reports) {
       const status = report ? report.status : "failed";
       const stats = report?.stats || {
         total: 0,
@@ -164,7 +180,7 @@ export const spec: spec = {
       const description = report?.description || path.basename(file);
 
       process.stdout.write(
-        testReportHeader({ description, file, duration, status, stats })
+        testReportHeader({ description, file, duration, status, stats }),
       );
 
       if (report) {
@@ -183,7 +199,7 @@ export const spec: spec = {
       totalStats.softfailed += stats.softfailed;
       totalStats.skipped += stats.skipped;
       totalStats.todo += stats.todo;
-      totalStats.duration += duration
+      totalStats.duration += duration;
     }
 
     process.stdout.write(summary(totalStats));

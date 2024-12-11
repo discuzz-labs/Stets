@@ -4,22 +4,22 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { format } from 'util';
-import RunTime from './RunTime.js';
-import { ErrorMetadata } from '../core/ErrorInspect.js';
-import { BenchmarkMetrics } from '../core/Bench.js';
+import { format } from "util";
+import RunTime from "./RunTime.js";
+import { ErrorMetadata } from "../core/ErrorInspect.js";
+import { BenchmarkMetrics } from "../core/Bench.js";
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
 export type Status =
-  | 'passed'
-  | 'failed'
-  | 'softfailed'
-  | 'skipped'
-  | 'todo'
-  | 'benched';
-export type TestCaseStatus = 'passed' | 'failed' | 'pending' | 'empty';
-export type HookTypes = 'afterAll' | 'afterEach' | 'beforeAll' | 'beforeEach';
+  | "passed"
+  | "failed"
+  | "softfailed"
+  | "skipped"
+  | "todo"
+  | "benched";
+export type TestCaseStatus = "passed" | "failed" | "pending" | "empty";
+export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
 export interface Test {
   description: string;
@@ -535,7 +535,7 @@ export class TestCase {
   // Define 'beforeAll' hook
   public beforeAll(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.beforeAll = {
-      description: 'beforeAll',
+      description: "beforeAll",
       fn,
       options: mergeOptions(options),
     };
@@ -544,7 +544,7 @@ export class TestCase {
   // Define 'beforeEach' hook
   public beforeEach(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.beforeEach = {
-      description: 'beforeEach',
+      description: "beforeEach",
       fn,
       options: mergeOptions(options),
     };
@@ -553,7 +553,7 @@ export class TestCase {
   // Define 'afterAll' hook
   public afterAll(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.afterAll = {
-      description: 'afterAll',
+      description: "afterAll",
       fn,
       options: mergeOptions(options),
     };
@@ -562,7 +562,7 @@ export class TestCase {
   // Define 'afterEach' hook
   public afterEach(fn: HookFunction, options?: Partial<Options>): void {
     this.hooks.afterEach = {
-      description: 'afterEach',
+      description: "afterEach",
       fn,
       options: mergeOptions(options),
     };

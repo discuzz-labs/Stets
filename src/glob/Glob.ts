@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { readdir, stat } from 'fs/promises';
-import { resolve, join } from 'path';
-import { globToRegex } from './globToRegex.js';
+import { readdir, stat } from "fs/promises";
+import { resolve, join } from "path";
+import { globToRegex } from "./globToRegex.js";
 
 interface GlobOptions {
   files: string[] | undefined;
@@ -20,7 +20,7 @@ export function isValidFile(
   excludes: string[],
 ): boolean {
   // Ignore files containing node_modules in their path
-  if (filePath.includes('node_modules')) return false;
+  if (filePath.includes("node_modules")) return false;
 
   // Convert patterns and excludes to regex
   const regexPatterns = patterns.map((pattern) => globToRegex(pattern));
@@ -86,7 +86,7 @@ export class Glob {
 
         if (stats.isDirectory()) {
           // Skip node_modules directories
-          if (!filePath.includes('node_modules')) {
+          if (!filePath.includes("node_modules")) {
             const nestedFiles = await this.collectFiles(
               filePath,
               patterns,

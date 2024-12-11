@@ -4,12 +4,12 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import Watcher from 'watcher';
-import { Pool, PoolResult } from './Pool.js';
-import { Config } from '../config/Config.js';
-import { report } from '../reporter/Reporter.js';
-import { isValidFile } from '../glob/Glob.js';
-import { ReporterPlugin } from '../reporter/Reporter.js';
+import Watcher from "watcher";
+import { Pool, PoolResult } from "./Pool.js";
+import { Config } from "../config/Config.js";
+import { report } from "../reporter/Reporter.js";
+import { isValidFile } from "../glob/Glob.js";
+import { ReporterPlugin } from "../reporter/Reporter.js";
 
 export class Start {
   private reports: Map<string, PoolResult> = new Map();
@@ -22,7 +22,7 @@ export class Start {
       pattern: string[];
       exclude: string[];
       requires: string[];
-      reporters: ReporterPlugin[],
+      reporters: ReporterPlugin[];
       output: string;
     },
   ) {}
@@ -30,13 +30,13 @@ export class Start {
   async exec(files: string[]) {
     const pool = new Pool({
       testFiles: files,
-      context: this.options.config.get('context'),
-      plugins: this.options.config.get('plugins'),
-      tsconfig: this.options.config.get('tsconfig'),
+      context: this.options.config.get("context"),
+      plugins: this.options.config.get("plugins"),
+      tsconfig: this.options.config.get("tsconfig"),
       timeout: parseInt(
-        this.options.config.get('timeout') as unknown as string,
+        this.options.config.get("timeout") as unknown as string,
       ),
-      requires: this.options.requires
+      requires: this.options.requires,
     });
     const exitCode = await pool.run();
     return {
@@ -74,7 +74,7 @@ export class Start {
       ignoreInitial: true,
     });
 
-    watcher.on('change', async (file: string) => {
+    watcher.on("change", async (file: string) => {
       console.clear();
 
       try {
@@ -83,7 +83,11 @@ export class Start {
 
         if (fileReport) {
           this.change(file, fileReport);
-          await report(this.reports, this.options.reporters, this.options.output);
+          await report(
+            this.reports,
+            this.options.reporters,
+            this.options.output,
+          );
         }
       } catch (error) {
         console.error(`Error processing changed file ${file}:`, error);
@@ -91,7 +95,7 @@ export class Start {
     });
 
     // Optional: Handle other file system events
-    watcher.on('add', async (file: string) => {
+    watcher.on("add", async (file: string) => {
       if (isValidFile(file, this.options.pattern, this.options.exclude)) {
         console.clear();
         try {
@@ -100,7 +104,11 @@ export class Start {
 
           if (fileReport) {
             this.add(file, fileReport);
-             await report(this.reports, this.options.reporters, this.options.output);
+            await report(
+              this.reports,
+              this.options.reporters,
+              this.options.output,
+            );
           }
         } catch (error) {
           console.error(`Error processing new file ${file}:`, error);
@@ -108,15 +116,15 @@ export class Start {
       }
     });
 
-    watcher.on('unlink',  async (file: string) => {
+    watcher.on("unlink", async (file: string) => {
       console.clear();
       if (this.reports.has(file)) {
         this.reports.delete(file);
-         await report(this.reports, this.options.reporters, this.options.output);
+        await report(this.reports, this.options.reporters, this.options.output);
       }
     });
 
-    watcher.on('error', (error: Error) => {
+    watcher.on("error", (error: Error) => {
       console.error(`Error occured while watching:`, error);
     });
   }

@@ -13,7 +13,7 @@ export interface ErrorMetadata {
 	stack?: string;
 }
 export interface ErrorInspectOptions {
-	error: ErrorMetadata | Error | undefined;
+	error: ErrorMetadata | Error;
 	file?: string;
 	sourceMap?: SourceMapConsumer;
 }
@@ -42,6 +42,7 @@ export type TestResult = {
 	description: string;
 	status: Status;
 	retries: number;
+	duration: number;
 	error?: ErrorMetadata;
 	bench: BenchmarkMetrics | null;
 };
@@ -49,6 +50,7 @@ export type HookResult = {
 	description: HookTypes;
 	status: Status;
 	retries: number;
+	duration: number;
 	error?: ErrorMetadata;
 	bench: null;
 };
@@ -75,6 +77,10 @@ export interface PoolResult {
 	sourceMap: SourceMapConsumer;
 }
 export interface ReporterPlugin {
+	reporter: Reporter;
+	options?: Record<any, any>;
+}
+export interface Reporter {
 	/** Name of the reporter plugin */
 	name: string;
 	/**
@@ -112,9 +118,9 @@ export interface ReporterPlugin {
 		reports: Map<string, PoolResult>;
 		/**
 		 * The directory where the report should be saved.
-		 * Required when the reporter type is `"file"`.
 		 */
 		outputDir?: string;
+		[key: string]: any;
 	}): Promise<void>;
 }
 /**
@@ -170,6 +176,11 @@ export interface Veve {
 	 * @example ["jsdom-global/register"]
 	 */
 	reporters: ReporterPlugin[];
+	/**
+	 * Defines the file path for reporters to save their outputs.
+	 * @example "./reports"
+	 */
+	output: string;
 }
 /**
  * Interface representing TypeScript configuration options.
@@ -242,9 +253,17 @@ export interface Tsconfig {
 	verbatimModuleSyntax?: boolean;
 }
 export declare function veve(config: Partial<Veve>): Partial<Veve>;
-export interface consoleReporter extends ReporterPlugin {
+export interface spec extends Reporter {
 }
-export declare const consoleReporter: consoleReporter;
+export declare const spec: spec;
+export interface junit extends Reporter {
+}
+/**
+ * Generates a JUnit XML report for the provided test results.
+ *
+ * @returns {Promise<void>} Resolves when the XML report is successfully written to a file.
+ */
+export declare const junit: junit;
 /**
  * A class providing assertion methods for testing.
  */
@@ -734,7 +753,7 @@ export declare class TrackFn<T extends any[], R> {
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // 3
  */
-export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): ((...args: T) => R);
+export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): (...args: T) => R & TrackFn<T,R>;
 /**
  * Replaces a method on an object with a tracked version of the method.
  *
@@ -754,7 +773,7 @@ export declare function Fn<T extends any[], R>(implementation: (...args: T) => R
  */
 export declare function spy<T extends any[], R>(obj: {
 	[key: string]: (...args: T) => R;
-}, method: string): (...args: T) => R;
+}, method: string): (...args: T) => R & TrackFn<T,R>;
 /**
  * Checks if a value is a tracked function.
  *

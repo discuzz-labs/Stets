@@ -1,6 +1,6 @@
-import esbuild from 'esbuild';
-import { SourceMapConsumer } from 'source-map';
-import kleur from 'kleur';
+import esbuild from "esbuild";
+import { SourceMapConsumer } from "source-map";
+import kleur from "kleur";
 
 interface ParsedStackFrame {
   file?: string;
@@ -29,7 +29,7 @@ export class ErrorInspect {
     parsed: ParsedStackFrame,
     options: ErrorInspectOptions,
   ): string {
-    const file = parsed.file?.padEnd(30) || '';
+    const file = parsed.file?.padEnd(30) || "";
     const line = parsed.lineNumber ?? 0;
     const column = parsed.column ?? 0;
 
@@ -55,7 +55,7 @@ export class ErrorInspect {
 
   private static stack(stack: string, options: ErrorInspectOptions): string {
     // Split stack trace into lines
-    const stackLines = stack.split('\n');
+    const stackLines = stack.split("\n");
     const formattedStackLines: string[] = [];
 
     // Process each line of the stack trace
@@ -78,9 +78,9 @@ export class ErrorInspect {
 
     // Fallback to formatted lines if no matching lines found
     return processedStack.length === 0
-      ? formattedStackLines.join('\n')
+      ? formattedStackLines.join("\n")
       : this.context(processedStack[0], options) ||
-          formattedStackLines.join('\n');
+          formattedStackLines.join("\n");
   }
 
   private static context(
@@ -107,7 +107,7 @@ export class ErrorInspect {
     }
 
     // Split source into lines
-    const sourceLines = sourcesContent[0].split('\n');
+    const sourceLines = sourcesContent[0].split("\n");
 
     // Calculate line range with context
     const targetLine = original.line - 1; // Convert to 0-indexed
@@ -122,24 +122,24 @@ export class ErrorInspect {
 
     for (let i = startLine; i <= endLine; i++) {
       const isTargetLine = i === targetLine;
-      const lineNumber = (i + 1).toString().padStart(2, ' ');
+      const lineNumber = (i + 1).toString().padStart(2, " ");
       const line = isTargetLine
         ? kleur.bold(sourceLines[i])
         : kleur.dim(sourceLines[i]);
 
       formattedLines.push(
-        `${isTargetLine ? kleur.red('>') : ''} ${kleur.gray(lineNumber)}|${' '.repeat(2)}${line}`,
+        `${isTargetLine ? kleur.red(">") : ""} ${kleur.gray(lineNumber)}|${" ".repeat(2)}${line}`,
       );
     }
 
-    return formattedLines.join('\n');
+    return formattedLines.join("\n");
   }
 
   private static buildMessage(
     messages: any[],
-    type: 'error' | 'warning',
+    type: "error" | "warning",
   ): string {
-    if (!Array.isArray(messages) || messages.length === 0) return '';
+    if (!Array.isArray(messages) || messages.length === 0) return "";
 
     // Use esbuild's message formatting
     const formattedMessages = esbuild.formatMessagesSync(messages, {
@@ -147,32 +147,32 @@ export class ErrorInspect {
       color: true, // Disable colors for cleaner output
     });
 
-    return formattedMessages.map((msg) => msg.trim()).join('\n');
+    return formattedMessages.map((msg) => msg.trim()).join("\n");
   }
 
   static format(options: ErrorInspectOptions): string {
     // Create a divider for visual separation
-    const divider = '─'.repeat(60);
+    const divider = "─".repeat(60);
 
     // Extract error message or use default
-    const header = options.error?.message || 'No message available.';
+    const header = options.error?.message || "No message available.";
 
     // Process stack trace
     const body = options.error?.stack
       ? this.stack(options.error.stack, options)
-      : 'No stack trace available\n';
+      : "No stack trace available\n";
 
     // Format build-related messages
-    let buildOutput = '';
+    let buildOutput = "";
     if (options.error) {
       const { errors = [], warnings = [] } = options.error as any;
-      const errorMessages = this.buildMessage(errors, 'error');
-      const warningMessages = this.buildMessage(warnings, 'warning');
+      const errorMessages = this.buildMessage(errors, "error");
+      const warningMessages = this.buildMessage(warnings, "warning");
 
       // Combine non-empty messages
       buildOutput = [errorMessages, warningMessages]
         .filter(Boolean)
-        .join('\n\n')
+        .join("\n\n")
         .trim();
     }
 
@@ -181,7 +181,7 @@ export class ErrorInspect {
       divider,
       buildOutput || `${header}\n\n${body}`,
       divider,
-    ].join('\n');
+    ].join("\n");
 
     return output;
   }

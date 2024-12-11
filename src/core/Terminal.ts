@@ -1,5 +1,5 @@
-import { TestCaseStatus } from '../framework/TestCase.js';
-import { formatTestStatus } from '../utils/ui.js';
+import { TestCaseStatus } from "../framework/TestCase.js";
+import { formatTestStatus } from "../utils/ui.js";
 
 /*
  * Copyright (c) 2024 Discuzz Labs Organization

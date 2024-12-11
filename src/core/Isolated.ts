@@ -4,8 +4,8 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import * as vm from 'vm';
-import { TestReport } from '../framework/TestCase.js';
+import * as vm from "vm";
+import { TestReport } from "../framework/TestCase.js";
 
 export interface ExecResult {
   status: boolean;
@@ -23,17 +23,17 @@ export class Isolated {
   constructor(
     private readonly options: {
       file: string;
-      requires: string[]
+      requires: string[];
     },
   ) {}
 
   injectRequires(code: string) {
-    const requireStack = []
-    for(const require of this.options.requires) {
-      requireStack.push(`require("${require}")`)
+    const requireStack = [];
+    for (const require of this.options.requires) {
+      requireStack.push(`require("${require}")`);
     }
-    requireStack.push(code)
-    return requireStack.join("\n")
+    requireStack.push(code);
+    return requireStack.join("\n");
   }
 
   script(code: string) {
@@ -46,7 +46,7 @@ export class Isolated {
     try {
       const report = await script.runInNewContext(context, {
         timeout,
-        displayErrors: true
+        displayErrors: true,
       });
 
       const isValid = this.isValidReport(report);
@@ -68,14 +68,14 @@ export class Isolated {
   isValidReport(report: any): report is TestReport {
     return (
       report !== null &&
-      typeof report === 'object' &&
-      typeof report.status === 'string' &&
-      typeof report.stats === 'object' &&
+      typeof report === "object" &&
+      typeof report.status === "string" &&
+      typeof report.stats === "object" &&
       report.stats !== null &&
-      typeof report.stats.total === 'number' &&
-      typeof report.stats.passed === 'number' &&
-      typeof report.stats.failed === 'number' &&
-      typeof report.stats.skipped === 'number' &&
+      typeof report.stats.total === "number" &&
+      typeof report.stats.passed === "number" &&
+      typeof report.stats.failed === "number" &&
+      typeof report.stats.skipped === "number" &&
       Array.isArray(report.tests) &&
       Array.isArray(report.hooks)
     );

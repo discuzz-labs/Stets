@@ -1,9 +1,9 @@
-import type { Veve } from './config/Config.js';
-import { spec } from './reporter/spec.js';
+import type { Veve } from "./config/Config.js";
+import { spec } from "./reporter/spec.js";
 
 const config: Veve = {
-  pattern: ['**/*.test.ts', '**/*.test.js', '**/*.spec.ts', '**/*.spec.js'],
-  exclude: ['**/dist/**', '*.json'],
+  pattern: ["**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js"],
+  exclude: ["**/dist/**", "*.json"],
   envs: [],
   timeout: 600_000,
   context: {},
@@ -11,10 +11,8 @@ const config: Veve = {
   tsconfig: {},
   watch: false,
   require: [],
-  reporters: [
-    { reporter: spec}
-  ],
-  output: "veve"
+  reporters: [{ reporter: spec }],
+  output: "veve",
 };
 
 export default config;

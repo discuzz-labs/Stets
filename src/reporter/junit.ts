@@ -1,9 +1,9 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { Reporter } from './Reporter';
-import { PoolResult } from '../core/Pool';
-import { ErrorInspect, ErrorInspectOptions } from '../core/ErrorInspect';
-import kleur from 'kleur';
+import * as fs from "fs";
+import * as path from "path";
+import { Reporter } from "./Reporter";
+import { PoolResult } from "../core/Pool";
+import { ErrorInspect, ErrorInspectOptions } from "../core/ErrorInspect";
+import kleur from "kleur";
 
 class XMLWriter {
   private buffer: string[] = [];
@@ -19,10 +19,10 @@ class XMLWriter {
   openTag(name: string, attributes: Record<string, string | number> = {}) {
     const attrs = Object.entries(attributes)
       .map(([key, value]) => `${key}="${this.escapeXml(value.toString())}"`)
-      .join(' ');
+      .join(" ");
 
-    const indentStr = '  '.repeat(this.indent);
-    this.buffer.push(`${indentStr}<${name}${attrs ? ' ' + attrs : ''}>`);
+    const indentStr = "  ".repeat(this.indent);
+    this.buffer.push(`${indentStr}<${name}${attrs ? " " + attrs : ""}>`);
     this.indent++;
     return this;
   }
@@ -30,26 +30,35 @@ class XMLWriter {
   /**
    * Add a self-closing tag with attributes
    */
-  selfClosingTag(name: string, attributes: Record<string, string | number> = {}) {
+  selfClosingTag(
+    name: string,
+    attributes: Record<string, string | number> = {},
+  ) {
     const attrs = Object.entries(attributes)
       .map(([key, value]) => `${key}="${this.escapeXml(value.toString())}"`)
-      .join(' ');
+      .join(" ");
 
-    const indentStr = '  '.repeat(this.indent);
-    this.buffer.push(`${indentStr}<${name}${attrs ? ' ' + attrs : ''} />`);
+    const indentStr = "  ".repeat(this.indent);
+    this.buffer.push(`${indentStr}<${name}${attrs ? " " + attrs : ""} />`);
     return this;
   }
 
   /**
    * Add a tag with content
    */
-  tag(name: string, content: string, attributes: Record<string, string | number> = {}) {
+  tag(
+    name: string,
+    content: string,
+    attributes: Record<string, string | number> = {},
+  ) {
     const attrs = Object.entries(attributes)
       .map(([key, value]) => `${key}="${this.escapeXml(value.toString())}"`)
-      .join(' ');
+      .join(" ");
 
-    const indentStr = '  '.repeat(this.indent);
-    this.buffer.push(`${indentStr}<${name}${attrs ? ' ' + attrs : ''}>${this.escapeXml(content)}</${name}>`);
+    const indentStr = "  ".repeat(this.indent);
+    this.buffer.push(
+      `${indentStr}<${name}${attrs ? " " + attrs : ""}>${this.escapeXml(content)}</${name}>`,
+    );
     return this;
   }
 
@@ -58,7 +67,7 @@ class XMLWriter {
    */
   closeTag(name: string) {
     this.indent--;
-    const indentStr = '  '.repeat(this.indent);
+    const indentStr = "  ".repeat(this.indent);
     this.buffer.push(`${indentStr}</${name}>`);
     return this;
   }
@@ -68,13 +77,19 @@ class XMLWriter {
    */
   private escapeXml(unsafe: string): string {
     return unsafe.replace(/[<>&'"]/g, (match) => {
-      switch(match) {
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '&': return '&amp;';
-        case '\'': return '&apos;';
-        case '"': return '&quot;';
-        default: return match;
+      switch (match) {
+        case "<":
+          return "&lt;";
+        case ">":
+          return "&gt;";
+        case "&":
+          return "&amp;";
+        case "'":
+          return "&apos;";
+        case '"':
+          return "&quot;";
+        default:
+          return match;
       }
     });
   }
@@ -83,7 +98,7 @@ class XMLWriter {
    * Generate final XML string
    */
   toString(): string {
-    return this.buffer.join('\n');
+    return this.buffer.join("\n");
   }
 }
 
@@ -91,23 +106,25 @@ export interface junit extends Reporter {}
 
 /**
  * Generates a JUnit XML report for the provided test results.
- * 
+ *
  * @returns {Promise<void>} Resolves when the XML report is successfully written to a file.
  */
-export const junit: junit  = {
+export const junit: junit = {
   name: "junitReporter",
   type: "file",
 
-   
-    report: async function (options: {
-      reports: Map<string, PoolResult>;
-      outputDir: string;
-    }) {
-      const writer = new XMLWriter();
-      writer.openTag("testsuites");
+  report: async function (options: {
+    reports: Map<string, PoolResult>;
+    outputDir: string;
+  }) {
+    const writer = new XMLWriter();
+    writer.openTag("testsuites");
 
-      for (const [file, { error, duration, report, sourceMap }] of options.reports) {
-        if(report) {
+    for (const [
+      file,
+      { error, duration, report, sourceMap },
+    ] of options.reports) {
+      if (report) {
         writer.openTag("testsuite", {
           name: file,
           time: duration, // Convert duration to seconds.
@@ -123,7 +140,13 @@ export const junit: junit  = {
           });
 
           if (test.status === "failed" && test.error) {
-            writer.openTag("failure", { message: ErrorInspect.format({ error: test.error, file, sourceMap }) });
+            writer.openTag("failure", {
+              message: ErrorInspect.format({
+                error: test.error,
+                file,
+                sourceMap,
+              }),
+            });
             writer.closeTag("failure");
           }
 
@@ -133,24 +156,24 @@ export const junit: junit  = {
 
           writer.closeTag("testcase");
         }
-        }
-        
-        if (error) {
-          writer.openTag("system-err");
-          writer.tag("![CDATA[", error({error, file }));
-          writer.closeTag("system-err");
-        }
-
-        writer.closeTag("testsuite");
       }
 
-      writer.closeTag("testsuites");
+      if (error) {
+        writer.openTag("system-err");
+        writer.tag("![CDATA[", error({ error, file }));
+        writer.closeTag("system-err");
+      }
 
-      // Write the XML report to the specified directory.
-      const outputPath = path.join(options.outputDir, "junit-report.xml");
-      await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
-      await fs.promises.writeFile(outputPath, writer.toString());
+      writer.closeTag("testsuite");
+    }
 
-      console.log(`${kleur.green("✓")} JUnit report generated at ${outputPath}`);
-    },
-  }
+    writer.closeTag("testsuites");
+
+    // Write the XML report to the specified directory.
+    const outputPath = path.join(options.outputDir, "junit-report.xml");
+    await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
+    await fs.promises.writeFile(outputPath, writer.toString());
+
+    console.log(`${kleur.green("✓")} JUnit report generated at ${outputPath}`);
+  },
+};

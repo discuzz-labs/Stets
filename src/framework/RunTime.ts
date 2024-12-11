@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Bench } from '../core/Bench.js';
+import { Bench } from "../core/Bench.js";
 import type {
   Hook,
   HookResult,
@@ -13,9 +13,9 @@ import type {
   TestReport,
   Stats,
   TestCaseStatus,
-} from './TestCase.js';
-import TestCase from './TestCase.js';
-import { cpus } from 'os';
+} from "./TestCase.js";
+import TestCase from "./TestCase.js";
+import { cpus } from "os";
 
 class RunTime {
   private readonly MAX_PARALLEL_TESTS = cpus().length || 4;
@@ -41,13 +41,13 @@ class RunTime {
     const result: TestResult | HookResult = {
       description,
       retries: 0,
-      status: 'passed',
+      status: "passed",
       duration: 0,
       bench: null,
     };
 
     if (todo) {
-      result.status = 'todo';
+      result.status = "todo";
       return result;
     }
 
@@ -57,14 +57,14 @@ class RunTime {
       condition === null ||
       !(await this.evaluateCondition(condition))
     ) {
-      result.status = 'skipped';
+      result.status = "skipped";
       return result;
     }
 
     let lastError: any;
     const fallbackTimeout = timeout === 0 ? this.MAX_TIMEOUT : timeout;
 
-  const start = Date.now();
+    const start = Date.now();
 
     while (result.retries <= retry) {
       try {
@@ -75,7 +75,7 @@ class RunTime {
               () =>
                 reject(
                   new Error(
-                    `${description} exceeded ${fallbackTimeout} ms. ${fallbackTimeout === this.MAX_TIMEOUT ? 'Fallback timeout was used. This test took 5 minutes to finish. Make sure you donot have any dead promises! Finding dead promises: https://swizec.com/blog/finding-unresolved-promises-in-javascript/' : ''} `,
+                    `${description} exceeded ${fallbackTimeout} ms. ${fallbackTimeout === this.MAX_TIMEOUT ? "Fallback timeout was used. This test took 5 minutes to finish. Make sure you donot have any dead promises! Finding dead promises: https://swizec.com/blog/finding-unresolved-promises-in-javascript/" : ""} `,
                   ),
                 ),
               fallbackTimeout,
@@ -91,13 +91,13 @@ class RunTime {
         // If softFail is set and this was the last attempt, mark as "soft-fail"
         if (result.retries > retry) {
           if (softfail) {
-            result.status = 'softfailed';
+            result.status = "softfailed";
             result.error = {
               message: `Soft failure: ${lastError.message}`,
               stack: lastError.stack,
             };
           } else {
-            result.status = 'failed';
+            result.status = "failed";
             result.error = {
               message: lastError.message,
               stack: lastError.stack,
@@ -106,13 +106,13 @@ class RunTime {
           return result;
         }
       } finally {
-        result.duration = parseInt((Date.now() - start).toFixed(4))
+        result.duration = parseInt((Date.now() - start).toFixed(4));
       }
     }
 
     if (bench) {
       result.bench = await Bench.run(fn);
-      result.status = 'benched';
+      result.status = "benched";
     }
 
     return result;
@@ -121,17 +121,17 @@ class RunTime {
   private async evaluateCondition(
     condition: boolean | (() => boolean | Promise<boolean> | null | undefined),
   ): Promise<boolean> {
-    if (typeof condition === 'function') {
+    if (typeof condition === "function") {
       return (await condition()) ?? false;
     }
     return condition ?? true;
   }
 
   private status(stats: Stats): TestCaseStatus {
-    if (stats.total === 0) return 'empty';
-    if (stats.failed > 0) return 'failed';
+    if (stats.total === 0) return "empty";
+    if (stats.failed > 0) return "failed";
 
-    return 'passed';
+    return "passed";
   }
 
   private initializeReport(): TestReport {
@@ -144,7 +144,7 @@ class RunTime {
         softfailed: 0,
         todo: 0,
       },
-      status: 'passed',
+      status: "passed",
       description: this.testCase.description,
       tests: [],
       hooks: [],
@@ -195,7 +195,7 @@ class RunTime {
       if (!testsToRun.includes(test) && !sequenceTestsToRun.includes(test)) {
         report.tests.push({
           description: test.description,
-          status: 'skipped',
+          status: "skipped",
         } as TestResult);
       }
     }
@@ -243,22 +243,22 @@ class RunTime {
     report: TestReport,
   ): void {
     for (const result of results) {
-      if (result.status === 'passed') {
+      if (result.status === "passed") {
         report.stats.passed++;
       }
-      if (result.status === 'benched') {
+      if (result.status === "benched") {
         report.stats.passed++;
       }
-      if (result.status === 'softfailed') {
+      if (result.status === "softfailed") {
         report.stats.softfailed++;
       }
-      if (result.status === 'failed') {
+      if (result.status === "failed") {
         report.stats.failed++;
       }
-      if (result.status === 'skipped') {
+      if (result.status === "skipped") {
         report.stats.skipped++;
       }
-      if (result.status === 'todo') {
+      if (result.status === "todo") {
         report.stats.todo++;
       }
     }

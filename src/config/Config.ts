@@ -4,13 +4,13 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Plugin } from 'esbuild';
-import { existsSync } from 'fs';
-import { join, extname } from 'path';
-import config from '../veve.config.js';
-import { createRequire } from 'module';
-import { ErrorInspect } from '../core/ErrorInspect.js';
-import { ReporterPlugin } from '../reporter/Reporter.js';
+import { Plugin } from "esbuild";
+import { existsSync } from "fs";
+import { join, extname } from "path";
+import config from "../veve.config.js";
+import { createRequire } from "module";
+import { ErrorInspect } from "../core/ErrorInspect.js";
+import { ReporterPlugin } from "../reporter/Reporter.js";
 
 /**
  * Type representing the configuration options for Veve.
@@ -67,7 +67,7 @@ export interface Veve {
    * List of modules to auto require inside the testing files
    * @example ["jsdom-global/register"]
    */
-  require: string[],
+  require: string[];
 
   /**
    * List of reporter plugins
@@ -108,13 +108,13 @@ export interface Tsconfig {
    * Specifies how imports not used as values should be treated.
    * @example 'remove'
    */
-  importsNotUsedAsValues?: 'remove' | 'preserve' | 'error';
+  importsNotUsedAsValues?: "remove" | "preserve" | "error";
 
   /**
    * Specifies the JSX code generation style.
    * @example 'react-jsx'
    */
-  jsx?: 'preserve' | 'react-native' | 'react' | 'react-jsx' | 'react-jsxdev';
+  jsx?: "preserve" | "react-native" | "react" | "react-jsx" | "react-jsxdev";
 
   /**
    * Factory function for creating JSX elements.
@@ -184,12 +184,12 @@ export class Config {
       }
     } else {
       const possibleFiles = [
-        'veve.config.js',
-        'veve.config.ts',
-        'veve.js',
-        'veve.ts',
-        'test.config.js',
-        'test.config.ts',
+        "veve.config.js",
+        "veve.config.ts",
+        "veve.js",
+        "veve.ts",
+        "test.config.js",
+        "test.config.ts",
       ];
       const foundFile = possibleFiles.find((file) =>
         existsSync(join(process.cwd(), file)),
@@ -207,7 +207,7 @@ export class Config {
     const ext = extname(filePath);
 
     // Directly import the configuration file
-    if (ext === '.ts' || ext === '.js') {
+    if (ext === ".ts" || ext === ".js") {
       try {
         const module = await this.require(filePath);
         this.applyConfig(module.default);

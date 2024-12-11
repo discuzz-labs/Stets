@@ -1,4 +1,11 @@
-import { Assertion, HookFunction, Options, TestFunction, TestReport, TrackFn } from ".";
+import {
+  Assertion,
+  HookFunction,
+  Options,
+  TestFunction,
+  TestReport,
+  TrackFn,
+} from ".";
 
 declare global {
   /**
@@ -256,4 +263,4 @@ declare global {
   ): TrackFn<T, R> & ((...args: T) => R);
 }
 
-export {}
+export {};

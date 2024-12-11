@@ -4,9 +4,9 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 
 export class Env {
   constructor(private readonly envs: string[]) {}
@@ -22,7 +22,7 @@ export class Env {
     const files = fs.readdirSync(cwd);
 
     // Filter for files that start with `.env` (e.g., `.env`, `.env.local`, `.env.production`)
-    const envFiles = files.filter((file) => file.startsWith('.env'));
+    const envFiles = files.filter((file) => file.startsWith(".env"));
 
     // Load each .env file in the root directory
     dotenv.config({ path: envFiles.map((file) => path.join(cwd, file)) });
