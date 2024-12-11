@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ReporterPlugin } from './Reporter';
+import { Reporter } from './Reporter';
 import { PoolResult } from '../core/Pool';
 import { ErrorInspect, ErrorInspectOptions } from '../core/ErrorInspect';
 import kleur from 'kleur';
@@ -87,7 +87,7 @@ class XMLWriter {
   }
 }
 
-export interface junit extends ReporterPlugin {}
+export interface junit extends Reporter {}
 
 /**
  * Generates a JUnit XML report for the provided test results.

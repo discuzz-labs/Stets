@@ -11,7 +11,9 @@ const config: Veve = {
   tsconfig: {},
   watch: false,
   require: [],
-  reporters: [spec],
+  reporters: [
+    { reporter: spec}
+  ],
   output: "veve"
 };
 

@@ -13,7 +13,7 @@ import { ErrorInspect, ErrorInspectOptions, ErrorMetadata } from "../core/ErrorI
 import { PoolResult } from "../core/Pool.js";
 import { TestCaseStatus, TestReport, Stats } from "../framework/TestCase.js";
 import { testReportHeader } from "../utils/ui.js";
-import { ReporterPlugin } from "./Reporter.js";
+import { Reporter } from "./Reporter.js";
 
 export interface LogArgs {
   description: string;
@@ -130,7 +130,7 @@ function summary(stats: {
   return `\n${parts.filter(Boolean).join("\n")}\n\n✨ All Tests ran. ✨\n`;
 }
 
-export interface spec extends ReporterPlugin {};
+export interface spec extends Reporter {};
 
 export const spec: spec = {
   name: "consoleReporter",

@@ -22,7 +22,8 @@ export class Start {
       pattern: string[];
       exclude: string[];
       requires: string[];
-      reporters: ReporterPlugin[]
+      reporters: ReporterPlugin[],
+      output: string;
     },
   ) {}
 
@@ -49,12 +50,12 @@ export class Start {
       // Run initial tests
       const { reports } = await this.exec(this.options.files);
       this.reports = reports;
-      await report(this.reports, this.options.reporters);
+      await report(this.reports, this.options.reporters, this.options.output);
       // Setup and start watching
       this.watch();
     } else {
       const { exitCode, reports } = await this.exec(this.options.files);
-      await report(reports, this.options.reporters);
+      await report(reports, this.options.reporters, this.options.output);
       process.exit(exitCode);
     }
   }
@@ -82,7 +83,7 @@ export class Start {
 
         if (fileReport) {
           this.change(file, fileReport);
-          await report(this.reports, this.options.reporters);
+          await report(this.reports, this.options.reporters, this.options.output);
         }
       } catch (error) {
         console.error(`Error processing changed file ${file}:`, error);
@@ -99,7 +100,7 @@ export class Start {
 
           if (fileReport) {
             this.add(file, fileReport);
-             await report(this.reports, this.options.reporters);
+             await report(this.reports, this.options.reporters, this.options.output);
           }
         } catch (error) {
           console.error(`Error processing new file ${file}:`, error);
@@ -111,7 +112,7 @@ export class Start {
       console.clear();
       if (this.reports.has(file)) {
         this.reports.delete(file);
-         await report(this.reports, this.options.reporters);
+         await report(this.reports, this.options.reporters, this.options.output);
       }
     });
 

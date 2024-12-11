@@ -38,8 +38,8 @@ import { isValidConfig } from '../config/isValidConfig.js';
   const context = config.get('context');
   const tsconfig = config.get('tsconfig');
   const watch = args.get('watch') || config.get('watch');
-  const requires = config.get("require") || args.get("require")
-  const output = config.get("output")
+  const requires = args.get("require") || config.get("require");
+  const output = args.get("output") || config.get("output") 
   const reporters = config.get("reporters")
 
   // Validate configuration
@@ -70,6 +70,7 @@ import { isValidConfig } from '../config/isValidConfig.js';
     pattern,
     exclude,
     requires,
-    reporters
+    reporters,
+    output
   }).start();
 })();

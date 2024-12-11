@@ -5,9 +5,43 @@
  */
 
 import kleur from "kleur";
-import { isReporterPlugin } from "../reporter/Reporter.js";
+import { Reporter, ReporterPlugin } from "../reporter/Reporter.js";
 import { getType } from "../utils/index.js";
 
+// Type guard for ReporterPlugin with descriptive error reporting
+function isReporter(object: any, index: number): object is Reporter {
+  if (getType(object) !== "object" || object === null) {
+    throw new Error(`Reporter at index ${index} is not an object.`);
+  }
+  if (getType(object.name) !== "string") {
+    throw new Error(`Reporter at index ${index} is missing a valid "name" property (expected a string).`);
+  }
+  if (object.type !== "file" && object.type !== "console") {
+    throw new Error(`Reporter "${object.name}" at index ${index} has an invalid "type" property (expected "file" or "console").`);
+  }
+  if (getType(object.report) !== "asyncfunction") {
+    throw new Error(`Reporter "${object.name}" at index ${index} is missing a valid "report" method (expected an async function).`);
+  }
+  return true
+}
+
+export function isReporterPlugin(object: any, index: number): object is ReporterPlugin {
+  if (getType(object) !== "object" || object === null) {
+    throw new Error(`ReporterPlugin at index ${index} is not a valid object.`);
+  }
+
+  // Validate the `reporter` property
+  if (!isReporter(object.reporter, index)) {
+    throw new Error(`ReporterPlugin at index ${index} has an invalid "reporter" property.`);
+  }
+
+  // Validate the `options` property (if present)
+  if (object.options !== undefined && getType(object.options) !== "object") {
+    throw new Error(`ReporterPlugin at index ${index} has an invalid "options" property (expected an object).`);
+  }
+
+  return true;
+}
 
 export function isValidConfig(veve: any): boolean {
   const errors: string[] = [];

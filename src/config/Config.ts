@@ -73,7 +73,7 @@ export interface Veve {
    * List of reporter plugins
    * @example ["jsdom-global/register"]
    */
-  reporters: ReporterPlugin[],
+  reporters: ReporterPlugin[];
 
   /**
    * Defines the file path for reporters to save their outputs.
