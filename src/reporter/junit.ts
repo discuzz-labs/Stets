@@ -110,7 +110,7 @@ export const junit: junit  = {
         if(report) {
         writer.openTag("testsuite", {
           name: file,
-          time: (duration / 1000).toFixed(2), // Convert duration to seconds.
+          time: duration, // Convert duration to seconds.
           tests: report?.stats.total,
           failures: report?.stats.failed,
           skipped: report?.stats.skipped,
@@ -119,7 +119,7 @@ export const junit: junit  = {
           writer.openTag("testcase", {
             name: test.description,
             classname: file,
-            time: 0,
+            time: test.duration,
           });
 
           if (test.status === "failed" && test.error) {

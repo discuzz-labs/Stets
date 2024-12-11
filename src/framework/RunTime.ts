@@ -42,6 +42,7 @@ class RunTime {
       description,
       retries: 0,
       status: 'passed',
+      duration: 0,
       bench: null,
     };
 
@@ -62,6 +63,8 @@ class RunTime {
 
     let lastError: any;
     const fallbackTimeout = timeout === 0 ? this.MAX_TIMEOUT : timeout;
+
+  const start = Date.now();
 
     while (result.retries <= retry) {
       try {
@@ -102,6 +105,8 @@ class RunTime {
           }
           return result;
         }
+      } finally {
+        result.duration = parseInt((Date.now() - start).toFixed(4))
       }
     }
 

@@ -37,6 +37,7 @@ export type TestResult = {
   description: string;
   status: Status;
   retries: number;
+  duration: number;
   error?: ErrorMetadata;
   bench: BenchmarkMetrics | null;
 };
@@ -45,6 +46,7 @@ export type HookResult = {
   description: HookTypes;
   status: Status;
   retries: number;
+  duration: number;
   error?: ErrorMetadata;
   bench: null;
 };

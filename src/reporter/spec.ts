@@ -34,7 +34,7 @@ export interface ReportOptions {
 }
 
 export function log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): string {
-  const { description, file, error, retries, bench } = args;
+  const { description, file, error, retries, bench, duration } = args;
   const indicators = {
     failed: kleur.red("×"),
     softfailed: kleur.red("!"),
@@ -48,15 +48,15 @@ export function log(args: LogArgs, type: string, sourceMap: SourceMapConsumer): 
     case "failed":
     case "softfailed":
       const errorDetails = ErrorInspect.format({ error: error as any, file, sourceMap });
-      return `${indicators[type]} ${description} ${kleur.gray(
+      return `${indicators[type]} ${description} in ${duration}ms ${kleur.gray(
         `retry: ${retries}`
       )}\n${errorDetails}`;
 
     case "benched":
-      return `${indicators[type]} ${description}\n${benchMarks([bench])}`;
+      return `${indicators[type]} ${description} in ${duration}ms\n${benchMarks([bench])}`;
 
     default:
-      return `${(indicators as any)[type] || "-"} ${description}`;
+      return `${(indicators as any)[type] || "-"} ${description} in ${duration}ms`;
   }
 }
 
@@ -90,6 +90,7 @@ export function generate({ file, report, sourceMap }: ReportOptions): string {
         file,
         retries: test.retries,
         softFail: test.status === "softfailed",
+        duration: test.duration,
         bench: test.bench,
       },
       test.status,
@@ -114,13 +115,14 @@ function summary(stats: {
   skipped: number;
   softfailed: number;
   todo: number;
+  duration: number;
 }): string {
-  const { total, passed, failed, skipped, softfailed } = stats;
+  const { total, passed, failed, skipped, softfailed, duration } = stats;
   const percent = (count: number) =>
     total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
 
   const parts = [
-    `Total: ${total}`,
+    `Total: ${total} in ${duration}s`,
     passed && kleur.green(`✓ ${passed} (${percent(passed)}%)`),
     failed && kleur.red(`× ${failed} (${percent(failed)}%)`),
     softfailed && kleur.red(`! ${softfailed} (${percent(softfailed)}%)`),
@@ -146,6 +148,7 @@ export const spec: spec = {
       softfailed: 0,
       skipped: 0,
       todo: 0,
+      duration:0
     };
 
     for (const [file, { logs, error, sourceMap, duration, report }] of options.reports) {
@@ -180,6 +183,7 @@ export const spec: spec = {
       totalStats.softfailed += stats.softfailed;
       totalStats.skipped += stats.skipped;
       totalStats.todo += stats.todo;
+      totalStats.duration += duration
     }
 
     process.stdout.write(summary(totalStats));
