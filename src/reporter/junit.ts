@@ -145,6 +145,7 @@ export const junit: junit = {
                 error: test.error,
                 file,
                 sourceMap,
+                noColor: true
               }),
             });
             writer.closeTag("failure");
@@ -172,7 +173,7 @@ export const junit: junit = {
     // Write the XML report to the specified directory.
     const outputPath = path.join(options.outputDir, "junit-report.xml");
     await fs.promises.mkdir(path.dirname(outputPath), { recursive: true });
-    await fs.promises.writeFile(outputPath, writer.toString());
+    await fs.promises.writeFile(outputPath, writer.toString(), "utf-8");
 
     console.log(`${kleur.green("✓")} JUnit report generated at ${outputPath}`);
   },

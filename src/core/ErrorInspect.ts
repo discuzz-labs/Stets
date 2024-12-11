@@ -17,6 +17,7 @@ export interface ErrorInspectOptions {
   error: ErrorMetadata | Error;
   file?: string;
   sourceMap?: SourceMapConsumer;
+  noColor?: boolean;
 }
 
 export class ErrorInspect {
@@ -25,11 +26,16 @@ export class ErrorInspect {
 
   private static readonly CONTEXT_LINES = 3;
 
+  private static colorize(text: string, options: ErrorInspectOptions, colorFn?: (text: string) => string): string {
+    if (options.noColor) return text;
+    return colorFn ? colorFn(text) : text;
+  }
+
   private static line(
     parsed: ParsedStackFrame,
     options: ErrorInspectOptions,
   ): string {
-    const file = parsed.file?.padEnd(30) || "";
+    const file = (parsed.file?.padEnd(30) || "");
     const line = parsed.lineNumber ?? 0;
     const column = parsed.column ?? 0;
 
@@ -39,7 +45,7 @@ export class ErrorInspect {
       column,
     });
 
-    return `→ ${file} ${kleur.bold(original?.line || line)}:${kleur.bold(original?.column || column)}`;
+    return `→ ${file} ${this.colorize(String(original?.line || line), options, kleur.bold)}:${this.colorize(String(original?.column || column), options, kleur.bold)}`;
   }
 
   private static parse(line: string): ParsedStackFrame | null {
@@ -123,12 +129,14 @@ export class ErrorInspect {
     for (let i = startLine; i <= endLine; i++) {
       const isTargetLine = i === targetLine;
       const lineNumber = (i + 1).toString().padStart(2, " ");
-      const line = isTargetLine
-        ? kleur.bold(sourceLines[i])
-        : kleur.dim(sourceLines[i]);
+
+      // Apply colors based on noColor option
+      const lineText = isTargetLine 
+        ? this.colorize(sourceLines[i], options, kleur.bold)
+        : this.colorize(sourceLines[i], options, kleur.dim);
 
       formattedLines.push(
-        `${isTargetLine ? kleur.red(">") : ""} ${kleur.gray(lineNumber)}|${" ".repeat(2)}${line}`,
+        `${isTargetLine ? this.colorize(">", options, kleur.red) : ""} ${this.colorize(lineNumber, options, kleur.gray)}|${" ".repeat(2)}${lineText}`,
       );
     }
 
@@ -138,13 +146,14 @@ export class ErrorInspect {
   private static buildMessage(
     messages: any[],
     type: "error" | "warning",
+    options: ErrorInspectOptions,
   ): string {
     if (!Array.isArray(messages) || messages.length === 0) return "";
 
-    // Use esbuild's message formatting
+    // Use esbuild's message formatting with optional color
     const formattedMessages = esbuild.formatMessagesSync(messages, {
       kind: type,
-      color: true, // Disable colors for cleaner output
+      color: !options.noColor, 
     });
 
     return formattedMessages.map((msg) => msg.trim()).join("\n");
@@ -152,7 +161,7 @@ export class ErrorInspect {
 
   static format(options: ErrorInspectOptions): string {
     // Create a divider for visual separation
-    const divider = "─".repeat(60);
+    const divider = this.colorize("─".repeat(60), options);
 
     // Extract error message or use default
     const header = options.error?.message || "No message available.";
@@ -166,8 +175,8 @@ export class ErrorInspect {
     let buildOutput = "";
     if (options.error) {
       const { errors = [], warnings = [] } = options.error as any;
-      const errorMessages = this.buildMessage(errors, "error");
-      const warningMessages = this.buildMessage(warnings, "warning");
+      const errorMessages = this.buildMessage(errors, "error", options);
+      const warningMessages = this.buildMessage(warnings, "warning", options);
 
       // Combine non-empty messages
       buildOutput = [errorMessages, warningMessages]
