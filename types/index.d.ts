@@ -16,10 +16,12 @@ export interface ErrorInspectOptions {
 	error: ErrorMetadata | Error;
 	file?: string;
 	sourceMap?: SourceMapConsumer;
+	noColor?: boolean;
 }
 export declare class ErrorInspect {
 	private static readonly STACK_FRAME_REGEX;
 	private static readonly CONTEXT_LINES;
+	private static colorize;
 	private static line;
 	private static parse;
 	private static stack;
@@ -264,6 +266,82 @@ export interface junit extends Reporter {
  * @returns {Promise<void>} Resolves when the XML report is successfully written to a file.
  */
 export declare const junit: junit;
+export interface json extends Reporter {
+}
+/**
+ * Generates a comprehensive JSON report for the provided test results.
+ *
+ * @returns {Promise<void>} Resolves when the JSON report is successfully written to a file.
+ */
+export declare const json: json;
+/**
+ * Represents the contract for an XML document writer.
+ * Provides methods to build XML documents with support for tags, attributes, and content.
+ */
+export interface XML {
+	/**
+	 * Opens a new XML tag with optional attributes.
+	 *
+	 * @param name - The name of the tag
+	 * @param attributes - Optional key-value pairs of attributes
+	 * @returns The XMLWriter instance for method chaining
+	 *
+	 * @example
+	 * writer.openTag('person', { id: 1, type: 'employee' })
+	 */
+	openTag(name: string, attributes?: Record<string, string | number>): XML;
+	/**
+	 * Adds a self-closing XML tag with optional attributes.
+	 *
+	 * @param name - The name of the tag
+	 * @param attributes - Optional key-value pairs of attributes
+	 * @returns The XMLWriter instance for method chaining
+	 *
+	 * @example
+	 * writer.selfClosingTag('image', { src: 'profile.jpg', width: 100 })
+	 */
+	selfClosingTag(name: string, attributes?: Record<string, string | number>): XML;
+	/**
+	 * Adds an XML tag with content and optional attributes.
+	 *
+	 * @param name - The name of the tag
+	 * @param content - The text content of the tag
+	 * @param attributes - Optional key-value pairs of attributes
+	 * @returns The XMLWriter instance for method chaining
+	 *
+	 * @example
+	 * writer.tag('name', 'John Doe', { type: 'full' })
+	 */
+	tag(name: string, content: string, attributes?: Record<string, string | number>): XML;
+	/**
+	 * Closes the most recently opened tag.
+	 *
+	 * @param name - The name of the tag to close
+	 * @returns The XMLWriter instance for method chaining
+	 *
+	 * @example
+	 * writer.openTag('person').closeTag('person')
+	 */
+	closeTag(name: string): XML;
+	/**
+	 * Generates the complete XML document as a string.
+	 *
+	 * @returns The full XML document
+	 *
+	 * @example
+	 * const xmlString = writer.toString();
+	 */
+	toString(): string;
+}
+export declare class XML {
+	private buffer;
+	private indent;
+	constructor();
+	/**
+	 * Escape XML special characters
+	 */
+	private escapeXml;
+}
 /**
  * A class providing assertion methods for testing.
  */
@@ -753,7 +831,7 @@ export declare class TrackFn<T extends any[], R> {
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // 3
  */
-export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): (...args: T) => R & TrackFn<T,R>;
+export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): (...args: T) => R;
 /**
  * Replaces a method on an object with a tracked version of the method.
  *
@@ -773,7 +851,7 @@ export declare function Fn<T extends any[], R>(implementation: (...args: T) => R
  */
 export declare function spy<T extends any[], R>(obj: {
 	[key: string]: (...args: T) => R;
-}, method: string): (...args: T) => R & TrackFn<T,R>;
+}, method: string): (...args: T) => R;
 /**
  * Checks if a value is a tracked function.
  *
