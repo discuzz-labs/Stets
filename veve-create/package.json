@@ -1,16 +1,13 @@
 {
-  "name": "veve",
+  "name": "veve-create",
   "version": "1.0.0-dev",
   "description": "Veve - Run tests with ease.",
-  "main": "dist/index.js",
-  "types": "types/index.d.ts",
   "type": "module",
   "bin": {
-    "veve": "./bin/index.js"
+    "veve-create": "./index.js"
   },
   "files": [
-    "dist/*",
-    "bin/*"
+    "dist/*"
   ],
   "keywords": [
     "testing",
@@ -34,31 +31,15 @@
   "author": "A. Shaheen",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
     "build:watch": "tsc -w",
-    "build:dts": "dts-bundle-generator src/index.ts -o types/index.d.ts",
-    "lint": "eslint",
     "fmt": "prettier --write '**/*.ts'"
   },
   "devDependencies": {
-    "@eslint/js": "^9.16.0",
-    "@types/diff": "^6.0.0",
-    "@types/node": "^22.9.0",
-    "dts-bundle-generator": "^9.5.1",
-    "eslint": "^9.16.0",
-    "prettier": "3.4.2",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.17.0"
+    "prettier": "3.4.2"
   },
   "dependencies": {
-    "diff": "^7.0.0",
-    "dotenv": "^16.4.5",
-    "esbuild": "^0.24.0",
-    "esbuild-register": "^3.6.0",
-    "kleur": "^4.1.5",
-    "pretty-format": "^29.7.0",
-    "source-map": "^0.7.4",
-    "watcher": "^2.3.1"
+    "@inquirer/prompts": "^7.2.0",
+    "kleur": "^4.1.5"
   },
   "engines": {
     "node": ">=16.16.0"

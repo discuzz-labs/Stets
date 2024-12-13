@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  * See the LICENSE file in the project root for license information.
  */
-export { veve } from "./config/Config.js";
+export { veve as default } from "./config/Config.js";
 export { spec } from "./reporter/spec.js";
 export { junit } from "./reporter/junit.js";
 export { json } from "./reporter/json.js";
