@@ -8,16 +8,16 @@ const config: Veve = {
     "**/*.spec.ts",
     "**/*.spec.js",
     "**/__tests__/**/*.ts", // Test files within __tests__ folders (TypeScript)
-    "**/__tests__/**/*.js"  // Test files within __tests__ folders (JavaScript)
+    "**/__tests__/**/*.js", // Test files within __tests__ folders (JavaScript)
   ],
   exclude: [
-    "**/dist/**",  // Compiled or distribution files
-    "**/node_modules/**",  // Dependencies
-    "*.json",      // JSON configuration files
+    "**/dist/**", // Compiled or distribution files
+    "**/node_modules/**", // Dependencies
+    "*.json", // JSON configuration files
     "**/coverage/**", // Coverage reports
-    "**/logs/**",   // Log files
+    "**/logs/**", // Log files
     "**/*.config.*", // Configuration files
-    "**/*.d.ts"    // Type declaration files
+    "**/*.d.ts", // Type declaration files
   ],
   envs: [],
   timeout: 600_000,

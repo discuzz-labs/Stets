@@ -57,9 +57,9 @@ export const json: json = {
         totalPassed: 0,
         totalFailed: 0,
         totalSkipped: 0,
-        totalDuration: 0
+        totalDuration: 0,
       },
-      testFiles: []
+      testFiles: [],
     };
 
     // Process each test report
@@ -67,14 +67,14 @@ export const json: json = {
       file,
       { error, duration, report, sourceMap },
     ] of options.reports) {
-      const testFile: typeof testResults.testFiles[number] = {
+      const testFile: (typeof testResults.testFiles)[number] = {
         name: file,
         total: 0,
         passed: 0,
         failed: 0,
         skipped: 0,
         duration,
-        tests: []
+        tests: [],
       };
 
       if (report) {
@@ -86,16 +86,16 @@ export const json: json = {
 
         // Process individual tests
         for (const test of report.tests) {
-          const testResult: typeof testFile.tests[number] = {
+          const testResult: (typeof testFile.tests)[number] = {
             name: test.description,
             status: test.status,
-            duration: test.duration
+            duration: test.duration,
           };
 
           // Add error details for failed tests
           if (test.status === "failed" && test.error) {
             testResult.error = {
-              stack: test.error.stack
+              stack: test.error.stack,
             };
           }
 
@@ -106,7 +106,7 @@ export const json: json = {
       // Handle file-level errors
       if (error) {
         testFile.fileError = {
-          message: error({ error, file })
+          message: error({ error, file }),
         };
       }
 
@@ -127,9 +127,9 @@ export const json: json = {
 
     // Use JSON.stringify with pretty printing
     await fs.promises.writeFile(
-      outputPath, 
-      JSON.stringify(testResults, null, 2), 
-      "utf-8"
+      outputPath,
+      JSON.stringify(testResults, null, 2),
+      "utf-8",
     );
 
     console.log(`${kleur.green("✓")} JSON report generated at ${outputPath}`);

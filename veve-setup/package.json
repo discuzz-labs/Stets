@@ -1,10 +1,10 @@
 {
-  "name": "veve-create",
+  "name": "veve-setup",
   "version": "1.0.0-dev",
   "description": "Veve - Run tests with ease.",
   "type": "module",
   "bin": {
-    "veve-create": "./index.js"
+    "veve-setup": "./index.js"
   },
   "files": [
     "dist/*"

@@ -9,10 +9,7 @@ import path from "path";
 import { SourceMapConsumer } from "source-map";
 import { BenchmarkMetrics } from "../core/Bench.js";
 import { replay } from "../core/Console.js";
-import {
-  ErrorInspect,
-  ErrorMetadata,
-} from "../core/ErrorInspect.js";
+import { ErrorInspect, ErrorMetadata } from "../core/ErrorInspect.js";
 import { PoolResult } from "../core/Pool.js";
 import { TestCaseStatus, TestReport, Stats } from "../framework/TestCase.js";
 import { testReportHeader } from "../utils/ui.js";

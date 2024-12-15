@@ -10,11 +10,11 @@
 export interface XML {
   /**
    * Opens a new XML tag with optional attributes.
-   * 
+   *
    * @param name - The name of the tag
    * @param attributes - Optional key-value pairs of attributes
    * @returns The XMLWriter instance for method chaining
-   * 
+   *
    * @example
    * writer.openTag('person', { id: 1, type: 'employee' })
    */
@@ -22,42 +22,42 @@ export interface XML {
 
   /**
    * Adds a self-closing XML tag with optional attributes.
-   * 
+   *
    * @param name - The name of the tag
    * @param attributes - Optional key-value pairs of attributes
    * @returns The XMLWriter instance for method chaining
-   * 
+   *
    * @example
    * writer.selfClosingTag('image', { src: 'profile.jpg', width: 100 })
    */
   selfClosingTag(
-    name: string, 
-    attributes?: Record<string, string | number>
+    name: string,
+    attributes?: Record<string, string | number>,
   ): XML;
 
   /**
    * Adds an XML tag with content and optional attributes.
-   * 
+   *
    * @param name - The name of the tag
    * @param content - The text content of the tag
    * @param attributes - Optional key-value pairs of attributes
    * @returns The XMLWriter instance for method chaining
-   * 
+   *
    * @example
    * writer.tag('name', 'John Doe', { type: 'full' })
    */
   tag(
-    name: string, 
-    content: string, 
-    attributes?: Record<string, string | number>
+    name: string,
+    content: string,
+    attributes?: Record<string, string | number>,
   ): XML;
 
   /**
    * Closes the most recently opened tag.
-   * 
+   *
    * @param name - The name of the tag to close
    * @returns The XMLWriter instance for method chaining
-   * 
+   *
    * @example
    * writer.openTag('person').closeTag('person')
    */
@@ -65,9 +65,9 @@ export interface XML {
 
   /**
    * Generates the complete XML document as a string.
-   * 
+   *
    * @returns The full XML document
-   * 
+   *
    * @example
    * const xmlString = writer.toString();
    */
@@ -129,7 +129,6 @@ export class XML {
     return this;
   }
 
- 
   private escapeXml(unsafe: string): string {
     return unsafe.replace(/[<>&'"]/g, (match) => {
       switch (match) {

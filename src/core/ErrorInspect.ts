@@ -26,7 +26,11 @@ export class ErrorInspect {
 
   private static readonly CONTEXT_LINES = 3;
 
-  private static colorize(text: string, options: ErrorInspectOptions, colorFn?: (text: string) => string): string {
+  private static colorize(
+    text: string,
+    options: ErrorInspectOptions,
+    colorFn?: (text: string) => string,
+  ): string {
     if (options.noColor) return text;
     return colorFn ? colorFn(text) : text;
   }
@@ -35,7 +39,7 @@ export class ErrorInspect {
     parsed: ParsedStackFrame,
     options: ErrorInspectOptions,
   ): string {
-    const file = (parsed.file?.padEnd(30) || "");
+    const file = parsed.file?.padEnd(30) || "";
     const line = parsed.lineNumber ?? 0;
     const column = parsed.column ?? 0;
 
@@ -131,7 +135,7 @@ export class ErrorInspect {
       const lineNumber = (i + 1).toString().padStart(2, " ");
 
       // Apply colors based on noColor option
-      const lineText = isTargetLine 
+      const lineText = isTargetLine
         ? this.colorize(sourceLines[i], options, kleur.bold)
         : this.colorize(sourceLines[i], options, kleur.dim);
 
@@ -153,7 +157,7 @@ export class ErrorInspect {
     // Use esbuild's message formatting with optional color
     const formattedMessages = esbuild.formatMessagesSync(messages, {
       kind: type,
-      color: !options.noColor, 
+      color: !options.noColor,
     });
 
     return formattedMessages.map((msg) => msg.trim()).join("\n");
