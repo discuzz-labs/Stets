@@ -129,9 +129,7 @@ async function generateVeveConfig() {
 
     const canOverwrite = await overWriteConfigFile();
     if (!canOverwrite) {
-      console.log(
-        kleur.yellow("Config overwrite cancelled. Maybe next time!"),
-      );
+      console.log(kleur.yellow("Config overwrite cancelled. Maybe next time!"));
       return;
     }
 
@@ -284,7 +282,10 @@ async function installDependencies() {
   try {
     // Use await to ensure sequential execution
     await installPackage("veve", installCommands[packageManager].veve);
-    await installPackage("proxyquire", installCommands[packageManager].proxyquire);
+    await installPackage(
+      "proxyquire",
+      installCommands[packageManager].proxyquire,
+    );
 
     // This message will only be displayed after both packages are installed
     console.log(kleur.green("✓ All packages installed successfully!"));
@@ -304,7 +305,7 @@ function installPackage(packageName, command) {
         resolve();
       } else {
         reject(
-          new Error(`${packageName} installation failed with code ${code}`)
+          new Error(`${packageName} installation failed with code ${code}`),
         );
       }
     });

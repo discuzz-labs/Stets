@@ -1,6 +1,6 @@
 {
   "name": "veve-setup",
-  "version": "1.0.0-dev",
+  "version": "1.0.0-beta",
   "description": "Veve - Run tests with ease.",
   "type": "module",
   "bin": {
@@ -31,8 +31,7 @@
   "author": "A. Shaheen",
   "license": "MIT",
   "scripts": {
-    "build:watch": "tsc -w",
-    "fmt": "prettier --write '**/*.ts'"
+    "fmt": "prettier --write '**/*.{js,ts,json,md}'"
   },
   "devDependencies": {
     "prettier": "3.4.2"
@@ -51,5 +50,5 @@
   "bugs": {
     "url": "https://github.com/discuzz-labs/veve/issues"
   },
-  "homepage": "https://github.com/username/veve#readme"
+  "homepage": "https://github.com/discuzz-labs/veve#readme"
 }

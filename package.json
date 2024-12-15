@@ -1,6 +1,6 @@
 {
   "name": "veve",
-  "version": "1.0.0-dev",
+  "version": "1.0.0-beta",
   "description": "Veve - Run tests with ease.",
   "main": "dist/index.js",
   "types": "types/index.d.ts",
@@ -38,7 +38,7 @@
     "build:watch": "tsc -w",
     "build:dts": "dts-bundle-generator src/index.ts -o types/index.d.ts",
     "lint": "eslint",
-    "fmt": "prettier --write '**/*.ts'",
+    "fmt": "prettier --write '**/*.{ts,json,md}'",
     "test": "veve",
     "test:watch": "veve --watch"
   },
@@ -72,5 +72,5 @@
   "bugs": {
     "url": "https://github.com/discuzz-labs/veve/issues"
   },
-  "homepage": "https://github.com/username/veve#readme"
+  "homepage": "https://github.com/discuzz-labs/veve#readme"
 }
