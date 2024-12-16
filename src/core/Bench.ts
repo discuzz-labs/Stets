@@ -67,7 +67,7 @@ export class Bench {
       }
 
       const iterEnd = performance.now();
-      const latency = (iterEnd - iterStart) * 1_000_000; // Convert to nanoseconds
+      const latency = (iterEnd - iterStart)
       latencies.push(latency);
 
       // Break if timeout is reached
