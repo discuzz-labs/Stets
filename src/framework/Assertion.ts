@@ -8,7 +8,7 @@ import { AssertionError } from "./AssertionError.js";
 import { diff } from "./Diff.js";
 import { Fn, isFn } from "./Fn.js";
 import { format } from "pretty-format";
-import { getOrdinal } from "../utils/index.js";
+import { getOrdinal, getType } from "../utils/index.js";
 
 /**
  * A class providing assertion methods for testing.
@@ -498,7 +498,8 @@ export class Assertion {
 
   toMatch(expected: RegExp | string): Assertion | boolean {
     const pass =
-      expected instanceof RegExp
+      getType(expected) === "regexp"
+        // @ts-ignore
         ? expected.test(this.received)
         : this.received.includes(expected);
     return this.assert(

@@ -132,7 +132,7 @@ function summary(stats: {
     total > 0 ? ((count / total) * 100).toFixed(1) : "0.0";
 
   const parts = [
-    `Total: ${total} in ${duration}s`,
+    `Total: ${total} in ${duration.toFixed(2)}s`,
     passed && kleur.green(`✓ ${passed} (${percent(passed)}%)`),
     failed && kleur.red(`× ${failed} (${percent(failed)}%)`),
     softfailed && kleur.red(`! ${softfailed} (${percent(softfailed)}%)`),

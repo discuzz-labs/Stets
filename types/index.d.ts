@@ -36,6 +36,7 @@ export interface BenchmarkMetrics {
 	latencyMedian: number;
 	samples: number;
 	timestamp: number;
+	timedOut: boolean;
 }
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;

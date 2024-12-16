@@ -13,7 +13,6 @@ export interface LogEntry {
 
 export class Console {
   logs: LogEntry[] = [];
-  counts: { [key: string]: number } = {};
   timers: { [key: string]: number } = {};
 
   private manageTimer(action: "start" | "end", timerName: string) {
@@ -87,23 +86,23 @@ export class Console {
   }
 
   count(args: any = "default") {
-    this.createMethod("count")(...args);
+    this.createMethod("count")(args);
   }
 
   countReset(args: any = "default") {
-    this.createMethod("countReset")(...args);
+    this.createMethod("countReset")(args);
   }
 
-  group(args: any[]) {
-    this.createMethod("group")(...args);
+  group(args: any) {
+    this.createMethod("group")(args);
   }
 
   groupEnd() {
     this.createMethod("groupEnd")();
   }
 
-  groupCollapsed(args: any[]) {
-    this.createMethod("groupCollapsed")(...args);
+  groupCollapsed(args: any) {
+    this.createMethod("groupCollapsed")(args);
   }
 
   trace(args: any[]) {
