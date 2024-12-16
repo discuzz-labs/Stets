@@ -1,15 +1,13 @@
 import * as vm from "vm";
 import * as path from "path";
-import { EventEmitter } from "events";
 import { createRequire } from "module";
-import { Fn, spy } from "../framework/Fn.js";
+import { Fn, spyOn } from "../framework/Fn.js";
 import { is, assert } from "../framework/Assertion.js";
 import TestCase from "../framework/TestCase.js";
 
-export class Context extends EventEmitter {
+export class Context {
   private context: any;
   constructor() {
-    super();
 
     this.context = {
       process: this.process(),
@@ -31,7 +29,7 @@ export class Context extends EventEmitter {
       argv: [...process.argv],
       cwd: process.cwd(),
       on: process.on.bind(process),
-      platform: process.platform,
+      platform: process.platform
     };
   }
 
@@ -49,7 +47,7 @@ export class Context extends EventEmitter {
       assert,
       Fn,
       is,
-      spy,
+      spyOn,
       bench: testCase.bench.bind(testCase),
       it: testCase.it.bind(testCase),
       fail: testCase.fail.bind(testCase),
@@ -68,7 +66,7 @@ export class Context extends EventEmitter {
       require: createRequire(file),
       __filename: path.basename(file),
       __dirname: path.dirname(file),
-    };
+    }
 
     return this;
   }

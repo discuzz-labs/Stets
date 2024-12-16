@@ -319,12 +319,12 @@ export function Fn<T extends any[], R>(
  *
  * @example
  * const obj = { multiply: (a: number, b: number) => a * b };
- * const trackedMultiply = spy(obj, 'multiply');
+ * const trackedMultiply = spyOn(obj, 'multiply');
  * obj.multiply(2, 3); // 6
  * console.log(trackedMultiply.getCallCount()); // 1
  */
-export function spy<T extends any[], R>(
-  obj: { [key: string]: (...args: T) => R },
+export function spyOn<T extends any[], R>(
+  obj: { [key: string]: (...args: T) => R } | any,
   method: string,
 ) {
   if (!obj || typeof obj[method] !== "function") {

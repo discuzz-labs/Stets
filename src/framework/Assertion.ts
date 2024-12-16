@@ -6,8 +6,7 @@
 
 import { AssertionError } from "./AssertionError.js";
 import { diff } from "./Diff.js";
-import { isFn } from "./Fn.js";
-import { isDeepStrictEqual } from "util";
+import { Fn, isFn } from "./Fn.js";
 import { format } from "pretty-format";
 import { getOrdinal } from "../utils/index.js";
 
@@ -162,6 +161,26 @@ export interface Assertion {
    * assert([1, 2, 3]).toContain(5); // Fails
    */
   toContain(expected: any): Assertion | boolean;
+
+  /**
+Asserts that a tracked function throws an exception that matches the expected value.
+ * This method checks the last exception thrown by a tracked function and compares it with the expected exception.
+ * If the exception does not match, it will display the differences between the thrown exception and the expected one.
+ * 
+ * If no exceptions are thrown, it will fail the assertion with a message: "No exceptions were thrown!".
+ * If an exception is thrown, it compares the exception with the expected value and reports any differences.
+ * 
+ * @param {any} expected - The expected exception or value to compare against the thrown exception.
+ * This could be an exact match or a complex object that will be compared with the thrown exception.
+ * 
+ * @throws {Error} Throws an error if the function is not being tracked or if the exception does not match the expected value.
+ * 
+ * @returns {boolean} Returns `true` if the exception matches the expected value (no differences), otherwise returns `false` and logs the exception differences.
+ * 
+ * @example
+ * assert(() => { throw new Error("Expected error") }).toThrow("Expected error") // Passes
+ */
+  toThrow(expected: any): Assertion | boolean;
   /**
    * Checks if the number is close to another number within a specified precision
    * @param {number} expected - Expected number
@@ -492,15 +511,17 @@ export class Assertion {
   toBe(expected: any): Assertion | boolean {
     return this.assert(
       Object.is(this.received, expected),
-      diff(this.received, expected),
+      diff(this.received, expected).diffFormatted,
       "toBe",
     );
   }
 
   toEqual(expected: any): Assertion | boolean {
+    const diffs = diff(this.received, expected);
+
     return this.assert(
-      isDeepStrictEqual(expected, this.received),
-      diff(this.received, expected),
+      diffs.hasDiffs === false,
+      diffs.diffFormatted,
       "toEqual",
     );
   }
@@ -525,7 +546,7 @@ export class Assertion {
 
     return this.assert(
       contains,
-      `Expected ${isString ? `"${this.received}"` : JSON.stringify(this.received)} to contain ${JSON.stringify(expected)}`,
+      `Expected ${isString ? `"${this.received}"` : format(this.received)} to contain ${format(expected)}`,
       "toContain",
     );
   }
@@ -540,6 +561,24 @@ export class Assertion {
       `Expected ${this.received} to be close to ${expected} within ${numDigits} decimal places`,
       "toBeCloseTo",
     );
+  }
+
+  toThrow(expected: any) {
+    if (!this.isTracked) {
+      throw new Error("toThrow can only be used with tracked functions");
+    }
+
+    const exceptions = this.received.getExceptions();
+    if (exceptions.length === 0) {
+      return this.assert(false, "No exceptions were thrown!", "toThrow");
+    } else {
+      const diffs = diff(exceptions[exceptions.length - 1], expected);
+      return this.assert(
+        diffs.hasDiffs === false,
+        `Exception diffrences: \n\n ${diffs.diffFormatted}`,
+        "toThrow",
+      );
+    }
   }
 
   toBeTracked(): Assertion | boolean {
@@ -596,9 +635,10 @@ export class Assertion {
       );
     }
     const latestCall = this.received.getLatestCall();
+    const diffs = diff(latestCall.args, args);
     return this.assert(
-      latestCall && isDeepStrictEqual(latestCall.args, args),
-      `Function's last call differences: \n\n${diff(latestCall.args, args)}`,
+      latestCall && diffs.hasDiffs === false,
+      `Function's last call differences: \n\n${diffs.diffFormatted}`,
       "toHaveBeenLastCalledWith",
     );
   }
@@ -610,9 +650,10 @@ export class Assertion {
       );
     }
     const call = this.received.getCall(n - 1);
+    const diffs = diff(call.args, args);
     return this.assert(
-      call && isDeepStrictEqual(call.args, args),
-      `Function's ${n}${getOrdinal(n)} call differences: \n\n${diff(call.args, args)}`,
+      call && diffs.hasDiffs === false,
+      `Function's ${n}${getOrdinal(n)} call differences: \n\n${diffs.diffFormatted}`,
       "toHaveBeenNthCalledWith",
     );
   }
@@ -650,7 +691,7 @@ export class Assertion {
     return this.assert(
       this.received
         .getReturnValues()
-        .some((rv: any) => isDeepStrictEqual(rv, value)),
+        .some((rv: any) => diff(rv, value).hasDiffs),
       `Expected function to have returned with ${format(value)}`,
       "toHaveReturnedWith",
     );
@@ -663,10 +704,10 @@ export class Assertion {
       );
     }
     const returnValues = this.received.getReturnValues();
+    const diffs = diff(returnValues[returnValues.length - 1], value);
     return this.assert(
-      returnValues.length > 0 &&
-        isDeepStrictEqual(returnValues[returnValues.length - 1], value),
-      `Function's last return differences: \n\n${diff(returnValues, value)}`,
+      returnValues.length > 0 && diffs.hasDiffs === false,
+      `Function's last return differences: \n\n${diffs.diffFormatted}`,
       "toHaveLastReturnedWith",
     );
   }
@@ -678,9 +719,10 @@ export class Assertion {
       );
     }
     const returnValues = this.received.getReturnValues();
+    const diffs = diff(returnValues[n - 1], value);
     return this.assert(
-      returnValues.length >= n && isDeepStrictEqual(returnValues[n - 1], value),
-      `Function's ${n}${getOrdinal(n)} return differences: \n\n ${diff(returnValues, value)}`,
+      returnValues.length >= n && diffs.hasDiffs === false,
+      `Function's ${n}${getOrdinal(n)} return differences: \n\n ${diffs.diffFormatted}`,
       "toHaveNthReturnedWith",
     );
   }
@@ -709,8 +751,9 @@ export class Assertion {
     }
 
     if (arguments.length > 1) {
+      const diffs = diff(obj, value);
       return this.assert(
-        isDeepStrictEqual(obj, value),
+        diffs.hasDiffs === false,
         `Property ${keyPath} does not have expected value`,
         "toHaveProperty",
       );

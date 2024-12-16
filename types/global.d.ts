@@ -251,14 +251,14 @@ declare global {
    *
    * @example
    * const obj = { multiply: (a: number, b: number) => a * b };
-   * const trackedMultiply = spy(obj, 'multiply');
+   * const trackedMultiply = spyOn(obj, 'multiply');
    * obj.multiply(2, 3); // 6
    * console.log(trackedMultiply.getCallCount()); // 1
    */
-  function spy<T extends any[], R>(
+  function spyOn<T extends any[], R>(
     obj: {
       [key: string]: (...args: T) => R;
-    },
+    } | any,
     method: string,
   ): TrackFn<T, R> & ((...args: T) => R);
 }

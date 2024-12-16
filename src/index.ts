@@ -10,4 +10,5 @@ export { json } from "./reporter/json.js";
 export { XML } from "./utils/xml.js";
 export { ErrorInspect } from "./core/ErrorInspect.js";
 export { is, assert, Assertion } from "./framework/Assertion.js";
-export { isFn, Fn, spy, TrackFn } from "./framework/Fn.js";
+export { TestCase } from "./framework/TestCase.js"
+export { isFn, Fn, spyOn, TrackFn } from "./framework/Fn.js";

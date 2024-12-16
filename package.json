@@ -39,8 +39,7 @@
     "build:dts": "dts-bundle-generator src/index.ts -o types/index.d.ts",
     "lint": "eslint",
     "fmt": "prettier --write '**/*.{ts,json,md}'",
-    "test": "veve",
-    "test:watch": "veve --watch"
+    "test": "./bin/index.js --watch"
   },
   "devDependencies": {
     "@types/diff": "^6.0.0",
@@ -60,6 +59,7 @@
     "kleur": "^4.1.5",
     "pretty-format": "^29.7.0",
     "source-map": "^0.7.4",
+    "veve": "file:./",
     "watcher": "^2.3.1"
   },
   "engines": {

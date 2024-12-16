@@ -23,7 +23,7 @@ function isReporter(object: any, index: number): object is Reporter {
       `Reporter "${object.name}" at index ${index} has an invalid "type" property (expected "file" or "console").`,
     );
   }
-  if (getType(object.report) !== "asyncfunction") {
+  if (getType(object.report) !== "function" && getType(object.report) !== "asyncfunction") {
     throw new Error(
       `Reporter "${object.name}" at index ${index} is missing a valid "report" method (expected an async function).`,
     );
@@ -133,20 +133,6 @@ export function isValidConfig(veve: any): boolean {
   // Check outputDir (optional)
   if (veve.outputDir !== undefined && getType(veve.outputDir) !== "string") {
     logError("outputDir", "Expected a string.");
-  }
-
-  // Check formats (optional)
-  if (
-    veve.formats !== undefined &&
-    (!Array.isArray(veve.formats) ||
-      !veve.formats.every((item: any) => getType(item) === "string"))
-  ) {
-    logError("formats", "Expected an array of strings.");
-  }
-
-  // Check timestamp (optional)
-  if (veve.timestamp !== undefined && getType(veve.timestamp) !== "boolean") {
-    logError("timestamp", "Expected a boolean.");
   }
 
   // Check reporters (optional)

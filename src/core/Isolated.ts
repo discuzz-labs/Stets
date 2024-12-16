@@ -47,6 +47,7 @@ export class Isolated {
       const report = await script.runInNewContext(context, {
         timeout,
         displayErrors: true,
+        
       });
 
       const isValid = this.isValidReport(report);
