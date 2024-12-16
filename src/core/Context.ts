@@ -8,7 +8,6 @@ import TestCase from "../framework/TestCase.js";
 export class Context {
   private context: any;
   constructor() {
-
     this.context = {
       process: this.process(),
       Buffer,
@@ -29,6 +28,8 @@ export class Context {
       argv: [...process.argv],
       cwd: process.cwd(),
       on: process.on.bind(process),
+      exit: (code: number) => { return false },
+      abort: (code: number) => { return false },
       platform: process.platform
     };
   }
@@ -44,6 +45,7 @@ export class Context {
     const testCase = new TestCase("Unnamed test");
 
     this.context = {
+      ...this.context,
       assert,
       Fn,
       is,

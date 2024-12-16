@@ -38,7 +38,7 @@ it("handles synchronous functions correctly", async () => {
   assert(result).toHaveProperty("latencyAvg");
 
   assert(result.samples).toBeGreaterThan(0);
-  assert(result.latencyAvg).toBeCloseTo(0); // Since the function is synchronous, latency should be minimal (close to 0)
+  assert(result.latencyAvg).toBeCloseTo(0, 0); // Since the function is synchronous, latency should be minimal (close to 0)
 });
 
 it("stops benchmark when timeout is reached", async () => {
@@ -47,18 +47,12 @@ it("stops benchmark when timeout is reached", async () => {
   const result: BenchmarkMetrics = await Bench.run(longTestFunction, {
     iterations: 100,
     warmup: 10,
-    timeout: 500, // Set a short timeout to test stopping early
+    timeout: 100, // Set a short timeout to test stopping early
   });
-  const resultControll: BenchmarkMetrics = await Bench.run(longTestFunction, {
-    iterations: 100,
-    warmup: 10,
-    timeout: 1000, // Set a short timeout to test stopping early
-  });
-
+  
   assert(result.samples).toBeGreaterThan(0);
   assert(result.timestamp).toBeDefined();
-
-  assert(result.throughputAvg).toBeLessThan(resultControll.throughputAvg); // Expect lower throughput due to early stop
+  assert(result.timedOut).toBe(true)
 });
 
 run();

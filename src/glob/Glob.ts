@@ -37,7 +37,7 @@ export function isValidFile(
 }
 
 export class Glob {
-  private maxFiles: number = 2; // Default max file limit
+  private maxFiles: number = 100_000; // Default max file limit
   private fileCount: number = 0;
 
   constructor(private readonly options: GlobOptions) {}

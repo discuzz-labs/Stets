@@ -5,7 +5,6 @@
  */
 
 import { performance } from "node:perf_hooks";
-import { TestFunction } from "../framework/TestCase";
 
 export interface BenchmarkOptions {
   iterations?: number;
@@ -20,114 +19,98 @@ export interface BenchmarkMetrics {
   latencyMedian: number;
   samples: number;
   timestamp: number;
+  timedOut: boolean; // Track if benchmark was forcibly stopped
 }
 
 export class Bench {
   private static readonly DEFAULT_OPTIONS: Required<BenchmarkOptions> = {
     iterations: 1000,
     warmup: 100,
-    timeout: 5000,
+    timeout: 5000
   };
 
   private static benchmarkResults: BenchmarkMetrics[] = [];
 
   static async run(
-    fn: TestFunction,
-    options: BenchmarkOptions = {},
+    fn: (() => void | Promise<void>),
+    options: BenchmarkOptions = {}
   ): Promise<BenchmarkMetrics> {
-    const config = { ...this.DEFAULT_OPTIONS, ...options };
+    // Validate and merge options
+    const config = this.validateOptions({ ...this.DEFAULT_OPTIONS, ...options });
+
     const latencies: number[] = [];
-    const isAsync = fn.constructor.name === "AsyncFunction";
+    let timedOut = false;
 
     // Warmup phase
-    for (let i = 0; i < config.warmup; i++) {
-      if (isAsync) {
-        void (await fn()); // Use void to explicitly ignore the return value
-      } else {
-        void fn(); // Use void for synchronous functions too
-      }
+    for (let i = 0; i < config.warmup!; i++) {
+      const start = performance.now();
+      await fn();
+      const end = performance.now();
+      latencies.push(end - start);
     }
 
-    const startTime = performance.now();
-    const endTimeLimit = startTime + config.timeout;
+    // Benchmark phase with timeout handling
+    const timeoutPromise = new Promise<BenchmarkMetrics>((_, reject) => {
+      setTimeout(() => {
+        timedOut = true;
+      }, config.timeout!);
+    });
 
-    // Actual benchmark
-    for (let i = 0; i < config.iterations; i++) {
-      const iterStart = performance.now();
+    try {
+      const promises = Array.from({ length: config.iterations! }, async () => {
+        const start = performance.now();
+        await fn();
+        const end = performance.now();
+        latencies.push(end - start);
+      });
 
-      try {
-        if (isAsync) {
-          void (await fn()); // Use void to explicitly ignore the return value
-        } else {
-          void fn(); // Use void for synchronous functions too
-        }
-      } catch (error) {
-        console.error(`Benchmark error in ${name}:`, error);
-        break;
-      }
+      await Promise.race([Promise.all(promises), timeoutPromise]);
 
-      const iterEnd = performance.now();
-      const latency = (iterEnd - iterStart)
-      latencies.push(latency);
+      // Calculate metrics
+      const throughputAvg = latencies.length / performance.now()
+      const latencyAvg = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+      const latencyMedian = this.median(latencies);
 
-      // Break if timeout is reached
-      if (performance.now() > endTimeLimit) break;
+      const metrics: BenchmarkMetrics = {
+        throughputAvg,
+        throughputMedian: this.median(latencies),
+        latencyAvg,
+        latencyMedian,
+        samples: latencies.length,
+        timestamp: Date.now(),
+        timedOut,
+      };
+
+      this.benchmarkResults.push(metrics);
+      return metrics;
+    } catch (error) {
+      // Simply stop and return metrics without throwing errors
+      return {
+        throughputAvg: 0,
+        throughputMedian: 0,
+        latencyAvg: 0,
+        latencyMedian: 0,
+        samples: 0,
+        timestamp: Date.now(),
+        timedOut: true,
+      };
     }
-
-    // Calculate statistics
-    const samples = latencies.length;
-    const latenciesSort = [...latencies].sort((a, b) => a - b);
-
-    const latencyAvg = latencies.reduce((a, b) => a + b, 0) / samples;
-    const latencyMedian = this.calculateMedian(latenciesSort);
-
-    const totalTime = performance.now() - startTime;
-    const throughputAvg = (samples / totalTime) * 1000;
-
-    const throughputSort = [...latencies].sort((a, b) => a - b);
-    const throughputMedian =
-      samples / (this.calculateMedian(throughputSort) / 1000);
-
-    const result: BenchmarkMetrics = {
-      throughputAvg,
-      throughputMedian,
-      latencyAvg,
-      latencyMedian,
-      samples,
-
-      timestamp: Date.now(),
-    };
-
-    // Store the result
-    this.benchmarkResults.push(result);
-
-    return result;
   }
 
-  /**
-   * Calculate median of a sorted array
-   * @param sortedArray Sorted array of numbers
-   * @returns Median value
-   */
-  private static calculateMedian(sortedArray: number[]): number {
-    const mid = Math.floor(sortedArray.length / 2);
-    return sortedArray.length % 2 !== 0
-      ? sortedArray[mid]
-      : (sortedArray[mid - 1] + sortedArray[mid]) / 2;
+  // Helper to calculate the median
+  private static median(values: number[]): number {
+    const sorted = [...values].sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0
+      ? (sorted[middle - 1] + sorted[middle]) / 2
+      : sorted[middle];
   }
 
-  /**
-   * Find the best-performing benchmark from the results
-   * @param metric Metric to compare (default: throughputAvg)
-   * @returns Best benchmark result
-   */
-  static getBestResult(
-    metric: keyof BenchmarkMetrics = "throughputAvg",
-  ): BenchmarkMetrics | undefined {
-    return this.benchmarkResults.reduce(
-      (best, current) =>
-        !best || current[metric] > best[metric] ? current : best,
-      undefined as BenchmarkMetrics | undefined,
-    );
+  // Option validation
+  private static validateOptions(options: BenchmarkOptions): Required<BenchmarkOptions> {
+    if (options.iterations && options.iterations <= 0) {
+      throw new Error("Iterations must be greater than 0");
+    }
+    return options as Required<BenchmarkOptions>;
   }
 }
