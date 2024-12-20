@@ -474,7 +474,7 @@ export class Assertion {
 
   toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean {
     return this.assert(
-      this.received instanceof expectedClass,
+      this.received.constructor.name === expectedClass.name,
       `Expected value to be an instance of ${expectedClass.name}, but received ${this.received.constructor.name}`,
       "toBeInstanceOf",
     );
