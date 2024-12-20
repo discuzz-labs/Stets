@@ -1,6 +1,7 @@
 import "veve";
-
 import proxyquire from "proxyquire";
+
+should("Test ArgParser");
 
 const mockCommands = {
   config: { requiresValue: true, isArray: false },
@@ -19,8 +20,6 @@ const mockCommands = {
 const { ArgsParser } = proxyquire("../dist/cli/ArgParser.js", {
   "./commands.js": { COMMANDS: mockCommands },
 });
-
-should("Test ArgParser");
 
 it("parses single boolean flags", () => {
   const args = ["--version", "--help"];

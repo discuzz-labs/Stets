@@ -17,7 +17,6 @@ export type Status =
   | "softfailed"
   | "skipped"
   | "todo"
-  | "benched";
 export type TestCaseStatus = "passed" | "failed" | "pending" | "empty";
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
@@ -153,40 +152,6 @@ export interface TestCase {
    * @example 'User login tests'
    */
   description: string;
-
-  /**
-   * The list of standard tests in this test case.
-   * @example [{ description: 'should login with valid credentials', fn: () => {} }]
-   */
-  tests: Test[];
-
-  /**
-   * The list of tests marked to run in sequence.
-   * @example [{ description: 'should process payments sequentially', fn: () => {} }]
-   */
-  sequenceTests: Test[];
-
-  /**
-   * The list of tests marked as 'only' to execute exclusively.
-   * @example [{ description: 'should only run this critical test', fn: () => {} }]
-   */
-  onlyTests: Test[];
-
-  /**
-   * The list of tests marked as both 'only' and sequential.
-   * @example [{ description: 'critical sequential test', fn: () => {} }]
-   */
-  sequenceOnlyTests: Test[];
-
-  /**
-   * The hooks defined for the test case.
-   */
-  hooks: {
-    beforeAll?: Hook;
-    beforeEach?: Hook;
-    afterAll?: Hook;
-    afterEach?: Hook;
-  };
 
   /**
    * Updates the description of the test case.
@@ -393,18 +358,18 @@ export class TestCase {
     this.hooks = {};
   }
 
-  should(description: string) {
+  public should(description: string) {
     this.description = description;
   }
 
-  bench(description: string, fn: TestFunction, options?: Partial<Options>) {
+  public bench(description: string, fn: TestFunction, options?: Partial<Options>) {
     const mergedOptions = mergeOptions({ ...options, bench: true });
     if (options?.sequencial)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
   }
 
-  each(
+  public each(
     table: any[],
     description: string,
     fn: (...args: any[]) => void | Promise<void>,

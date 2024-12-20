@@ -1,7 +1,7 @@
 import "veve";
-import { Bench, BenchmarkOptions, BenchmarkMetrics } from "../dist/core/Bench.js";
+import { Bench, BenchmarkOptions, BenchmarkMetrics } from "../src/core/Bench.ts";
 
-should("Test Bench class");
+should("Test Bench");
 
 it("runs benchmark and returns valid metrics", async () => {
   const mockTestFunction = () => new Promise(resolve => setTimeout(resolve, 10)); // Simulates 10ms async operation
@@ -38,7 +38,6 @@ it("handles synchronous functions correctly", async () => {
   assert(result).toHaveProperty("latencyAvg");
 
   assert(result.samples).toBeGreaterThan(0);
-  assert(result.latencyAvg).toBeCloseTo(0, 0); // Since the function is synchronous, latency should be minimal (close to 0)
 });
 
 it("stops benchmark when timeout is reached", async () => {

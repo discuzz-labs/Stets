@@ -32,7 +32,7 @@ export class Bench {
   private static benchmarkResults: BenchmarkMetrics[] = [];
 
   static async run(
-    fn: (() => void | Promise<void>),
+    fn: (() => unknown | Promise<unknown>),
     options: BenchmarkOptions = {}
   ): Promise<BenchmarkMetrics> {
     // Validate and merge options

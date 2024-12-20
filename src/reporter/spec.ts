@@ -44,8 +44,7 @@ export function log(
     softfailed: kleur.red("!"),
     skipped: kleur.yellow("-"),
     passed: kleur.green("✓"),
-    todo: kleur.blue("□"),
-    benched: kleur.cyan("⚡"),
+    todo: kleur.blue("□")
   };
 
   switch (type) {
@@ -59,9 +58,6 @@ export function log(
       return `${indicators[type]} ${description} in ${duration}ms ${kleur.gray(
         `retry: ${retries}`,
       )}\n${errorDetails}`;
-
-    case "benched":
-      return `${indicators[type]} ${description} in ${duration}ms\n${benchMarks([bench])}`;
 
     default:
       return `${(indicators as any)[type] || "-"} ${description} in ${duration}ms`;
@@ -188,6 +184,7 @@ export const spec: spec = {
       if (error) process.stdout.write(ErrorInspect.format({ error, file }));
 
       replay(logs);
+    
 
       // Aggregate stats
       totalStats.total += stats.total;

@@ -6,7 +6,7 @@
 
 import { AssertionError } from "./AssertionError.js";
 import { diff } from "./Diff.js";
-import { Fn, isFn } from "./Fn.js";
+import { isFn } from "./Fn.js";
 import { format } from "pretty-format";
 import { getOrdinal, getType } from "../utils/index.js";
 
