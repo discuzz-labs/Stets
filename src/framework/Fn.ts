@@ -293,7 +293,7 @@ export class TrackFn<T extends any[], R> {
  * @template T - The argument types of the function.
  * @template R - The return type of the function.
  * @param {(...args: T) => R} implementation - The original function implementation.
- * @returns {(...args: T) => R} A tracked version of the provided function.
+ * @returns {TrackFn<T,R> & ((...args: T) => R)} A tracked version of the provided function.
  *
  * @example
  * const add = (a: number, b: number) => a + b;
@@ -347,7 +347,7 @@ export function isFn(value: any): boolean {
  * @template R - The return type of the method.
  * @param {{ [key: string]: (...args: T) => R }} obj - The object containing the method.
  * @param {string} method - The name of the method to replace.
- * @returns {(...args: T) => R} The tracked version of the method.
+ * @returns {TrackFn<T,R> & ((...args: T) => R)} The tracked version of the method.
  *
  * @throws {Error} If the method does not exist on the object or is not a function.
  *

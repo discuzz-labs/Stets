@@ -40,7 +40,7 @@ export interface BenchmarkMetrics {
 }
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
-export type Status = "passed" | "failed" | "softfailed" | "skipped" | "todo" | "benched";
+export type Status = "passed" | "failed" | "softfailed" | "skipped" | "todo";
 export type TestCaseStatus = "passed" | "failed" | "pending" | "empty";
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 export interface Test {
@@ -141,35 +141,6 @@ export interface TestCase {
 	 * @example 'User login tests'
 	 */
 	description: string;
-	/**
-	 * The list of standard tests in this test case.
-	 * @example [{ description: 'should login with valid credentials', fn: () => {} }]
-	 */
-	tests: Test[];
-	/**
-	 * The list of tests marked to run in sequence.
-	 * @example [{ description: 'should process payments sequentially', fn: () => {} }]
-	 */
-	sequenceTests: Test[];
-	/**
-	 * The list of tests marked as 'only' to execute exclusively.
-	 * @example [{ description: 'should only run this critical test', fn: () => {} }]
-	 */
-	onlyTests: Test[];
-	/**
-	 * The list of tests marked as both 'only' and sequential.
-	 * @example [{ description: 'critical sequential test', fn: () => {} }]
-	 */
-	sequenceOnlyTests: Test[];
-	/**
-	 * The hooks defined for the test case.
-	 */
-	hooks: {
-		beforeAll?: Hook;
-		beforeEach?: Hook;
-		afterAll?: Hook;
-		afterEach?: Hook;
-	};
 	/**
 	 * Updates the description of the test case.
 	 * @param description - The new description for the test case.
@@ -1086,34 +1057,14 @@ export declare class TrackFn<T extends any[], R> {
  * @template T - The argument types of the function.
  * @template R - The return type of the function.
  * @param {(...args: T) => R} implementation - The original function implementation.
- * @returns {(...args: T) => R} A tracked version of the provided function.
+ * @returns {TrackFn<T,R> & ((...args: T) => R)} A tracked version of the provided function.
  *
  * @example
  * const add = (a: number, b: number) => a + b;
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // 3
  */
-export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): (...args: T) => R;
-/**
- * Replaces a method on an object with a tracked version of the method.
- *
- * @template T - The argument types of the method.
- * @template R - The return type of the method.
- * @param {{ [key: string]: (...args: T) => R }} obj - The object containing the method.
- * @param {string} method - The name of the method to replace.
- * @returns {(...args: T) => R} The tracked version of the method.
- *
- * @throws {Error} If the method does not exist on the object or is not a function.
- *
- * @example
- * const obj = { multiply: (a: number, b: number) => a * b };
- * const trackedMultiply = spyOn(obj, 'multiply');
- * obj.multiply(2, 3); // 6
- * console.log(trackedMultiply.getCallCount()); // 1
- */
-export declare function spyOn<T extends any[], R>(obj: {
-	[key: string]: (...args: T) => R;
-} | any, method: string): (...args: any[]) => unknown;
+export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): TrackFn<T,R> & ((...args: T) => R);
 /**
  * Checks if a value is a tracked function.
  *
@@ -1125,6 +1076,26 @@ export declare function spyOn<T extends any[], R>(obj: {
  * console.log(isFn(trackedAdd)); // true
  */
 export declare function isFn(value: any): boolean;
+/**
+ * Replaces a method on an object with a tracked version of the method.
+ *
+ * @template T - The argument types of the method.
+ * @template R - The return type of the method.
+ * @param {{ [key: string]: (...args: T) => R }} obj - The object containing the method.
+ * @param {string} method - The name of the method to replace.
+ * @returns {TrackFn<T,R> & ((...args: T) => R)} The tracked version of the method.
+ *
+ * @throws {Error} If the method does not exist on the object or is not a function.
+ *
+ * @example
+ * const obj = { multiply: (a: number, b: number) => a * b };
+ * const trackedMultiply = spyOn(obj, 'multiply');
+ * obj.multiply(2, 3); // 6
+ * console.log(trackedMultiply.getCallCount()); // 1
+ */
+export declare function spyOn<T extends any[], R>(obj: {
+	[key: string]: (...args: T) => R;
+}, method: string): TrackFn<T,R> & ((...args: T) => R);
 
 export {
 	veve as default,

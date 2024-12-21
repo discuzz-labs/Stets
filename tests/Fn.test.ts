@@ -72,12 +72,12 @@ it("can use a custom implementation", () => {
 
   trackedFn.use((x: number) => x * 2);
 
-  const result = trackedFn(3);
+  const result = (trackedFn as any)(3);
   assert(result).toBe(6);
 });
 
 it("resets function tracking", () => {
-  const trackedFn = Fn((x: number) => x);
+  const trackedFn = Fn((x: number) => x)
 
   trackedFn(1);
   trackedFn(2);
