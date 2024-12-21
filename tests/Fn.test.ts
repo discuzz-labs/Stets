@@ -1,5 +1,5 @@
 import "veve";
-import { isFn } from "../dist/framework/Fn.js"
+import { isFn } from "../dist/framework/Fn.js";
 
 should("Test TrackFn utilities");
 

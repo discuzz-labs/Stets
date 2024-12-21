@@ -499,8 +499,8 @@ export class Assertion {
   toMatch(expected: RegExp | string): Assertion | boolean {
     const pass =
       getType(expected) === "regexp"
-        // @ts-ignore
-        ? expected.test(this.received)
+        ? // @ts-ignore
+          expected.test(this.received)
         : this.received.includes(expected);
     return this.assert(
       pass,

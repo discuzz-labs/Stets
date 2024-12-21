@@ -23,7 +23,10 @@ function isReporter(object: any, index: number): object is Reporter {
       `Reporter "${object.name}" at index ${index} has an invalid "type" property (expected "file" or "console").`,
     );
   }
-  if (getType(object.report) !== "function" && getType(object.report) !== "asyncfunction") {
+  if (
+    getType(object.report) !== "function" &&
+    getType(object.report) !== "asyncfunction"
+  ) {
     throw new Error(
       `Reporter "${object.name}" at index ${index} is missing a valid "report" method (expected an async function).`,
     );

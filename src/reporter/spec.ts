@@ -44,7 +44,7 @@ export function log(
     softfailed: kleur.red("!"),
     skipped: kleur.yellow("-"),
     passed: kleur.green("✓"),
-    todo: kleur.blue("□")
+    todo: kleur.blue("□"),
   };
 
   switch (type) {
@@ -184,7 +184,6 @@ export const spec: spec = {
       if (error) process.stdout.write(ErrorInspect.format({ error, file }));
 
       replay(logs);
-    
 
       // Aggregate stats
       totalStats.total += stats.total;

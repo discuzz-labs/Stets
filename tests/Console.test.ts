@@ -1,5 +1,5 @@
-import { Console } from "../dist/core/Console.js"; 
-import "veve"
+import { Console } from "../dist/core/Console.js";
+import "veve";
 
 should("Test Console");
 
@@ -50,7 +50,7 @@ it("should handle groups correctly", () => {
   const console = new Console();
 
   // Start a group
-  console.group("group1")
+  console.group("group1");
 
   // Add some log entries to the group
   console.log("Inside group");

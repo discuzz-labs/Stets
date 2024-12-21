@@ -11,12 +11,7 @@ import { BenchmarkMetrics } from "../core/Bench.js";
 
 export type TestFunction = () => void | Promise<void>;
 export type HookFunction = () => void | Promise<void>;
-export type Status =
-  | "passed"
-  | "failed"
-  | "softfailed"
-  | "skipped"
-  | "todo"
+export type Status = "passed" | "failed" | "softfailed" | "skipped" | "todo";
 export type TestCaseStatus = "passed" | "failed" | "pending" | "empty";
 export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
@@ -362,7 +357,11 @@ export class TestCase {
     this.description = description;
   }
 
-  public bench(description: string, fn: TestFunction, options?: Partial<Options>) {
+  public bench(
+    description: string,
+    fn: TestFunction,
+    options?: Partial<Options>,
+  ) {
     const mergedOptions = mergeOptions({ ...options, bench: true });
     if (options?.sequencial)
       this.sequenceTests.push({ description, fn, options: mergedOptions });

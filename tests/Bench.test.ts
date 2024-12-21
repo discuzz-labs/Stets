@@ -1,10 +1,15 @@
 import "veve";
-import { Bench, BenchmarkOptions, BenchmarkMetrics } from "../src/core/Bench.ts";
+import {
+  Bench,
+  BenchmarkOptions,
+  BenchmarkMetrics,
+} from "../src/core/Bench.ts";
 
 should("Test Bench");
 
 it("runs benchmark and returns valid metrics", async () => {
-  const mockTestFunction = () => new Promise(resolve => setTimeout(resolve, 10)); // Simulates 10ms async operation
+  const mockTestFunction = () =>
+    new Promise((resolve) => setTimeout(resolve, 10)); // Simulates 10ms async operation
   const options: BenchmarkOptions = {
     iterations: 100,
     warmup: 10,
@@ -41,17 +46,18 @@ it("handles synchronous functions correctly", async () => {
 });
 
 it("stops benchmark when timeout is reached", async () => {
-  const longTestFunction = () => new Promise(resolve => setTimeout(resolve, 100)); // Simulates 100ms async operation
+  const longTestFunction = () =>
+    new Promise((resolve) => setTimeout(resolve, 100)); // Simulates 100ms async operation
 
   const result: BenchmarkMetrics = await Bench.run(longTestFunction, {
     iterations: 100,
     warmup: 10,
     timeout: 100, // Set a short timeout to test stopping early
   });
-  
+
   assert(result.samples).toBeGreaterThan(0);
   assert(result.timestamp).toBeDefined();
-  assert(result.timedOut).toBe(true)
+  assert(result.timedOut).toBe(true);
 });
 
 run();

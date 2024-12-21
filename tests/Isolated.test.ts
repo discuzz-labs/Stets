@@ -1,6 +1,6 @@
 import { Isolated } from "../dist/core/Isolated.js";
 import { Script, createContext } from "vm";
-import  "veve";
+import "veve";
 
 should("Test Isolated");
 
@@ -14,7 +14,7 @@ it("injects required modules into the code", () => {
   const injectedCode = isolated.injectRequires(code);
 
   assert(injectedCode).toEqual(
-    `require("moduleA")\nrequire("moduleB")\nconsole.log("Hello World");`
+    `require("moduleA")\nrequire("moduleB")\nconsole.log("Hello World");`,
   );
 });
 
@@ -69,7 +69,7 @@ it("executes a script in a new context and validates the result", async () => {
     hooks: [hookResult],
   };
 
-  const validateReport = isolated.isValidReport(report)
+  const validateReport = isolated.isValidReport(report);
   assert(validateReport).toBe(true);
 });
 

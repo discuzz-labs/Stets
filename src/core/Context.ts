@@ -28,9 +28,13 @@ export class Context {
       argv: [...process.argv],
       cwd: process.cwd(),
       on: process.on.bind(process),
-      exit: (code: number) => { return false },
-      abort: (code: number) => { return false },
-      platform: process.platform
+      exit: (code: number) => {
+        return false;
+      },
+      abort: (code: number) => {
+        return false;
+      },
+      platform: process.platform,
     };
   }
 
@@ -68,7 +72,7 @@ export class Context {
       require: createRequire(file),
       __filename: path.basename(file),
       __dirname: path.dirname(file),
-    }
+    };
 
     return this;
   }

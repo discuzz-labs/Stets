@@ -256,9 +256,11 @@ declare global {
    * console.log(trackedMultiply.getCallCount()); // 1
    */
   function spyOn<T extends any[], R>(
-    obj: {
-      [key: string]: (...args: T) => R;
-    } | any,
+    obj:
+      | {
+          [key: string]: (...args: T) => R;
+        }
+      | any,
     method: string,
   ): TrackFn<T, R> & ((...args: T) => R);
 }

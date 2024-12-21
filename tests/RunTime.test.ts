@@ -18,9 +18,12 @@ const osMock = {
 
 // Create test functions with various behaviors
 const successFn = async () => {};
-const failFn = async () => { throw new Error("Test failure"); };
-const slowFn = async () => new Promise(resolve => setTimeout(resolve, 100));
-const timeoutFn = async () => new Promise(resolve => setTimeout(resolve, 6000));
+const failFn = async () => {
+  throw new Error("Test failure");
+};
+const slowFn = async () => new Promise((resolve) => setTimeout(resolve, 100));
+const timeoutFn = async () =>
+  new Promise((resolve) => setTimeout(resolve, 6000));
 const DEFAULT_OPTIONS: Options = {
   timeout: 0,
   skip: false,
@@ -31,30 +34,53 @@ const DEFAULT_OPTIONS: Options = {
   bench: false,
   todo: false,
 };
-const mergeOptions = (customOptions) => ({ ...DEFAULT_OPTIONS, ...customOptions });
+const mergeOptions = (customOptions) => ({
+  ...DEFAULT_OPTIONS,
+  ...customOptions,
+});
 
 // Load RunTime with mocked dependencies
 const { default: RunTime } = proxyquire("../dist/framework/RunTime.js", {
   "../core/Bench.js": { Bench: BenchMock },
-  "os": osMock
-})
+  os: osMock,
+});
 
-it("should handle basic test execution and hooks", async function() {
+it("should handle basic test execution and hooks", async function () {
   const testCase = {
     description: "Basic Test Suite",
     tests: [
-      { description: "Success test", fn: successFn, options: mergeOptions({})},
-      { description: "Skipped test", fn: successFn, options: mergeOptions({ skip: true}) }
+      { description: "Success test", fn: successFn, options: mergeOptions({}) },
+      {
+        description: "Skipped test",
+        fn: successFn,
+        options: mergeOptions({ skip: true }),
+      },
     ],
     sequenceTests: [],
     onlyTests: [],
     sequenceOnlyTests: [],
     hooks: {
-      beforeAll: { description: "Before All", fn: successFn, options:mergeOptions({})  },
-      afterAll: { description: "After All", fn: successFn, options: mergeOptions({}) },
-      beforeEach: { description: "Before Each", fn: successFn, options: mergeOptions({}) },
-      afterEach: { description: "After Each", fn: successFn, options: mergeOptions({}) }
-    }
+      beforeAll: {
+        description: "Before All",
+        fn: successFn,
+        options: mergeOptions({}),
+      },
+      afterAll: {
+        description: "After All",
+        fn: successFn,
+        options: mergeOptions({}),
+      },
+      beforeEach: {
+        description: "Before Each",
+        fn: successFn,
+        options: mergeOptions({}),
+      },
+      afterEach: {
+        description: "After Each",
+        fn: successFn,
+        options: mergeOptions({}),
+      },
+    },
   };
 
   const runtime = new RunTime(testCase);
@@ -69,25 +95,25 @@ it("should handle basic test execution and hooks", async function() {
   assert(report.tests.length).toEqual(2);
 });
 
-it("should handle test failures and retries", async function() {
+it("should handle test failures and retries", async function () {
   const testCase = {
     description: "Failure and Retry Suite",
     tests: [
-      { 
-        description: "Failing test with retry", 
-        fn: failFn, 
-        options: mergeOptions({ retry: 2 })
+      {
+        description: "Failing test with retry",
+        fn: failFn,
+        options: mergeOptions({ retry: 2 }),
       },
-      { 
-        description: "Soft failing test", 
-        fn: failFn, 
-        options: mergeOptions({softfail: true})
-      }
+      {
+        description: "Soft failing test",
+        fn: failFn,
+        options: mergeOptions({ softfail: true }),
+      },
     ],
     sequenceTests: [],
     onlyTests: [],
     sequenceOnlyTests: [],
-    hooks: {}
+    hooks: {},
   };
 
   const runtime = new RunTime(testCase);
@@ -99,30 +125,30 @@ it("should handle test failures and retries", async function() {
   assert(report.status).toEqual("failed");
 });
 
-it("should handle conditional tests", async function() {
+it("should handle conditional tests", async function () {
   const testCase = {
     description: "Conditional Tests Suite",
     tests: [
-      { 
-        description: "Conditional true test", 
-        fn: successFn, 
-        options: mergeOptions({ if: true })
+      {
+        description: "Conditional true test",
+        fn: successFn,
+        options: mergeOptions({ if: true }),
       },
-      { 
-        description: "Conditional false test", 
-        fn: successFn, 
-        options: mergeOptions({ if: false })
+      {
+        description: "Conditional false test",
+        fn: successFn,
+        options: mergeOptions({ if: false }),
       },
-      { 
-        description: "Dynamic condition test", 
-        fn: successFn, 
-        options: mergeOptions({ if: async () => true })
-      }
+      {
+        description: "Dynamic condition test",
+        fn: successFn,
+        options: mergeOptions({ if: async () => true }),
+      },
     ],
     sequenceTests: [],
     onlyTests: [],
     sequenceOnlyTests: [],
-    hooks: {}
+    hooks: {},
   };
 
   const runtime = new RunTime(testCase);
@@ -132,25 +158,25 @@ it("should handle conditional tests", async function() {
   assert(report.stats.skipped).toEqual(1);
 });
 
-it("should handle timeouts and benchmarking", async function() {
+it("should handle timeouts and benchmarking", async function () {
   const testCase = {
     description: "Timeout and Bench Suite",
     tests: [
-      { 
-        description: "Timeout test", 
-        fn: timeoutFn, 
-        options: mergeOptions({ timeout: 100 })
+      {
+        description: "Timeout test",
+        fn: timeoutFn,
+        options: mergeOptions({ timeout: 100 }),
       },
-      { 
-        description: "Bench test", 
-        fn: successFn, 
-        options: mergeOptions({ bench: true })
-      }
+      {
+        description: "Bench test",
+        fn: successFn,
+        options: mergeOptions({ bench: true }),
+      },
     ],
     sequenceTests: [],
     onlyTests: [],
     sequenceOnlyTests: [],
-    hooks: {}
+    hooks: {},
   };
 
   const runtime = new RunTime(testCase);
@@ -159,24 +185,24 @@ it("should handle timeouts and benchmarking", async function() {
   assert(report.stats.failed).toEqual(1);
   assert(report.tests[0].error.message).toContain("exceeded 100 ms");
   assert(report.tests[1].status).toEqual("passed");
-  assert(report.tests[1].bench).not.toBeNull()
+  assert(report.tests[1].bench).not.toBeNull();
   assert(report.tests[1].bench).toBeDefined();
 });
 
-it("should handle parallel and sequence execution", async function() {
+it("should handle parallel and sequence execution", async function () {
   const testCase = {
     description: "Parallel and Sequence Suite",
     tests: [
       { description: "Parallel test 1", fn: slowFn, options: mergeOptions({}) },
-      { description: "Parallel test 2", fn: slowFn, options: mergeOptions({}) }
+      { description: "Parallel test 2", fn: slowFn, options: mergeOptions({}) },
     ],
     sequenceTests: [
       { description: "Sequence test 1", fn: slowFn, options: mergeOptions({}) },
-      { description: "Sequence test 2", fn: slowFn, options: mergeOptions({}) }
+      { description: "Sequence test 2", fn: slowFn, options: mergeOptions({}) },
     ],
     onlyTests: [],
     sequenceOnlyTests: [],
-    hooks: {}
+    hooks: {},
   };
 
   const runtime = new RunTime(testCase);
@@ -190,22 +216,30 @@ it("should handle parallel and sequence execution", async function() {
   assert(duration).toBeLessThan(500); // But less than 5 * 100ms
 });
 
-it("should handle only tests correctly", async function() {
+it("should handle only tests correctly", async function () {
   const testCase = {
     description: "Only Tests Suite",
     tests: [
-      { description: "Regular test", fn: successFn, options: mergeOptions({}) }
+      { description: "Regular test", fn: successFn, options: mergeOptions({}) },
     ],
     sequenceTests: [
-      { description: "Regular sequence test", fn: successFn, options: mergeOptions({}) }
+      {
+        description: "Regular sequence test",
+        fn: successFn,
+        options: mergeOptions({}),
+      },
     ],
     onlyTests: [
-      { description: "Only test", fn: successFn, options: mergeOptions({}) }
+      { description: "Only test", fn: successFn, options: mergeOptions({}) },
     ],
     sequenceOnlyTests: [
-      { description: "Only sequence test", fn: successFn, options: mergeOptions({}) }
+      {
+        description: "Only sequence test",
+        fn: successFn,
+        options: mergeOptions({}),
+      },
     ],
-    hooks: {}
+    hooks: {},
   };
 
   const runtime = new RunTime(testCase);
@@ -216,20 +250,20 @@ it("should handle only tests correctly", async function() {
   assert(report.tests.length).toEqual(4);
 });
 
-it("should handle todo tests", async function() {
+it("should handle todo tests", async function () {
   const testCase = {
     description: "Todo Tests Suite",
     tests: [
-      { 
-        description: "Todo test", 
-        fn: successFn, 
-        options: mergeOptions({todo: true})
-      }
+      {
+        description: "Todo test",
+        fn: successFn,
+        options: mergeOptions({ todo: true }),
+      },
     ],
     sequenceTests: [],
     onlyTests: [],
     sequenceOnlyTests: [],
-    hooks: {}
+    hooks: {},
   };
 
   const runtime = new RunTime(testCase);

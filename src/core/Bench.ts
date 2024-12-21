@@ -26,17 +26,20 @@ export class Bench {
   private static readonly DEFAULT_OPTIONS: Required<BenchmarkOptions> = {
     iterations: 1000,
     warmup: 100,
-    timeout: 5000
+    timeout: 5000,
   };
 
   private static benchmarkResults: BenchmarkMetrics[] = [];
 
   static async run(
-    fn: (() => unknown | Promise<unknown>),
-    options: BenchmarkOptions = {}
+    fn: () => unknown | Promise<unknown>,
+    options: BenchmarkOptions = {},
   ): Promise<BenchmarkMetrics> {
     // Validate and merge options
-    const config = this.validateOptions({ ...this.DEFAULT_OPTIONS, ...options });
+    const config = this.validateOptions({
+      ...this.DEFAULT_OPTIONS,
+      ...options,
+    });
 
     const latencies: number[] = [];
     let timedOut = false;
@@ -67,8 +70,9 @@ export class Bench {
       await Promise.race([Promise.all(promises), timeoutPromise]);
 
       // Calculate metrics
-      const throughputAvg = latencies.length / performance.now()
-      const latencyAvg = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+      const throughputAvg = latencies.length / performance.now();
+      const latencyAvg =
+        latencies.reduce((a, b) => a + b, 0) / latencies.length;
       const latencyMedian = this.median(latencies);
 
       const metrics: BenchmarkMetrics = {
@@ -107,7 +111,9 @@ export class Bench {
   }
 
   // Option validation
-  private static validateOptions(options: BenchmarkOptions): Required<BenchmarkOptions> {
+  private static validateOptions(
+    options: BenchmarkOptions,
+  ): Required<BenchmarkOptions> {
     if (options.iterations && options.iterations <= 0) {
       throw new Error("Iterations must be greater than 0");
     }

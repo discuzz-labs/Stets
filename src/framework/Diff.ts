@@ -32,8 +32,8 @@ export function diff(received: any, expected: any) {
       ? kleur.bgGreen(" + ") +
         part.value.replace(/([^\s])/g, kleur.bgGreen("$1"))
       : part.removed
-      ? kleur.bgRed(" - ") + part.value.replace(/([^\s])/g, kleur.bgRed("$1"))
-      : part.value;
+        ? kleur.bgRed(" - ") + part.value.replace(/([^\s])/g, kleur.bgRed("$1"))
+        : part.value;
     diffFormatted += diffParts;
   });
 
