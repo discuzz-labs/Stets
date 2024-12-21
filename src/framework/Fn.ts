@@ -307,43 +307,6 @@ export function Fn<T extends any[], R>(
 }
 
 /**
- * Replaces a method on an object with a tracked version of the method.
- *
- * @template T - The argument types of the method.
- * @template R - The return type of the method.
- * @param {{ [key: string]: (...args: T) => R }} obj - The object containing the method.
- * @param {string} method - The name of the method to replace.
- * @returns {(...args: T) => R} The tracked version of the method.
- *
- * @throws {Error} If the method does not exist on the object or is not a function.
- *
- * @example
- * const obj = { multiply: (a: number, b: number) => a * b };
- * const trackedMultiply = spyOn(obj, 'multiply');
- * obj.multiply(2, 3); // 6
- * console.log(trackedMultiply.getCallCount()); // 1
- */
-export function spyOn<T extends any[], R>(
-  obj: { [key: string]: (...args: T) => R } | any,
-  method: string,
-) {
-  if (!obj || typeof obj[method] !== "function") {
-    throw new Error(`Method '${method}' not found on the object.`);
-  }
-
-  // Get the original method
-  const originalMethod = obj[method];
-
-  // Create a tracked version of the method using the Fn function
-  const trackedFn = Fn(originalMethod);
-
-  // Replace the original method with the tracked version
-  obj[method] = trackedFn;
-
-  return trackedFn;
-}
-
-/**
  * Checks if a value is a tracked function.
  *
  * @param {any} value - The value to check.
@@ -375,4 +338,41 @@ export function isFn(value: any): boolean {
   ];
 
   return methods.every((method) => typeof value[method] === "function");
+}
+
+/**
+ * Replaces a method on an object with a tracked version of the method.
+ *
+ * @template T - The argument types of the method.
+ * @template R - The return type of the method.
+ * @param {{ [key: string]: (...args: T) => R }} obj - The object containing the method.
+ * @param {string} method - The name of the method to replace.
+ * @returns {(...args: T) => R} The tracked version of the method.
+ *
+ * @throws {Error} If the method does not exist on the object or is not a function.
+ *
+ * @example
+ * const obj = { multiply: (a: number, b: number) => a * b };
+ * const trackedMultiply = spyOn(obj, 'multiply');
+ * obj.multiply(2, 3); // 6
+ * console.log(trackedMultiply.getCallCount()); // 1
+ */
+export function spyOn<T extends any[], R>(
+  obj: { [key: string]: (...args: T) => R },
+  method: string,
+) {
+  if (!obj || typeof obj[method] !== "function") {
+    throw new Error(`Method '${method}' not found on the object.`);
+  }
+
+  // Get the original method
+  const originalMethod = obj[method];
+
+  // Create a tracked version of the method using the Fn function
+  const trackedFn = Fn(originalMethod);
+
+  // Replace the original method with the tracked version
+  obj[method] = trackedFn;
+
+  return trackedFn;
 }
