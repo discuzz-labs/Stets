@@ -4,118 +4,187 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { performance } from "node:perf_hooks";
-
 export interface BenchmarkOptions {
   iterations?: number;
   warmup?: number;
   timeout?: number;
+  confidence?: number; // Confidence level for statistical calculations
 }
 
 export interface BenchmarkMetrics {
-  throughputAvg: number;
-  throughputMedian: number;
-  latencyAvg: number;
-  latencyMedian: number;
+  meanLatency: number;
+  medianLatency: number;
+  p95Latency: number; // 95th percentile latency
+  stdDev: number; // Standard deviation
+  opsPerSecond: number; // Operations per second
+  confidenceInterval: {
+    lower: number;
+    upper: number;
+  };
   samples: number;
   timestamp: number;
-  timedOut: boolean; // Track if benchmark was forcibly stopped
+  timedOut: boolean;
 }
 
 export class Bench {
-  private static readonly DEFAULT_OPTIONS: Required<BenchmarkOptions> = {
-    iterations: 1000,
-    warmup: 100,
-    timeout: 5000,
-  };
-
-  private static benchmarkResults: BenchmarkMetrics[] = [];
-
   static async run(
     fn: () => unknown | Promise<unknown>,
-    options: BenchmarkOptions = {},
+    options: BenchmarkOptions,
   ): Promise<BenchmarkMetrics> {
-    // Validate and merge options
     const config = this.validateOptions({
-      ...this.DEFAULT_OPTIONS,
       ...options,
     });
 
-    const latencies: number[] = [];
+    const samples: number[] = [];
     let timedOut = false;
 
-    // Warmup phase
-    for (let i = 0; i < config.warmup!; i++) {
-      const start = performance.now();
-      await fn();
-      const end = performance.now();
-      latencies.push(end - start);
+    // Warmup phase with high-resolution timing
+    for (let i = 0; i < config.warmup; i++) {
+      await this.measure(fn, []);
     }
 
-    // Benchmark phase with timeout handling
-    const timeoutPromise = new Promise<BenchmarkMetrics>((_, reject) => {
-      setTimeout(() => {
-        timedOut = true;
-      }, config.timeout!);
-    });
+    // Main benchmark phase
+    const startTime = Date.now();
 
     try {
-      const promises = Array.from({ length: config.iterations! }, async () => {
-        const start = performance.now();
-        await fn();
-        const end = performance.now();
-        latencies.push(end - start);
-      });
+      while (samples.length < config.iterations && !timedOut) {
+        if (Date.now() - startTime > config.timeout) {
+          timedOut = true;
+          break;
+        }
+        await this.measure(fn, samples);
+      }
 
-      await Promise.race([Promise.all(promises), timeoutPromise]);
-
-      // Calculate metrics
-      const throughputAvg = latencies.length / performance.now();
-      const latencyAvg =
-        latencies.reduce((a, b) => a + b, 0) / latencies.length;
-      const latencyMedian = this.median(latencies);
-
-      const metrics: BenchmarkMetrics = {
-        throughputAvg,
-        throughputMedian: this.median(latencies),
-        latencyAvg,
-        latencyMedian,
-        samples: latencies.length,
-        timestamp: Date.now(),
-        timedOut,
-      };
-
-      this.benchmarkResults.push(metrics);
-      return metrics;
+      return this.calculateMetrics(samples, timedOut, config.confidence);
     } catch (error) {
-      // Simply stop and return metrics without throwing errors
-      return {
-        throughputAvg: 0,
-        throughputMedian: 0,
-        latencyAvg: 0,
-        latencyMedian: 0,
-        samples: 0,
-        timestamp: Date.now(),
-        timedOut: true,
-      };
+      return this.createEmptyMetrics(true);
     }
   }
 
-  // Helper to calculate the median
-  private static median(values: number[]): number {
-    const sorted = [...values].sort((a, b) => a - b);
-    const middle = Math.floor(sorted.length / 2);
-    return sorted.length % 2 === 0
-      ? (sorted[middle - 1] + sorted[middle]) / 2
-      : sorted[middle];
+  private static async measure(
+    fn: () => unknown | Promise<unknown>,
+    samples: number[]
+  ): Promise<void> {
+    const start = this.getHighResTime();
+    await fn();
+    const end = this.getHighResTime();
+    const duration = end - start;
+    samples.push(duration);
   }
 
-  // Option validation
+  private static getHighResTime(): number {
+    if (typeof process !== 'undefined' && process.hrtime) {
+      const [seconds, nanoseconds] = process.hrtime();
+      return seconds * 1000 + nanoseconds / 1_000_000; // Convert to milliseconds
+    }
+    // For browsers, using performance.now() for higher precision timing
+    return performance.now();
+  }
+
+  private static calculateMetrics(
+    samples: number[],
+    timedOut: boolean,
+    confidence: number
+  ): BenchmarkMetrics {
+    if (samples.length === 0) {
+      return this.createEmptyMetrics(timedOut);
+    }
+
+
+    const sorted = [...samples].sort((a, b) => a - b);
+    const mean = this.calculateMean(samples);
+    const stdDev = this.calculateStdDev(samples, mean);
+    const confidenceInterval = this.calculateConfidenceInterval(
+      mean,
+      stdDev,
+      samples.length,
+      confidence
+    );
+
+    const metrics: BenchmarkMetrics = {
+      meanLatency: mean,
+      medianLatency: this.percentile(sorted, 0.5),
+      p95Latency: this.percentile(sorted, 0.95),
+      stdDev,
+      opsPerSecond: samples.length / (mean / 1000), // Convert ms to ops/second
+      confidenceInterval,
+      samples: samples.length,
+      timestamp: Date.now(),
+      timedOut,
+    };
+
+    return metrics;
+  }
+
+  private static calculateMean(values: number[]): number {
+    return values.reduce((sum, val) => sum + val, 0) / values.length;
+  }
+
+  private static calculateStdDev(values: number[], mean: number): number {
+    const squaredDiffs = values.map(x => Math.pow(x - mean, 2));
+    return Math.sqrt(this.calculateMean(squaredDiffs));
+  }
+
+  private static percentile(sorted: number[], p: number): number {
+    const index = Math.ceil(sorted.length * p) - 1;
+    return sorted[index];
+  }
+
+  private static calculateConfidenceInterval(
+    mean: number,
+    stdDev: number,
+    sampleSize: number,
+    confidence: number
+  ): { lower: number; upper: number } {
+    // Using t-distribution for small sample sizes
+    const alpha = 1 - confidence;
+    const tValue = this.getTValue(sampleSize - 1, alpha / 2);
+    const margin = (tValue * stdDev) / Math.sqrt(sampleSize);
+
+    return {
+      lower: mean - margin,
+      upper: mean + margin,
+    };
+  }
+
+  private static getTValue(degreesOfFreedom: number, alpha: number): number {
+    // Approximation of t-distribution critical values
+    // This is a simplified implementation - for more accurate values,
+    // you might want to use a statistical library
+    const confidenceLevel = 1 - alpha * 2;
+    if (confidenceLevel === 0.95) {
+      if (degreesOfFreedom > 120) return 1.96;
+      if (degreesOfFreedom > 60) return 2.0;
+      if (degreesOfFreedom > 30) return 2.042;
+      if (degreesOfFreedom > 15) return 2.131;
+      return 2.262;
+    }
+    // Default to normal distribution approximation
+    return 1.96;
+  }
+
+  private static createEmptyMetrics(timedOut: boolean): BenchmarkMetrics {
+    return {
+      meanLatency: 0,
+      medianLatency: 0,
+      p95Latency: 0,
+      stdDev: 0,
+      opsPerSecond: 0,
+      confidenceInterval: { lower: 0, upper: 0 },
+      samples: 0,
+      timestamp: Date.now(),
+      timedOut,
+    };
+  }
+
   private static validateOptions(
-    options: BenchmarkOptions,
+    options: BenchmarkOptions
   ): Required<BenchmarkOptions> {
     if (options.iterations && options.iterations <= 0) {
       throw new Error("Iterations must be greater than 0");
+    }
+    if (options.confidence && (options.confidence <= 0 || options.confidence >= 1)) {
+      throw new Error("Confidence must be between 0 and 1");
     }
     return options as Required<BenchmarkOptions>;
   }

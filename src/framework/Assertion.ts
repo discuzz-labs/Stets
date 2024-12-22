@@ -128,6 +128,60 @@ export interface Assertion {
    * assert(5).toBe(6)
    */
   toBe(expected: any): Assertion | boolean;
+
+  /**
+   * Checks if the received value is strictly between the min and max (exclusive).
+   * @param {number | bigint} min - The lower bound (exclusive).
+   * @param {number | bigint} max - The upper bound (exclusive).
+   * @returns {Assertion | boolean} Assertion result.
+   * @example
+   * // Passes
+   * assert(15).toBeBetween(10, 20);
+   *
+   * // Fails
+   * assert(15).toBeBetween(15, 20);
+   */
+  toBeBetween(min: number | bigint, max: number | bigint): Assertion | boolean;
+
+  /**
+   * Checks if the received value is between the min and max (inclusive).
+   * @param {number | bigint} min - The lower bound (inclusive).
+   * @param {number | bigint} max - The upper bound (inclusive).
+   * @returns {Assertion | boolean} Assertion result.
+   * @example
+   * // Passes
+   * assert(15).toBeBetweenOrEqual(10, 15);
+   *
+   * // Fails
+   * assert(15).toBeBetweenOrEqual(16, 20);
+   */
+  toBeBetweenOrEqual(min: number | bigint, max: number | bigint): Assertion | boolean;
+
+  /**
+   * Checks if the received value is greater than or equal to the min value.
+   * @param {number | bigint} min - The minimum value (inclusive).
+   * @returns {Assertion | boolean} Assertion result.
+   * @example
+   * // Passes
+   * assert(15).toBeAboveMin(10);
+   *
+   * // Fails
+   * assert(5).toBeAboveMin(10);
+   */
+  toBeAboveMin(min: number | bigint): Assertion | boolean;
+
+  /**
+   * Checks if the received value is less than or equal to the max value.
+   * @param {number | bigint} max - The maximum value (inclusive).
+   * @returns {Assertion | boolean} Assertion result.
+   * @example
+   * // Passes
+   * assert(15).toBeBelowMax(20);
+   *
+   * // Fails
+   * assert(25).toBeBelowMax(20);
+   */
+  toBeBelowMax(max: number | bigint): Assertion | boolean;
   /**
    * Asserts that the received value is deeply equal to the expected value.
    * - Performs a deep comparison between the received and expected values,
@@ -493,6 +547,38 @@ export class Assertion {
       Number.isNaN(this.received),
       "Expected value to be NaN",
       "toBeNaN",
+    );
+  }
+
+  toBeBetween(min: number | bigint, max: number | bigint) {
+    return this.assert(
+      this.received > min && this.received < max,
+      `Expected value ${this.received} to be between ${min} and ${max} (exclusive).`,
+      "toBeBetween"
+    );
+  }
+
+  toBeBetweenOrEqual(min: number | bigint, max: number | bigint) {
+    return this.assert(
+      this.received >= min && this.received <= max,
+      `Expected value ${this.received} to be between ${min} and ${max} (inclusive).`,
+      "toBeBetweenOrEqual"
+    );
+  }
+
+  toBeAboveMin(min: number | bigint) {
+    return this.assert(
+      this.received >= min,
+      `Expected value ${this.received} to be greater than or equal to ${min}.`,
+      "toBeAboveMin"
+    );
+  }
+
+  toBeBelowMax(max: number | bigint) {
+    return this.assert(
+      this.received <= max,
+      `Expected value ${this.received} to be less than or equal to ${max}.`,
+      "toBeBelowMax"
     );
   }
 

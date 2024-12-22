@@ -56,31 +56,55 @@ export function log(
         sourceMap,
       });
       return `${indicators[type]} ${description} in ${duration}ms ${kleur.gray(
-        `retry: ${retries}`,
+        `retries: ${retries}`,
       )}\n${errorDetails}`;
 
     default:
-      return `${(indicators as any)[type] || "-"} ${description} in ${duration}ms`;
+      const benchFormated = bench ? benchFormat(bench) : "";
+      return `${(indicators as any)[type] || "-"} ${description} in ${duration}ms${benchFormated}`;
   }
 }
 
-export function benchMarks(
-  data: (BenchmarkMetrics | null | undefined)[],
-): string | void {
-  if (!Array.isArray(data) || data.length === 0) return;
 
-  return data
-    .map((item) =>
-      item
-        ? `✓ [${kleur.bold("TP")}: ${item.throughputMedian?.toFixed(2)} | ${kleur.bold(
-            "Lat",
-          )}: ${item.latencyMedian?.toFixed(2)} | ${kleur.bold(
-            "Samples",
-          )}: ${item.samples}]`
-        : "× [N/A]",
-    )
+export function benchFormat(data: BenchmarkMetrics): string {
+  const format = (num: number) => num.toFixed(8);
+  const formatOps = (num: number) => num.toLocaleString();
+
+  // Highlighting functions
+  const title = (text: string) => kleur.bold(text);
+  const label = (text: string) => kleur.bold(text);
+  const value = (text: string) => kleur.cyan(text);
+  const status = (text: string) => kleur.red(text);
+
+  const divider = kleur.dim("─────────────────────────────────────────────");
+
+  const lines = [
+    " ",
+    " ",
+    title("Benchmark Results"),
+    divider,
+    `${label("Throughput")}: ${value(formatOps(data.opsPerSecond))} ops/s`,
+    "",
+    `${label("Latency")}:`,
+    `  ${label("Mean")}: ${value(format(data.meanLatency))}ms`,
+    `  ${label("p50")}:  ${value(format(data.medianLatency))}ms`,
+    `  ${label("p95")}:  ${value(format(data.p95Latency))}ms`,
+    `  ${label("Std Dev")}: ±${value(format(data.stdDev))}ms`,
+    "",
+    `${label("Confidence Interval")}: (${value(data.confidenceInterval.lower.toFixed(2))} - ${value(data.confidenceInterval.upper.toFixed(2))}ms)`,
+    `${label("Samples")}: ${value(data.samples.toLocaleString())}`,
+    "",
+    data.timedOut ? `${status("Status: Timed out")}` : "",
+    " "
+  ]
+    .filter(Boolean) // Remove empty lines
+    .map((line) => "  " + line)
     .join("\n");
+
+  return lines;
 }
+
+
 
 export function generate({ file, report, sourceMap }: ReportOptions): string {
   const items = [...report.tests, ...report.hooks];

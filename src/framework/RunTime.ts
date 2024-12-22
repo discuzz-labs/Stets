@@ -17,7 +17,6 @@ import { cpus } from "os";
 
 class RunTime {
   private readonly MAX_PARALLEL_TESTS = cpus().length || 4;
-  private readonly MAX_TIMEOUT = 300_000; // 5 minutes
 
   constructor(private testCase: TestCase) {}
 
@@ -33,6 +32,9 @@ class RunTime {
       retry,
       bench,
       todo,
+      warmup,
+      iterations,
+      confidence
     } = options;
 
     const result: TestResult | HookResult = {
@@ -58,7 +60,6 @@ class RunTime {
       return result;
     }
 
-    const fallbackTimeout = timeout === 0 ? this.MAX_TIMEOUT : timeout;
     const start = Date.now();
 
     let lastError: any;
@@ -72,9 +73,9 @@ class RunTime {
             setTimeout(
               () =>
                 reject(
-                  new Error(`${description} exceeded ${fallbackTimeout} ms.`),
+                  new Error(`${description} exceeded ${timeout} ms.`),
                 ),
-              fallbackTimeout,
+              timeout,
             ),
           ),
         ]);
@@ -103,7 +104,12 @@ class RunTime {
     }
     // Handle benchmarking if applicable
     if (bench) {
-      result.bench = await Bench.run(fn);
+      result.bench = await Bench.run(fn, {
+        warmup,
+        iterations,
+        confidence,
+        timeout
+      });
     }
 
     return result;

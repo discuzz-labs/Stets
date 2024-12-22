@@ -30,10 +30,15 @@ export declare class ErrorInspect {
 	static format(options: ErrorInspectOptions): string;
 }
 export interface BenchmarkMetrics {
-	throughputAvg: number;
-	throughputMedian: number;
-	latencyAvg: number;
-	latencyMedian: number;
+	meanLatency: number;
+	medianLatency: number;
+	p95Latency: number;
+	stdDev: number;
+	opsPerSecond: number;
+	confidenceInterval: {
+		lower: number;
+		upper: number;
+	};
 	samples: number;
 	timestamp: number;
 	timedOut: boolean;
@@ -90,17 +95,20 @@ export interface TestReport {
 export interface Options {
 	/**
 	 * The maximum time (in milliseconds) a test is allowed to run before timing out.
+	 * @type {number}
 	 * @example 5000 // 5 seconds timeout
 	 */
 	timeout: number;
 	/**
 	 * Indicates whether the test should be skipped.
+	 * @type {boolean}
 	 * @example true // Test will be skipped
 	 */
 	skip: boolean;
 	/**
 	 * A condition to determine whether the test should run.
 	 * Can be a boolean, a function returning a boolean, or a promise resolving to a boolean.
+	 * @type {boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined)}
 	 * @example
 	 * true // Test will run
 	 * () => environment === 'production' // Conditional test execution
@@ -108,29 +116,56 @@ export interface Options {
 	if: boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined);
 	/**
 	 * The number of times the test should be retried upon failure.
+	 * @type {number}
 	 * @example 3 // Retry the test 3 times
 	 */
 	retry: number;
 	/**
 	 * Indicates whether the test should allow soft failures without halting the test suite.
+	 * @type {boolean}
 	 * @example true // Test can fail without breaking the suite
 	 */
 	softfail: boolean;
 	/**
 	 * Indicates whether the test should be run sequentially.
+	 * @type {boolean}
 	 * @example true // Test will run in sequence with others
 	 */
 	sequencial: boolean;
 	/**
 	 * Indicates whether the test is a benchmark test.
+	 * @type {boolean}
 	 * @example true // Marks the test as a benchmark
 	 */
 	bench: boolean;
 	/**
 	 * Indicates whether the test is marked as a 'to-do' item.
+	 * @type {boolean}
 	 * @example true // Test is marked as a to-do
 	 */
 	todo: boolean;
+	/**
+	 * The number of iterations the test should run.
+	 * @type {number | undefined}
+	 * @example 100 // Run the test 100 times
+	 */
+	iterations: number;
+	/**
+	 * The number of warmup iterations before the actual test begins.
+	 * @type {number | undefined}
+	 * @example 10 // Perform 10 warmup iterations before testing
+	 */
+	warmup: number;
+	/**
+	 * The confidence level for statistical calculations (between 0 and 1).
+	 * Used to calculate confidence intervals for the benchmark results.
+	 * Higher values mean more confidence but wider intervals.
+	 * @type {number | undefined}
+	 * @default 0.95
+	 * @example 0.99 // Use 99% confidence level for more rigorous results
+	 * @example 0.90 // Use 90% confidence level for narrower intervals
+	 */
+	confidence: number;
 }
 /**
  * Interface representing a test case and its associated methods and properties.
@@ -675,6 +710,56 @@ export interface Assertion {
 	 */
 	toBe(expected: any): Assertion | boolean;
 	/**
+	 * Checks if the received value is strictly between the min and max (exclusive).
+	 * @param {number | bigint} min - The lower bound (exclusive).
+	 * @param {number | bigint} max - The upper bound (exclusive).
+	 * @returns {Assertion | boolean} Assertion result.
+	 * @example
+	 * // Passes
+	 * assert(15).toBeBetween(10, 20);
+	 *
+	 * // Fails
+	 * assert(15).toBeBetween(15, 20);
+	 */
+	toBeBetween(min: number | bigint, max: number | bigint): Assertion | boolean;
+	/**
+	 * Checks if the received value is between the min and max (inclusive).
+	 * @param {number | bigint} min - The lower bound (inclusive).
+	 * @param {number | bigint} max - The upper bound (inclusive).
+	 * @returns {Assertion | boolean} Assertion result.
+	 * @example
+	 * // Passes
+	 * assert(15).toBeBetweenOrEqual(10, 15);
+	 *
+	 * // Fails
+	 * assert(15).toBeBetweenOrEqual(16, 20);
+	 */
+	toBeBetweenOrEqual(min: number | bigint, max: number | bigint): Assertion | boolean;
+	/**
+	 * Checks if the received value is greater than or equal to the min value.
+	 * @param {number | bigint} min - The minimum value (inclusive).
+	 * @returns {Assertion | boolean} Assertion result.
+	 * @example
+	 * // Passes
+	 * assert(15).toBeAboveMin(10);
+	 *
+	 * // Fails
+	 * assert(5).toBeAboveMin(10);
+	 */
+	toBeAboveMin(min: number | bigint): Assertion | boolean;
+	/**
+	 * Checks if the received value is less than or equal to the max value.
+	 * @param {number | bigint} max - The maximum value (inclusive).
+	 * @returns {Assertion | boolean} Assertion result.
+	 * @example
+	 * // Passes
+	 * assert(15).toBeBelowMax(20);
+	 *
+	 * // Fails
+	 * assert(25).toBeBelowMax(20);
+	 */
+	toBeBelowMax(max: number | bigint): Assertion | boolean;
+	/**
 	 * Asserts that the received value is deeply equal to the expected value.
 	 * - Performs a deep comparison between the received and expected values,
 	 *   checking all nested properties for equality.
@@ -1064,7 +1149,7 @@ export declare class TrackFn<T extends any[], R> {
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // 3
  */
-export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): TrackFn<T,R> & ((...args: T) => R);
+export declare function Fn<T extends any[], R>(implementation: (...args: T) => R): (...args: T) => R;
 /**
  * Checks if a value is a tracked function.
  *
@@ -1095,7 +1180,7 @@ export declare function isFn(value: any): boolean;
  */
 export declare function spyOn<T extends any[], R>(obj: {
 	[key: string]: (...args: T) => R;
-}, method: string): TrackFn<T,R> & ((...args: T) => R);
+}, method: string): (...args: T) => R;
 
 export {
 	veve as default,

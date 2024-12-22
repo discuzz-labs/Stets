@@ -24,8 +24,8 @@ const failFn = async () => {
 const slowFn = async () => new Promise((resolve) => setTimeout(resolve, 100));
 const timeoutFn = async () =>
   new Promise((resolve) => setTimeout(resolve, 6000));
-const DEFAULT_OPTIONS: Options = {
-  timeout: 0,
+const DEFAULT_OPTIONS = {
+  timeout: 300_000,
   skip: false,
   softfail: false,
   if: true,
@@ -33,7 +33,11 @@ const DEFAULT_OPTIONS: Options = {
   sequencial: false,
   bench: false,
   todo: false,
+  iterations: 1000,
+  warmup: 50,
+  confidence: 0.95
 };
+
 const mergeOptions = (customOptions) => ({
   ...DEFAULT_OPTIONS,
   ...customOptions,

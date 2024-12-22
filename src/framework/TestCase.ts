@@ -63,7 +63,7 @@ export interface TestReport {
 }
 
 const DEFAULT_OPTIONS: Options = {
-  timeout: 0,
+  timeout: 300_000,
   skip: false,
   softfail: false,
   if: true,
@@ -71,6 +71,9 @@ const DEFAULT_OPTIONS: Options = {
   sequencial: false,
   bench: false,
   todo: false,
+  iterations: 1000,
+  warmup: 50,
+  confidence: 0.95
 };
 
 // Merge the provided options with the default options
@@ -84,12 +87,14 @@ function mergeOptions(options?: Partial<Options>): Options {
 export interface Options {
   /**
    * The maximum time (in milliseconds) a test is allowed to run before timing out.
+   * @type {number}
    * @example 5000 // 5 seconds timeout
    */
   timeout: number;
 
   /**
    * Indicates whether the test should be skipped.
+   * @type {boolean}
    * @example true // Test will be skipped
    */
   skip: boolean;
@@ -97,6 +102,7 @@ export interface Options {
   /**
    * A condition to determine whether the test should run.
    * Can be a boolean, a function returning a boolean, or a promise resolving to a boolean.
+   * @type {boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined)}
    * @example
    * true // Test will run
    * () => environment === 'production' // Conditional test execution
@@ -109,33 +115,63 @@ export interface Options {
 
   /**
    * The number of times the test should be retried upon failure.
+   * @type {number}
    * @example 3 // Retry the test 3 times
    */
   retry: number;
 
   /**
    * Indicates whether the test should allow soft failures without halting the test suite.
+   * @type {boolean}
    * @example true // Test can fail without breaking the suite
    */
   softfail: boolean;
 
   /**
    * Indicates whether the test should be run sequentially.
+   * @type {boolean}
    * @example true // Test will run in sequence with others
    */
   sequencial: boolean;
 
   /**
    * Indicates whether the test is a benchmark test.
+   * @type {boolean}
    * @example true // Marks the test as a benchmark
    */
   bench: boolean;
 
   /**
    * Indicates whether the test is marked as a 'to-do' item.
+   * @type {boolean}
    * @example true // Test is marked as a to-do
    */
   todo: boolean;
+
+  /**
+   * The number of iterations the test should run.
+   * @type {number | undefined}
+   * @example 100 // Run the test 100 times
+   */
+  iterations: number;
+
+  /**
+   * The number of warmup iterations before the actual test begins.
+   * @type {number | undefined}
+   * @example 10 // Perform 10 warmup iterations before testing
+   */
+  warmup: number;
+
+  /**
+   * The confidence level for statistical calculations (between 0 and 1).
+   * Used to calculate confidence intervals for the benchmark results.
+   * Higher values mean more confidence but wider intervals.
+   * @type {number | undefined}
+   * @default 0.95
+   * @example 0.99 // Use 99% confidence level for more rigorous results
+   * @example 0.90 // Use 90% confidence level for narrower intervals
+   */
+  confidence: number;
 }
 
 /**
