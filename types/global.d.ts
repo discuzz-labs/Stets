@@ -1,6 +1,7 @@
 import {
   Assertion,
   HookFunction,
+  MethodNames,
   Options,
   TestFunction,
   TestReport,
@@ -217,35 +218,23 @@ declare global {
 
   /**
    * Creates a tracked version of a given function.
-   * The returned function retains its original call signature and implements the `TrackFn` interface
-   * for tracking calls, arguments, results, and more.
    *
-   * @template T - The argument types of the function.
-   * @template R - The return type of the function.
-   * @param {(...args: T) => R} implementation - The original function implementation.
-   * @returns {TrackFn<T, R> & ((...args: T) => R)} A tracked version of the provided function,
-   * combining the call signature of the original function and tracking capabilities.
+   * @param {Function} implementation - The original function implementation.
+   * @returns {TrackFn & Function} A tracked version of the provided function.
    *
    * @example
    * const add = (a: number, b: number) => a + b;
    * const trackedAdd = Fn(add);
-   *
    * trackedAdd(1, 2); // 3
-   * console.log(trackedAdd.getCalls()); // Logs tracked calls
-   * trackedAdd.reset(); // Clears tracked calls
    */
-  function Fn<T extends any[], R>(
-    implementation: (...args: T) => R,
-  ): TrackFn<T, R> & ((...args: T) => R);
+  function Fn(implementation: Function): TrackFn & Function;
 
   /**
    * Replaces a method on an object with a tracked version of the method.
    *
-   * @template T - The argument types of the method.
-   * @template R - The return type of the method.
-   * @param {{ [key: string]: (...args: T) => R }} obj - The object containing the method.
+   * @param {object} obj - The object containing the method.
    * @param {string} method - The name of the method to replace.
-   * @returns {(...args: T) => R} The tracked version of the method.
+   * @returns {TrackFn & Function} The tracked version of the method.
    *
    * @throws {Error} If the method does not exist on the object or is not a function.
    *
@@ -255,14 +244,29 @@ declare global {
    * obj.multiply(2, 3); // 6
    * console.log(trackedMultiply.getCallCount()); // 1
    */
-  function spyOn<T extends any[], R>(
-    obj:
-      | {
-          [key: string]: (...args: T) => R;
-        }
-      | any,
-    method: string,
-  ): TrackFn<T, R> & ((...args: T) => R);
+  function spyOn(obj: any, method: string): TrackFn & Function;
+
+  /**
+   * Creates a spied version of a specific method in a class instance.
+   *
+   * @param {T} instance - The class instance containing the method
+   * @param {K} methodName - The name of the method to spy on
+   * @returns {TrackFn & Function} The tracked version of the method
+   *
+   * @example
+   * class Calculator {
+   *   add(a: number, b: number) { return a + b; }
+   * }
+   *
+   * const calc = new Calculator();
+   * const spiedAdd = spyOnMethod(calc, 'add');
+   * calc.add(1, 2);
+   * console.log(spiedAdd.getCallCount()); // 1
+   */
+  function spyOnMethod<T extends object, K extends MethodNames<T>>(
+    instance: T,
+    methodName: K,
+  ): TrackFn & Function;
 }
 
 export {};

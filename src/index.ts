@@ -14,4 +14,4 @@ export { ErrorInspect } from "./core/ErrorInspect.js";
 
 export { is, assert, Assertion } from "./framework/Assertion.js";
 export { TestCase } from "./framework/TestCase.js";
-export { isFn, Fn, spyOn, TrackFn } from "./framework/Fn.js";
+export { isFn, Fn, spyOn, TrackFn, spyOnMethod } from "./framework/Fn.js";

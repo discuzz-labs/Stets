@@ -5,34 +5,40 @@
  */
 
 import { isDeepStrictEqual } from "util";
+import { getType } from "../utils/index.js";
+
+type MethodNames<T> = {
+  [K in keyof T]: T[K] extends Function ? K : never;
+}[keyof T];
+
 
 /**
  * Interface representing a tracking function with utilities for inspecting calls, arguments, and results.
  * @template T - The arguments of the tracked function, defaults to any[].
  * @template R - The return type of the tracked function, defaults to any.
  */
-export interface TrackFn<T extends any[] = any[], R = any> {
+export interface TrackFn {
   /**
    * Retrieves all the function calls made to the tracked function.
-   * @returns {ReadonlyArray<FunctionCall<T, R>>} An array of recorded function calls.
+   * @returns {ReadonlyArray<FunctionCall>} An array of recorded function calls.
    * @example trackFn.getCalls();
    */
-  getCalls(): ReadonlyArray<FunctionCall<T, R>>;
+  getCalls(): ReadonlyArray<FunctionCall>;
 
   /**
    * Retrieves a specific function call by index.
    * @param {number} index - The index of the function call.
-   * @returns {FunctionCall<T, R> | undefined} The function call at the specified index, or undefined if not found.
+   * @returns {FunctionCall | undefined} The function call at the specified index, or undefined if not found.
    * @example trackFn.getCall(0);
    */
-  getCall(index: number): FunctionCall<T, R> | undefined;
+  getCall(index: number): FunctionCall | undefined;
 
   /**
    * Retrieves the most recent function call made to the tracked function.
-   * @returns {FunctionCall<T, R> | undefined} The latest function call, or undefined if no calls have been made.
+   * @returns {FunctionCall | undefined} The latest function call, or undefined if no calls have been made.
    * @example trackFn.getLatestCall();
    */
-  getLatestCall(): FunctionCall<T, R> | undefined;
+  getLatestCall(): FunctionCall | undefined;
 
   /**
    * Retrieves the total number of times the tracked function has been called.
@@ -43,25 +49,25 @@ export interface TrackFn<T extends any[] = any[], R = any> {
 
   /**
    * Retrieves the arguments passed to all function calls.
-   * @returns {ReadonlyArray<T>} An array of arguments for each call.
+   * @returns {ReadonlyArray<any[]>} An array of arguments for each call.
    * @example trackFn.getAllArgs();
    */
-  getAllArgs(): ReadonlyArray<T>;
+  getAllArgs(): ReadonlyArray<any[]>;
 
   /**
    * Retrieves the arguments passed to a specific function call by index.
    * @param {number} index - The index of the function call.
-   * @returns {T | undefined} The arguments for the specified call, or undefined if not found.
+   * @returns {any[] | undefined} The arguments for the specified call, or undefined if not found.
    * @example trackFn.getArgsForCall(1);
    */
-  getArgsForCall(index: number): T | undefined;
+  getArgsForCall(index: number): any[] | undefined;
 
   /**
    * Retrieves the return values of all function calls.
-   * @returns {ReadonlyArray<R>} An array of return values.
+   * @returns {ReadonlyArray<any>} An array of return values.
    * @example trackFn.getReturnValues();
    */
-  getReturnValues(): ReadonlyArray<R>;
+  getReturnValues(): ReadonlyArray<any>;
 
   /**
    * Retrieves the exceptions thrown during function calls.
@@ -79,11 +85,11 @@ export interface TrackFn<T extends any[] = any[], R = any> {
 
   /**
    * Checks if the tracked function was called with specific arguments.
-   * @param {...T} args - The arguments to check.
+   * @param {...any[]} args - The arguments to check.
    * @returns {boolean} True if the function was called with the specified arguments, otherwise false.
    * @example trackFn.wasCalledWith('arg1', 'arg2');
    */
-  wasCalledWith(...args: T): boolean;
+  wasCalledWith(...args: any[]): boolean;
 
   /**
    * Checks if the tracked function was called a specific number of times.
@@ -95,48 +101,47 @@ export interface TrackFn<T extends any[] = any[], R = any> {
 
   /**
    * Sets the return value for the tracked function.
-   * @param {R} value - The value to be returned.
-   * @returns {TrackFn<T, R>} The updated tracked function.
+   * @param {any} value - The value to be returned.
+   * @returns {TrackFn} The updated tracked function.
    * @example trackFn.return('value');
    */
-  return(value: R): TrackFn<T, R>;
+  return(value: any): TrackFn;
 
   /**
    * Configures the tracked function to throw a specific error.
    * @param {Error} error - The error to be thrown.
-   * @returns {TrackFn<T, R>} The updated tracked function.
+   * @returns {TrackFn} The updated tracked function.
    * @example trackFn.throw(new Error('Something went wrong'));
    */
-  throw(error: Error): TrackFn<T, R>;
+  throw(error: Error): TrackFn;
 
   /**
    * Replaces the tracked function with a custom implementation.
-   * @template F - The custom function type.
-   * @param {F} fn - The custom function to use.
-   * @returns {TrackFn<T, R>} The updated tracked function.
+   * @param {Function} fn - The custom function to use.
+   * @returns {TrackFn} The updated tracked function.
    * @example trackFn.use((arg1, arg2) => arg1 + arg2);
    */
-  use<F extends (...args: any[]) => any>(fn: F): TrackFn<T, R>;
+  use(fn: Function): TrackFn;
 
   /**
    * Resets the state of the tracked function, clearing all recorded calls, arguments, and results.
-   * @returns {TrackFn<T, R>} The reset tracked function.
+   * @returns {TrackFn} The reset tracked function.
    * @example trackFn.reset();
    */
-  reset(): TrackFn<T, R>;
+  reset(): TrackFn;
 
   /**
    * Clears all recorded calls and arguments but retains custom behavior configurations.
-   * @returns {TrackFn<T, R>} The cleared tracked function.
+   * @returns {TrackFn} The cleared tracked function.
    * @example trackFn.clear();
    */
-  clear(): TrackFn<T, R>;
+  clear(): TrackFn;
 }
 
-export interface FunctionCall<T extends any[], R> {
-  args: T;
+export interface FunctionCall {
+  args: any[];
   timestamp: Date;
-  result: R;
+  result: any;
 }
 
 export interface FunctionException {
@@ -144,29 +149,29 @@ export interface FunctionException {
   timestamp: Date;
 }
 
-export class TrackFn<T extends any[], R> {
-  private _calls: FunctionCall<T, R>[] = [];
-  private _returnValues: R[] = [];
+export class TrackFn implements TrackFn {
+  private _calls: FunctionCall[] = [];
+  private _returnValues: any[] = [];
   private _exceptions: FunctionException[] = [];
   private _callCount = 0;
   private _instances: any[] = [];
 
-  constructor(private _implementation: (...args: T) => R) {}
+  constructor(private _implementation: Function) {}
 
   // Method to track the behavior of the function
-  track = (): ((...args: T) => R) => {
+  track = (): Function => {
     const self = this;
 
     // Create the tracked function
-    const trackedFunction: any = function (this: any, ...args: T): R {
+    const trackedFunction: any = function (this: any, ...args: any[]): any {
       try {
         const result = self._implementation.apply(this, args);
         self.recordCall(args, result, this);
         return result;
       } catch (error) {
         const normalizedError =
-          error instanceof Error ? error : new Error(String(error));
-        self.recordException(normalizedError);
+          getType(error) === "error" ? error : new Error(String(error));
+        self.recordException(normalizedError as Error);
         throw normalizedError;
       }
     };
@@ -195,8 +200,8 @@ export class TrackFn<T extends any[], R> {
   };
 
   // Method to record calls
-  private recordCall(args: T, result: R, thisArg?: any): void {
-    const call: FunctionCall<T, R> = { args, timestamp: new Date(), result };
+  private recordCall(args: any[], result: any, thisArg?: any): void {
+    const call: FunctionCall = { args, timestamp: new Date(), result };
     this._calls.push(call);
     this._returnValues.push(result);
     this._callCount++;
@@ -209,7 +214,7 @@ export class TrackFn<T extends any[], R> {
   }
 
   // Method to reset tracking
-  reset(): TrackFn<T, R> {
+  reset(): TrackFn {
     this._calls = [];
     this._returnValues = [];
     this._exceptions = [];
@@ -220,33 +225,33 @@ export class TrackFn<T extends any[], R> {
   }
 
   // Methods to manipulate the tracked function behavior
-  returns(value: R): TrackFn<T, R> {
+  returns(value: any): TrackFn {
     this._implementation = () => value;
     return this;
   }
 
-  throws(error: Error): TrackFn<T, R> {
+  throws(error: Error): TrackFn {
     this._implementation = () => {
       throw error;
     };
     return this;
   }
 
-  use<F extends (...args: any[]) => any>(fn: F): TrackFn<T, R> {
+  use(fn: Function): TrackFn {
     this._implementation = fn;
     return this;
   }
 
   // Tracking methods
-  getCalls(): ReadonlyArray<FunctionCall<T, R>> {
+  getCalls(): ReadonlyArray<FunctionCall> {
     return this._calls;
   }
 
-  getCall(index: number): FunctionCall<T, R> | undefined {
+  getCall(index: number): FunctionCall | undefined {
     return this._calls[index];
   }
 
-  getLatestCall(): FunctionCall<T, R> | undefined {
+  getLatestCall(): FunctionCall | undefined {
     return this._calls[this._calls.length - 1];
   }
 
@@ -254,15 +259,15 @@ export class TrackFn<T extends any[], R> {
     return this._callCount;
   }
 
-  getAllArgs(): ReadonlyArray<T> {
+  getAllArgs(): ReadonlyArray<any[]> {
     return this._calls.map((call) => call.args);
   }
 
-  getArgsForCall(index: number): T | undefined {
+  getArgsForCall(index: number): any[] | undefined {
     return this._calls[index]?.args;
   }
 
-  getReturnValues(): ReadonlyArray<R> {
+  getReturnValues(): ReadonlyArray<any> {
     return this._returnValues;
   }
 
@@ -274,7 +279,7 @@ export class TrackFn<T extends any[], R> {
     return this._callCount > 0;
   }
 
-  wasCalledWith(...args: T): boolean {
+  wasCalledWith(...args: any[]): boolean {
     return this._calls.some(
       (call) =>
         call.args.length === args.length &&
@@ -290,19 +295,15 @@ export class TrackFn<T extends any[], R> {
 /**
  * Creates a tracked version of a given function.
  *
- * @template T - The argument types of the function.
- * @template R - The return type of the function.
- * @param {(...args: T) => R} implementation - The original function implementation.
- * @returns {TrackFn<T,R> & ((...args: T) => R)} A tracked version of the provided function.
+ * @param {Function} implementation - The original function implementation.
+ * @returns {TrackFn & Function} A tracked version of the provided function.
  *
  * @example
  * const add = (a: number, b: number) => a + b;
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // 3
  */
-export function Fn<T extends any[], R>(
-  implementation: (...args: T) => R,
-): (...args: T) => R {
+export function Fn(implementation: Function): Function {
   return new TrackFn(implementation).track();
 }
 
@@ -343,11 +344,9 @@ export function isFn(value: any): boolean {
 /**
  * Replaces a method on an object with a tracked version of the method.
  *
- * @template T - The argument types of the method.
- * @template R - The return type of the method.
- * @param {{ [key: string]: (...args: T) => R }} obj - The object containing the method.
+ * @param {object} obj - The object containing the method.
  * @param {string} method - The name of the method to replace.
- * @returns {TrackFn<T,R> & ((...args: T) => R)} The tracked version of the method.
+ * @returns {TrackFn & Function} The tracked version of the method.
  *
  * @throws {Error} If the method does not exist on the object or is not a function.
  *
@@ -357,22 +356,54 @@ export function isFn(value: any): boolean {
  * obj.multiply(2, 3); // 6
  * console.log(trackedMultiply.getCallCount()); // 1
  */
-export function spyOn<T extends any[], R>(
-  obj: { [key: string]: (...args: T) => R },
-  method: string,
-) {
+export function spyOn(obj: any, method: string): Function {
   if (!obj || typeof obj[method] !== "function") {
     throw new Error(`Method '${method}' not found on the object.`);
   }
 
-  // Get the original method
   const originalMethod = obj[method];
-
-  // Create a tracked version of the method using the Fn function
   const trackedFn = Fn(originalMethod);
 
-  // Replace the original method with the tracked version
   obj[method] = trackedFn;
 
   return trackedFn;
+}
+
+/**
+ * Creates a spied version of a specific method in a class instance.
+ * 
+ * @param {T} instance - The class instance containing the method
+ * @param {K} methodName - The name of the method to spy on
+ * @returns {TrackFn & Function} The tracked version of the method
+ * 
+ * @example
+ * class Calculator {
+ *   add(a: number, b: number) { return a + b; }
+ * }
+ * 
+ * const calc = new Calculator();
+ * const spiedAdd = spyOnMethod(calc, 'add');
+ * calc.add(1, 2);
+ * console.log(spiedAdd.getCallCount()); // 1
+ */
+export function spyOnMethod<T extends object, K extends MethodNames<T>>(
+  instance: T,
+  methodName: K
+): TrackFn & Function {
+  const method = instance[methodName];
+
+  if (typeof method !== 'function') {
+    throw new Error(`Method '${String(methodName)}' not found on the instance.`);
+  }
+
+  const trackedMethod = Fn(method.bind(instance)) as TrackFn & Function;
+
+  // Replace the method with the tracked version
+  Object.defineProperty(instance, methodName, {
+    value: trackedMethod,
+    configurable: true,
+    writable: true,
+  });
+
+  return trackedMethod;
 }

@@ -42,7 +42,7 @@ it("tracks exceptions thrown by the function", () => {
 
   const exceptions = trackedErrorFn.getExceptions();
   assert(exceptions.length).toBe(1);
-  assert(exceptions[0].error.message).toBe("Error: Test error");
+  assert(exceptions[0].error.message).toBe("Test error");
 });
 
 it("can return a specified value", () => {
@@ -63,7 +63,7 @@ it("can throw a specified error", () => {
     trackedFn();
   } catch (e) {
     assert(e).toBeInstanceOf(Error);
-    assert(e.message).toBe("Error: Custom error");
+    assert(e.message).toBe("Custom error");
   }
 });
 
@@ -107,6 +107,59 @@ it("spies on an object's method", () => {
   assert(trackedMultiply.getCallCount()).toBe(2);
   assert(trackedMultiply.getReturnValues()).toEqual([6, 20]);
   assert(trackedMultiply.wasCalledWith(2, 3)).toBe(true);
+});
+
+it("spies on classes", () => {
+  class Test {
+    static greet(name: string) {
+      return 'Hello, ' + name;
+    }
+
+    method(value: number) {
+      return value * 2;
+    }
+  }
+
+  const testClass = new Test();
+
+  // Test static method
+  const spiedGreet = spyOn(Test, "greet");
+  assert(Test.greet("Alice")).toBe("Hello, Alice");
+  assert(spiedGreet.wasCalled()).toBe(true);
+  assert(spiedGreet.wasCalledWith("Alice")).toBe(true);
+  assert(spiedGreet.getCallCount()).toBe(1);
+  assert(spiedGreet.getLatestCall()?.result).toBe("Hello, Alice");
+
+  // Test instance method
+  const spiedMethod = spyOnMethod(testClass, "method");
+  assert(testClass.method(5)).toBe(10);
+  assert(spiedMethod.wasCalled()).toBe(true);
+  assert(spiedMethod.wasCalledWith(5)).toBe(true);
+  assert(spiedMethod.getCallCount()).toBe(1);
+  assert(spiedMethod.getLatestCall()?.result).toBe(10);
+
+  // Test method modification
+  spiedMethod.return(42);
+  assert(testClass.method(5)).toBe(42);
+  assert(spiedMethod.getLatestCall()?.result).toBe(42);
+
+  // Test error throwing
+  const error = new Error("Test Error")
+  spiedGreet.throw(error);
+  assert(() => Test.greet("Bob")).toThrow(error);
+  assert(spiedGreet.getExceptions()[0].error).toBe(error);
+  
+
+  // Test multiple calls
+  spiedGreet.use((name: string) => `Hi, ${name}!`);
+  Test.greet("Charlie");
+  Test.greet("David");
+  assert(spiedGreet.wasCalledTimes(4)); // 2 previous + 2 new call
+  assert(spiedGreet.getAllArgs()).toEqual([
+    ["Alice"],
+    ["Charlie"],
+    ["David"]
+  ]);
 });
 
 it("checks if a value is a tracked function", () => {

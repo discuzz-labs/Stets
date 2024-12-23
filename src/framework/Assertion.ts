@@ -155,7 +155,10 @@ export interface Assertion {
    * // Fails
    * assert(15).toBeBetweenOrEqual(16, 20);
    */
-  toBeBetweenOrEqual(min: number | bigint, max: number | bigint): Assertion | boolean;
+  toBeBetweenOrEqual(
+    min: number | bigint,
+    max: number | bigint,
+  ): Assertion | boolean;
 
   /**
    * Checks if the received value is greater than or equal to the min value.
@@ -554,7 +557,7 @@ export class Assertion {
     return this.assert(
       this.received > min && this.received < max,
       `Expected value ${this.received} to be between ${min} and ${max} (exclusive).`,
-      "toBeBetween"
+      "toBeBetween",
     );
   }
 
@@ -562,7 +565,7 @@ export class Assertion {
     return this.assert(
       this.received >= min && this.received <= max,
       `Expected value ${this.received} to be between ${min} and ${max} (inclusive).`,
-      "toBeBetweenOrEqual"
+      "toBeBetweenOrEqual",
     );
   }
 
@@ -570,7 +573,7 @@ export class Assertion {
     return this.assert(
       this.received >= min,
       `Expected value ${this.received} to be greater than or equal to ${min}.`,
-      "toBeAboveMin"
+      "toBeAboveMin",
     );
   }
 
@@ -578,7 +581,7 @@ export class Assertion {
     return this.assert(
       this.received <= max,
       `Expected value ${this.received} to be less than or equal to ${max}.`,
-      "toBeBelowMax"
+      "toBeBelowMax",
     );
   }
 
@@ -650,22 +653,80 @@ export class Assertion {
     );
   }
 
-  toThrow(expected: any) {
-    if (!this.isTracked) {
-      throw new Error("toThrow can only be used with tracked functions");
-    }
-
-    const exceptions = this.received.getExceptions();
-    if (exceptions.length === 0) {
-      return this.assert(false, "No exceptions were thrown!", "toThrow");
-    } else {
-      const diffs = diff(exceptions[exceptions.length - 1], expected);
+  toThrow(expected?: Error | string | RegExp): Assertion | boolean {
+    // Handle case where received is not a function
+    if (typeof this.received !== "function") {
       return this.assert(
-        diffs.hasDiffs === false,
-        `Exception diffrences: \n\n ${diffs.diffFormatted}`,
+        false,
+        "Expected received value to be a function",
         "toThrow",
       );
     }
+
+    let thrownError: Error | null = null;
+    let didThrow = false;
+
+    // Try to execute the function and catch any error
+    try {
+      this.received();
+    } catch (e) {
+      didThrow = true;
+      thrownError = getType(e) === "error" ? e as Error : new Error(String(e));
+    }
+
+    // If no expected value provided, just check if anything was thrown
+    if (expected === undefined) {
+      return this.assert(
+        didThrow,
+        "Expected function to throw an error",
+        "toThrow",
+      );
+    }
+
+    // If no error was thrown but we expected one
+    if (!didThrow) {
+      return this.assert(
+        false,
+        `Expected function to throw ${expected}`,
+        "toThrow",
+      );
+    }
+
+    // Handle different types of expected values
+    if (getType(expected) === "error") {
+      // Compare Error instances
+      return this.assert(
+        thrownError?.constructor === expected.constructor &&
+          thrownError?.message === (expected as Error).message,
+        `Expected function to throw ${expected.constructor.name} with message "${(expected as Error).message}" but it threw ${thrownError?.constructor.name} with message "${thrownError?.message}"`,
+        "toThrow",
+      );
+    }
+
+    if (getType(expected) === "regexp") {
+      // Test error message against RegExp
+      return this.assert(
+        (expected as RegExp).test(thrownError?.message || ""),
+        `Expected error message to match ${expected} but got "${thrownError?.message}"`,
+        "toThrow",
+      );
+    }
+
+    if (getType(expected) === "string") {
+      // Compare error message with string
+      return this.assert(
+        thrownError?.message === expected,
+        `Expected error message to be "${expected}" but got "${thrownError?.message}"`,
+        "toThrow",
+      );
+    }
+
+    // Handle unexpected expected type
+    return this.assert(
+      false,
+      `Invalid expected value type: ${getType(expected)}. Must be Error, string, or RegExp`,
+      "toThrow",
+    );
   }
 
   toBeTracked(): Assertion | boolean {
