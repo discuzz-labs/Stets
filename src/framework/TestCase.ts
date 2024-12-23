@@ -73,7 +73,7 @@ const DEFAULT_OPTIONS: Options = {
   todo: false,
   iterations: 1000,
   warmup: 50,
-  confidence: 0.95
+  confidence: 0.95,
 };
 
 // Merge the provided options with the default options

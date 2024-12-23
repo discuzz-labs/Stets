@@ -11,7 +11,6 @@ type MethodNames<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
 
-
 /**
  * Interface representing a tracking function with utilities for inspecting calls, arguments, and results.
  * @template T - The arguments of the tracked function, defaults to any[].
@@ -371,16 +370,16 @@ export function spyOn(obj: any, method: string): Function {
 
 /**
  * Creates a spied version of a specific method in a class instance.
- * 
+ *
  * @param {T} instance - The class instance containing the method
  * @param {K} methodName - The name of the method to spy on
  * @returns {TrackFn & Function} The tracked version of the method
- * 
+ *
  * @example
  * class Calculator {
  *   add(a: number, b: number) { return a + b; }
  * }
- * 
+ *
  * const calc = new Calculator();
  * const spiedAdd = spyOnMethod(calc, 'add');
  * calc.add(1, 2);
@@ -388,12 +387,14 @@ export function spyOn(obj: any, method: string): Function {
  */
 export function spyOnMethod<T extends object, K extends MethodNames<T>>(
   instance: T,
-  methodName: K
+  methodName: K,
 ): TrackFn & Function {
   const method = instance[methodName];
 
-  if (typeof method !== 'function') {
-    throw new Error(`Method '${String(methodName)}' not found on the instance.`);
+  if (typeof method !== "function") {
+    throw new Error(
+      `Method '${String(methodName)}' not found on the instance.`,
+    );
   }
 
   const trackedMethod = Fn(method.bind(instance)) as TrackFn & Function;

@@ -35,7 +35,7 @@ const DEFAULT_OPTIONS = {
   todo: false,
   iterations: 1000,
   warmup: 50,
-  confidence: 0.95
+  confidence: 0.95,
 };
 
 const mergeOptions = (customOptions) => ({

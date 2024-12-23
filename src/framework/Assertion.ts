@@ -671,7 +671,8 @@ export class Assertion {
       this.received();
     } catch (e) {
       didThrow = true;
-      thrownError = getType(e) === "error" ? e as Error : new Error(String(e));
+      thrownError =
+        getType(e) === "error" ? (e as Error) : new Error(String(e));
     }
 
     // If no expected value provided, just check if anything was thrown

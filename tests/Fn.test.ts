@@ -77,7 +77,7 @@ it("can use a custom implementation", () => {
 });
 
 it("resets function tracking", () => {
-  const trackedFn = Fn((x: number) => x)
+  const trackedFn = Fn((x: number) => x);
 
   trackedFn(1);
   trackedFn(2);
@@ -112,7 +112,7 @@ it("spies on an object's method", () => {
 it("spies on classes", () => {
   class Test {
     static greet(name: string) {
-      return 'Hello, ' + name;
+      return "Hello, " + name;
     }
 
     method(value: number) {
@@ -144,22 +144,17 @@ it("spies on classes", () => {
   assert(spiedMethod.getLatestCall()?.result).toBe(42);
 
   // Test error throwing
-  const error = new Error("Test Error")
+  const error = new Error("Test Error");
   spiedGreet.throw(error);
   assert(() => Test.greet("Bob")).toThrow(error);
   assert(spiedGreet.getExceptions()[0].error).toBe(error);
-  
 
   // Test multiple calls
   spiedGreet.use((name: string) => `Hi, ${name}!`);
   Test.greet("Charlie");
   Test.greet("David");
   assert(spiedGreet.wasCalledTimes(4)); // 2 previous + 2 new call
-  assert(spiedGreet.getAllArgs()).toEqual([
-    ["Alice"],
-    ["Charlie"],
-    ["David"]
-  ]);
+  assert(spiedGreet.getAllArgs()).toEqual([["Alice"], ["Charlie"], ["David"]]);
 });
 
 it("checks if a value is a tracked function", () => {

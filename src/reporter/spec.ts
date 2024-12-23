@@ -65,7 +65,6 @@ export function log(
   }
 }
 
-
 export function benchFormat(data: BenchmarkMetrics): string {
   const format = (num: number) => num.toFixed(8);
   const formatOps = (num: number) => num.toLocaleString();
@@ -95,7 +94,7 @@ export function benchFormat(data: BenchmarkMetrics): string {
     `${label("Samples")}: ${value(data.samples.toLocaleString())}`,
     "",
     data.timedOut ? `${status("Status: Timed out")}` : "",
-    " "
+    " ",
   ]
     .filter(Boolean) // Remove empty lines
     .map((line) => "  " + line)
@@ -103,8 +102,6 @@ export function benchFormat(data: BenchmarkMetrics): string {
 
   return lines;
 }
-
-
 
 export function generate({ file, report, sourceMap }: ReportOptions): string {
   const items = [...report.tests, ...report.hooks];

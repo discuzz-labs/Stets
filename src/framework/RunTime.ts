@@ -34,7 +34,7 @@ class RunTime {
       todo,
       warmup,
       iterations,
-      confidence
+      confidence,
     } = options;
 
     const result: TestResult | HookResult = {
@@ -71,10 +71,7 @@ class RunTime {
           fn(),
           new Promise<never>((_, reject) =>
             setTimeout(
-              () =>
-                reject(
-                  new Error(`${description} exceeded ${timeout} ms.`),
-                ),
+              () => reject(new Error(`${description} exceeded ${timeout} ms.`)),
               timeout,
             ),
           ),
@@ -108,7 +105,7 @@ class RunTime {
         warmup,
         iterations,
         confidence,
-        timeout
+        timeout,
       });
     }
 

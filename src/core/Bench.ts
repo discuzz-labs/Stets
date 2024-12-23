@@ -63,7 +63,7 @@ export class Bench {
 
   private static async measure(
     fn: () => unknown | Promise<unknown>,
-    samples: number[]
+    samples: number[],
   ): Promise<void> {
     const start = this.getHighResTime();
     await fn();
@@ -73,7 +73,7 @@ export class Bench {
   }
 
   private static getHighResTime(): number {
-    if (typeof process !== 'undefined' && process.hrtime) {
+    if (typeof process !== "undefined" && process.hrtime) {
       const [seconds, nanoseconds] = process.hrtime();
       return seconds * 1000 + nanoseconds / 1_000_000; // Convert to milliseconds
     }
@@ -84,12 +84,11 @@ export class Bench {
   private static calculateMetrics(
     samples: number[],
     timedOut: boolean,
-    confidence: number
+    confidence: number,
   ): BenchmarkMetrics {
     if (samples.length === 0) {
       return this.createEmptyMetrics(timedOut);
     }
-
 
     const sorted = [...samples].sort((a, b) => a - b);
     const mean = this.calculateMean(samples);
@@ -98,7 +97,7 @@ export class Bench {
       mean,
       stdDev,
       samples.length,
-      confidence
+      confidence,
     );
 
     const metrics: BenchmarkMetrics = {
@@ -121,7 +120,7 @@ export class Bench {
   }
 
   private static calculateStdDev(values: number[], mean: number): number {
-    const squaredDiffs = values.map(x => Math.pow(x - mean, 2));
+    const squaredDiffs = values.map((x) => Math.pow(x - mean, 2));
     return Math.sqrt(this.calculateMean(squaredDiffs));
   }
 
@@ -134,7 +133,7 @@ export class Bench {
     mean: number,
     stdDev: number,
     sampleSize: number,
-    confidence: number
+    confidence: number,
   ): { lower: number; upper: number } {
     // Using t-distribution for small sample sizes
     const alpha = 1 - confidence;
@@ -178,12 +177,15 @@ export class Bench {
   }
 
   private static validateOptions(
-    options: BenchmarkOptions
+    options: BenchmarkOptions,
   ): Required<BenchmarkOptions> {
     if (options.iterations && options.iterations <= 0) {
       throw new Error("Iterations must be greater than 0");
     }
-    if (options.confidence && (options.confidence <= 0 || options.confidence >= 1)) {
+    if (
+      options.confidence &&
+      (options.confidence <= 0 || options.confidence >= 1)
+    ) {
       throw new Error("Confidence must be between 0 and 1");
     }
     return options as Required<BenchmarkOptions>;
