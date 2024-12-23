@@ -4,16 +4,17 @@
  * See the LICENSE file in the project root for license information.
  */
 
+
 import kleur from "kleur";
 import path from "path";
 import { SourceMapConsumer } from "source-map";
 import { BenchmarkMetrics } from "../core/Bench.js";
-import { replay } from "../core/Console.js";
 import { ErrorInspect, ErrorMetadata } from "../core/ErrorInspect.js";
 import { PoolResult } from "../core/Pool.js";
 import { TestCaseStatus, TestReport, Stats } from "../framework/TestCase.js";
 import { testReportHeader } from "../utils/ui.js";
 import { Reporter } from "./Reporter.js";
+import { LogEntry, replayLogs } from "../core/Logger.js";
 
 export interface LogArgs {
   description: string;
@@ -168,6 +169,7 @@ export const spec: spec = {
     reports: Map<string, PoolResult>;
     outputDir?: string;
   }) {
+    let fileLogs: Map<string, LogEntry[]> = new Map();
     const totalStats = {
       total: 0,
       passed: 0,
@@ -182,6 +184,8 @@ export const spec: spec = {
       file,
       { logs, error, sourceMap, duration, report },
     ] of options.reports) {
+
+      if (logs.length > 0) fileLogs.set(file, logs);
       const status = report ? report.status : "failed";
       const stats = report?.stats || {
         total: 0,
@@ -204,8 +208,6 @@ export const spec: spec = {
 
       if (error) process.stdout.write(ErrorInspect.format({ error, file }));
 
-      replay(logs);
-
       // Aggregate stats
       totalStats.total += stats.total;
       totalStats.passed += stats.passed;
@@ -215,6 +217,8 @@ export const spec: spec = {
       totalStats.todo += stats.todo;
       totalStats.duration += duration;
     }
+
+    replayLogs(fileLogs);
 
     process.stdout.write(summary(totalStats));
   },

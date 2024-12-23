@@ -4,14 +4,12 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import kleur from "kleur";
-
 export interface LogEntry {
   type: string;
   args: any[];
 }
 
-export class Console {
+export class Logger {
   logs: LogEntry[] = [];
   timers: { [key: string]: number } = {};
 
@@ -110,21 +108,14 @@ export class Console {
   }
 }
 
-export function replay(logs: LogEntry[]) {
-  for (const log of logs) {
-    const { type, args } = log;
-    let header = kleur.blue("Console." + type + "()");
+export function replayLogs(logs: Map<string, LogEntry[]>) {
+  logs.forEach((entries, fileName) => {
+    console.log(`\nLogs for ${fileName}:\n`);
 
-    // Color coding for different log types
-    if (type === "log") header = kleur.gray("Console.log()");
-    if (type === "warn") header = kleur.yellow("Console.warn()");
-    if (type === "error") header = kleur.red("Console.error()");
-
-    console.log(header);
-
-    if (type === "timeEnd")
-      console.log(kleur.gray(args[0] + " took " + args[1]));
-    else if (type === "clear") console.log("Clear was called");
-    else (console as any)[type](...args);
-  }
+    entries.forEach(({ type, args }) => {
+      const formattedType = `[${type.toUpperCase()}]`
+      const message = args.join(" ");
+      console.log(`${formattedType}: ${message}`);
+    });
+  });
 }

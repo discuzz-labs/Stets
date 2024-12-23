@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for license information.
  */
 
-import { Console, LogEntry } from "./Console.js";
+import { Logger, LogEntry } from "./Logger.js";
 import { TestReport } from "../framework/TestCase";
 import { Isolated } from "./Isolated.js";
 import { Transform } from "./Transform.js";
@@ -46,7 +46,6 @@ export class Pool {
 
   async run(): Promise<number> {
     const exitCode = 0;
-    const startTimes = new Map<string, number>();
 
     // Initialize terminal with "pending" state for all files
     this.options.testFiles.forEach((file) => {
@@ -54,35 +53,27 @@ export class Pool {
     });
     this.terminal.render(); // Initial render
 
-    // Limit the number of concurrent tests for efficiency
-    const maxConcurrentTests = 4; // Adjust based on available resources
+    const maxConcurrentTests = 4;
     const chunks = this.chunkArray(this.options.testFiles, maxConcurrentTests);
 
     for (const chunk of chunks) {
       await Promise.all(
         chunk.map(async (file) => {
           const start = Date.now();
-          startTimes.set(file, start);
+          const logger = new Logger(); // File-specific logger
+          const context = new Context()
+            .VMContext(file)
+            .add({ console: logger })
+            .add(this.options.context)
+            .get();
 
           try {
-            const logger = new Console();
-
-            // Load the test code
             const { code, sourceMap } = await this.transformer.transform(file);
 
-            // Create isolated environment and context
             const isolated = new Isolated({
               file,
               requires: this.options.requires,
             });
-
-            const context = this.context
-              .VMContext(file)
-              .add({
-                console: logger,
-              })
-              .add(this.options.context)
-              .get();
 
             const script = isolated.script(code);
             const exec = await isolated.exec({
@@ -92,27 +83,24 @@ export class Pool {
             });
 
             const end = Date.now();
+            const status = exec.report ? exec.report.status : "failed";
 
-            // Update terminal and report results
-            const status =
-              exec.status && exec.report ? exec.report.status : "failed";
-
+            // Update terminal and assign logs to the correct file
             this.terminal.update(file, status);
-
             this.reports.set(file, {
               error: exec.error,
               duration: (end - start) / 1000,
               report: exec.report,
-              logs: logger.logs,
+              logs: logger.logs, // Scoped logs
               sourceMap,
             });
-          } catch (error: any) {
+          } catch (error) {
             const end = Date.now();
             this.reports.set(file, {
               error,
               duration: (end - start) / 1000,
               report: null,
-              logs: [],
+              logs: logger.logs, // Ensure logs are still captured
               sourceMap: {} as SourceMapConsumer,
             });
             this.terminal.update(file, "failed");
