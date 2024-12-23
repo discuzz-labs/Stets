@@ -45,10 +45,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/discuzz-labs/veve.git"
+    "url": "https://github.com/tinytools-oss/veve.git"
   },
   "bugs": {
-    "url": "https://github.com/discuzz-labs/veve/issues"
+    "url": "https://github.com/tinytools-oss/veve/issues"
   },
-  "homepage": "https://github.com/discuzz-labs/veve#readme"
+  "homepage": "https://github.com/tinytools-oss/veve#readme"
 }

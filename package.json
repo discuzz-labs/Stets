@@ -37,7 +37,6 @@
     "build": "tsc",
     "build:watch": "tsc -w",
     "build:dts": "dts-bundle-generator src/index.ts -o types/index.d.ts",
-    "lint": "eslint",
     "fmt": "prettier --write '**/*.{ts,json,md}'",
     "test": "./bin/index.js --watch"
   },
@@ -67,10 +66,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/discuzz-labs/veve.git"
+    "url": "https://github.com/tinytools-oss/veve.git"
   },
   "bugs": {
-    "url": "https://github.com/discuzz-labs/veve/issues"
+    "url": "https://github.com/tinytools-oss/veve/issues"
   },
-  "homepage": "https://github.com/discuzz-labs/veve#readme"
+  "homepage": "https://github.com/tinytools-oss/veve#readme"
 }

@@ -27,7 +27,7 @@ it("should log warning messages correctly", () => {
   assert(logger.logs[0].args).toEqual(["Test warning"]);
 });
 
-it("should handle timers correctly", () => {
+it("should handle timers correctly!", () => {
   const logger = new Logger();
 
   // Start timer
