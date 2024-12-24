@@ -53,7 +53,10 @@ export class ErrorInspect {
   }
 
   private static parse(line: string): ParsedStackFrame | null {
-    const parts = this.STACK_FRAME_REGEX.exec(line);
+    if(line.trim().length > 1000) {
+      return null;
+    }
+    const parts = this.STACK_FRAME_REGEX.exec(line.trim());
     if (!parts) return null;
 
     return {
