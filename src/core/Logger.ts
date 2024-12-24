@@ -113,7 +113,7 @@ export function replayLogs(logs: Map<string, LogEntry[]>) {
     console.log(`\nLogs for ${fileName}:\n`);
 
     entries.forEach(({ type, args }) => {
-      const formattedType = `[${type.toUpperCase()}]`
+      const formattedType = `[${type.toUpperCase()}]`;
       const message = args.join(" ");
       console.log(`${formattedType}: ${message}`);
     });

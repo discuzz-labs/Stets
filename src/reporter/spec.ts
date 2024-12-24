@@ -4,7 +4,6 @@
  * See the LICENSE file in the project root for license information.
  */
 
-
 import kleur from "kleur";
 import path from "path";
 import { SourceMapConsumer } from "source-map";
@@ -184,7 +183,6 @@ export const spec: spec = {
       file,
       { logs, error, sourceMap, duration, report },
     ] of options.reports) {
-
       if (logs.length > 0) fileLogs.set(file, logs);
       const status = report ? report.status : "failed";
       const stats = report?.stats || {

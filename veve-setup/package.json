@@ -1,13 +1,13 @@
 {
   "name": "veve-setup",
   "version": "1.0.0-beta",
-  "description": "Veve - Run tests with ease.",
+  "description": "Veve - A zero-config, type-safe, TypeScript-native testing framework and runner!",
   "type": "module",
   "bin": {
     "veve-setup": "./index.js"
   },
   "files": [
-    "dist/*"
+    "./index.js"
   ],
   "keywords": [
     "testing",

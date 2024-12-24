@@ -52,33 +52,34 @@ run();
 $ veve
 ```
 
-#### Step 3: Celebrate Your Simplicity! 🎉  
+#### Step 3: Celebrate Your Simplicity! 🎉
+
 No additional steps—just fast, type-safe tests.
 
 ---
 
 ### 🌟 Features
 
-- **Type-Safe**: Fully integrated with TypeScript.  
-- **Bring Your Own Assertion Library**: Use the built-in assertions or your favorite library.  
-- **Fast and Lightweight**: Minimal yet powerful.  
-- **Isolation**: Complete control with customizable VM contexts and esbuild plugins.  
-- **Simple Setup**: Zero config.  
+- **Type-Safe**: Fully integrated with TypeScript.
+- **Bring Your Own Assertion Library**: Use the built-in assertions or your favorite library.
+- **Fast and Lightweight**: Minimal yet powerful.
+- **Isolation**: Complete control with customizable VM contexts and esbuild plugins.
+- **Simple Setup**: Zero config.
 
 ### 🔒 Limitations
 
-- **No Top-Level Await**: Currently unsupported.  
-- **No Built-In Mocking**: Encourages the use of libraries like `proxyquire`.  
-- **No Snapshots**: This feature is planned for future versions.  
+- **No Top-Level Await**: Currently unsupported.
+- **No Built-In Mocking**: Encourages the use of libraries like `proxyquire`.
+- **No Snapshots**: This feature is planned for future versions.
 
 ---
 
 ### 📚 Resources
 
-- **Documentation**: [https://tinytools.vercel.app/veve](https://tinytools.vercel.app/veve)  
-- **GitHub**: [https://github.com/tinytools-oss/veve](https://github.com/tinytools-oss/veve)  
+- **Documentation**: [https://tinytools.vercel.app/veve](https://tinytools.vercel.app/veve)
+- **GitHub**: [https://github.com/tinytools-oss/veve](https://github.com/tinytools-oss/veve)
 
----  
+---
 
 ### 🛠 Contributing
 
