@@ -1,6 +1,6 @@
 {
   "name": "veve-setup",
-  "version": "1.0.1-beta",
+  "version": "1.0.1",
   "description": "Veve - A zero-config, type-safe, TypeScript-native testing framework and runner!",
   "type": "module",
   "bin": {
