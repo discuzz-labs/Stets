@@ -68,7 +68,7 @@ const DEFAULT_OPTIONS: Options = {
   softfail: false,
   if: true,
   retry: 0,
-  sequencial: false,
+  sequential: false,
   bench: false,
   todo: false,
   iterations: 1000,
@@ -132,7 +132,7 @@ export interface Options {
    * @type {boolean}
    * @example true // Test will run in sequence with others
    */
-  sequencial: boolean;
+  sequential: boolean;
 
   /**
    * Indicates whether the test is a benchmark test.
@@ -399,7 +399,7 @@ export class TestCase {
     options?: Partial<Options>,
   ) {
     const mergedOptions = mergeOptions({ ...options, bench: true });
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
   }
@@ -423,7 +423,7 @@ export class TestCase {
     fn: TestFunction,
     options?: Partial<Options>,
   ): void {
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceTests.push({
         description,
         fn,
@@ -451,7 +451,7 @@ export class TestCase {
     options?: Partial<Options>,
   ): void {
     const mergedOptions = mergeOptions({ ...options, retry });
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
   }
@@ -463,7 +463,7 @@ export class TestCase {
     options?: Partial<Options>,
   ): void {
     const mergedOptions = mergeOptions({ ...options, timeout });
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
   }
@@ -488,7 +488,7 @@ export class TestCase {
     options?: Partial<Options>,
   ): void {
     const mergedOptions = mergeOptions({ ...options, if: condition });
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
   }
@@ -499,7 +499,7 @@ export class TestCase {
     options?: Partial<Options>,
   ): void {
     const mergedOptions = mergeOptions({ ...options, softfail: true });
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
   }
@@ -510,7 +510,7 @@ export class TestCase {
     fn: TestFunction,
     options?: Partial<Options>,
   ): void {
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceOnlyTests.push({
         description,
         fn,
@@ -527,7 +527,7 @@ export class TestCase {
     options?: Partial<Options>,
   ): void {
     const mergedOptions = mergeOptions({ ...options, skip: true });
-    if (options?.sequencial)
+    if (options?.sequential)
       this.sequenceTests.push({ description, fn, options: mergedOptions });
     else this.tests.push({ description, fn, options: mergedOptions });
   }
