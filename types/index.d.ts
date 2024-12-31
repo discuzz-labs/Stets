@@ -1175,7 +1175,7 @@ export declare function is(received: any): Assertion;
  * @template T - The type from which method names are to be extracted.
  */
 export type MethodNames<T> = {
-	[K in keyof T]: T[K] extends Function ? K : never;
+	[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T];
 /**
  * A type that combines a function `T` with a `TrackFn` interface or type.
