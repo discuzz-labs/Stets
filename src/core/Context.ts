@@ -1,7 +1,7 @@
 import * as vm from "vm";
 import * as path from "path";
 import { createRequire } from "module";
-import { Fn, spyOn, spyOnMethod } from "../framework/Fn.js";
+import { Fn, spyOn } from "../framework/Fn.js";
 import { is, assert } from "../framework/Assertion.js";
 import TestCase from "../framework/TestCase.js";
 
@@ -54,7 +54,6 @@ export class Context {
       Fn,
       is,
       spyOn,
-      spyOnMethod,
       bench: testCase.bench.bind(testCase),
       it: testCase.it.bind(testCase),
       fail: testCase.fail.bind(testCase),
