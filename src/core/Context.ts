@@ -50,10 +50,6 @@ export class Context {
 
     this.context = {
       ...this.context,
-      assert,
-      Fn,
-      is,
-      spyOn,
       bench: testCase.bench.bind(testCase),
       it: testCase.it.bind(testCase),
       fail: testCase.fail.bind(testCase),
