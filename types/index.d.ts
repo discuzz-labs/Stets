@@ -1141,6 +1141,10 @@ export declare class TrackFn implements TrackFn {
 /**
  * Creates a tracked version of a given function.
  *
+ * This function wraps the provided function and adds tracking functionality
+ * (such as call count, arguments, return value, etc.) while still retaining 
+ * the original function's behavior.
+ *
  * @param {Function} implementation - The original function implementation.
  * @returns {TrackFn & Function} A tracked version of the provided function.
  *
@@ -1148,10 +1152,17 @@ export declare class TrackFn implements TrackFn {
  * const add = (a: number, b: number) => a + b;
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // 3
+ * console.log(trackedAdd.getCallCount()); // 1
  */
-export declare function Fn(implementation: Function): Function;
+export declare function Fn<T extends (...args: any[]) => any>(
+	implementation: T
+): T & TrackFn;
+
 /**
  * Checks if a value is a tracked function.
+ *
+ * This function determines whether the provided value is a function that 
+ * has been wrapped with tracking functionality using `Fn`.
  *
  * @param {any} value - The value to check.
  * @returns {boolean} True if the value is a tracked function, otherwise false.
@@ -1159,14 +1170,20 @@ export declare function Fn(implementation: Function): Function;
  * @example
  * const trackedAdd = Fn((a: number, b: number) => a + b);
  * console.log(isFn(trackedAdd)); // true
+ * console.log(isFn((a: number, b: number) => a + b)); // false
  */
 export declare function isFn(value: any): boolean;
+
 /**
  * Replaces a method on an object with a tracked version of the method.
  *
+ * This function wraps an existing method on an object with tracking functionality,
+ * allowing you to track how many times the method has been called, the arguments
+ * passed to it, and its return values.
+ *
  * @param {object} obj - The object containing the method.
  * @param {string} method - The name of the method to replace.
- * @returns {TrackFn & Function} The tracked version of the method.
+ * @returns {T[K] extends (...args: any[]) => any ? (T[K] & TrackFn) : never} The tracked version of the method.
  *
  * @throws {Error} If the method does not exist on the object or is not a function.
  *
@@ -1176,7 +1193,10 @@ export declare function isFn(value: any): boolean;
  * obj.multiply(2, 3); // 6
  * console.log(trackedMultiply.getCallCount()); // 1
  */
-export declare function spyOn(obj: any, method: string): Function;
+export declare function spyOn<T extends object, K extends keyof T>(
+	obj: T,
+	method: K
+): T[K] extends (...args: any[]) => any ? (T[K] & TrackFn) : never;
 /**
  * Creates a spied version of a specific method in a class instance.
  *
