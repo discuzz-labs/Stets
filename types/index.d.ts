@@ -1046,7 +1046,7 @@ export declare function assert(received: any): Assertion;
  */
 export declare function is(received: any): Assertion;
 export type MethodNames<T> = {
-	[K in keyof T]: T[K] extends Function ? K : never;
+	[K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
 }[keyof T];
 export type TrackedFunction<T extends (...args: any[]) => any> = T & TrackFn;
 export type MethodType<T, K extends keyof T> = T[K] extends (
