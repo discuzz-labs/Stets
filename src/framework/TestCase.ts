@@ -325,15 +325,8 @@ export interface Options {
  */
 export interface TestCase {
   /**
-   * The description of the test case.
-   * @example 'User login tests'
-   */
-  description: string;
-
-  /**
    * Updates the description of the test case.
    * @param description - The new description for the test case.
-   * @example testCase.should('Updated description');
    */
   should(description: string): void;
 
@@ -342,7 +335,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The function to benchmark.
    * @param options - Additional test options.
-   * @example testCase.bench('Measure performance', () => doWork());
    */
   bench(
     description: string,
@@ -356,8 +348,6 @@ export interface TestCase {
    * @param description - The description template.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example
-   * testCase.each([[1, 2], [3, 4]], 'adds %d and %d', (a, b) => expect(a + b).toBeGreaterThan(0));
    */
   each(
     table: any[],
@@ -371,7 +361,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.it('should login successfully', () => login());
    */
   it(description: string, fn: TestFunction, options?: Partial<Options>): void;
 
@@ -380,7 +369,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.sequence('processes data sequentially', () => processData());
    */
   sequence(
     description: string,
@@ -394,7 +382,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.retry(3, 'retryable test', () => flakyTest());
    */
   retry(
     retry: number,
@@ -409,7 +396,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.timeout(5000, 'should finish within 5 seconds', () => quickTest());
    */
   timeout(
     timeout: number,
@@ -422,7 +408,6 @@ export interface TestCase {
    * Adds a todo test.
    * @param description - The description of the test.
    * @param options - Additional test options.
-   * @example testCase.todo('Implement this later');
    */
   todo(description: string, options?: Partial<Options>): void;
 
@@ -432,7 +417,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.itIf(true, 'conditionally run this test', () => doTest());
    */
   itIf(
     condition:
@@ -450,7 +434,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.fail('non-critical test', () => flakyTest());
    */
   fail(description: string, fn: TestFunction, options?: Partial<Options>): void;
 
@@ -459,7 +442,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.only('critical test', () => runCriticalTest());
    */
   only(description: string, fn: TestFunction, options?: Partial<Options>): void;
 
@@ -468,7 +450,6 @@ export interface TestCase {
    * @param description - The description of the test.
    * @param fn - The test function.
    * @param options - Additional test options.
-   * @example testCase.skip('skipped test', () => doNotRun());
    */
   skip(description: string, fn: TestFunction, options?: Partial<Options>): void;
 
@@ -476,7 +457,6 @@ export interface TestCase {
    * Adds a 'beforeAll' hook to the test case.
    * @param fn - The hook function.
    * @param options - Additional options.
-   * @example testCase.beforeAll(() => setup());
    */
   beforeAll(fn: HookFunction, options?: Partial<Options>): void;
 
@@ -484,7 +464,6 @@ export interface TestCase {
    * Adds a 'beforeEach' hook to the test case.
    * @param fn - The hook function.
    * @param options - Additional options.
-   * @example testCase.beforeEach(() => setupEach());
    */
   beforeEach(fn: HookFunction, options?: Partial<Options>): void;
 
@@ -492,7 +471,6 @@ export interface TestCase {
    * Adds an 'afterAll' hook to the test case.
    * @param fn - The hook function.
    * @param options - Additional options.
-   * @example testCase.afterAll(() => teardown());
    */
   afterAll(fn: HookFunction, options?: Partial<Options>): void;
 
@@ -500,14 +478,12 @@ export interface TestCase {
    * Adds an 'afterEach' hook to the test case.
    * @param fn - The hook function.
    * @param options - Additional options.
-   * @example testCase.afterEach(() => cleanupEach());
    */
   afterEach(fn: HookFunction, options?: Partial<Options>): void;
 
   /**
    * Runs the test case and returns a test report.
    * @returns {Promise<TestReport>} The test report after execution.
-   * @example const report = await testCase.run();
    */
   run(): Promise<TestReport>;
 }
