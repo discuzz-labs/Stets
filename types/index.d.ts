@@ -1341,7 +1341,7 @@ export declare class TrackFn implements TrackFn {
 	private _exceptions;
 	private _callCount;
 	private _instances;
-	constructor(_implementation: Function);
+	constructor(_implementation: (...args: any[]) => any);
 	track: () => Function;
 	private recordCall;
 	private recordException;
