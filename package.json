@@ -1,6 +1,6 @@
 {
   "name": "veve",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Veve - A zero-config, type-safe, TypeScript-native testing framework and runner!",
   "main": "dist/index.js",
   "types": "types/index.d.ts",
@@ -10,7 +10,8 @@
   },
   "files": [
     "dist/*",
-    "bin/*"
+    "bin/*",
+    "types/*"
   ],
   "keywords": [
     "testing",
