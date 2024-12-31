@@ -1303,7 +1303,7 @@ export interface TrackFn {
 	 * const trackFn = Fn(add)
 	 * trackFn.use((a, b) => a * b)
 	 */
-	use(fn: Function): TrackFn;
+	use(fn: (...args: any[]) => any): TrackFn;
 	/**
 	 * Resets the state of the tracked function, clearing all recorded calls, arguments, and results
 	 * @returns {TrackFn} The reset tracked function
