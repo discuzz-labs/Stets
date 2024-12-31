@@ -58,7 +58,6 @@
     "kleur": "^4.1.5",
     "pretty-format": "^29.7.0",
     "source-map": "^0.7.4",
-    "veve": "file:./",
     "watcher": "^2.3.1"
   },
   "engines": {
@@ -71,5 +70,5 @@
   "bugs": {
     "url": "https://github.com/tinytools-oss/veve/issues"
   },
-  "homepage": "https://tinytools.vercel.app/veve"
+  "homepage": "https://tinytools.vercel.app/docs/veve"
 }
