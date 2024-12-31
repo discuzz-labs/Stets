@@ -131,7 +131,7 @@ it("spies on classes", () => {
   assert(spiedGreet.getLatestCall()?.result).toBe("Hello, Alice");
 
   // Test instance method
-  const spiedMethod = spyOnMethod(testClass, "method");
+  const spiedMethod = spyOn(testClass, "method");
   assert(testClass.method(5)).toBe(10);
   assert(spiedMethod.wasCalled()).toBe(true);
   assert(spiedMethod.wasCalledWith(5)).toBe(true);
