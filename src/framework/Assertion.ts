@@ -107,7 +107,7 @@ export interface Assertion {
 
   /**
    * Asserts that the received value is an instance of the given class.
-   * @param {Function} expectedClass The class to check against
+   * @param {any} expected The class to check against
    * @returns {Assertion | boolean} The assertion result
    * @throws {AssertionError} If the assertion fails
    *
@@ -115,7 +115,7 @@ export interface Assertion {
    * assert(new Date()).toBeInstanceOf(Date); // Passes
    * assert({}).toBeInstanceOf(Date); // Fails
    */
-  toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean;
+  toBeInstanceOf(expected: any): Assertion | boolean;
 
   /**
    * Asserts that the received value is less than or equal to the expected value.
@@ -571,10 +571,10 @@ export class Assertion {
     );
   }
 
-  toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean {
+  toBeInstanceOf(expected: any): Assertion | boolean {
     return this.assert(
-      this.received.constructor.name === expectedClass.name,
-      `Expected value to be an instance of ${expectedClass.name}, but received ${this.received.constructor.name}`,
+      this.received.constructor.name === expected.name,
+      `Expected value to be an instance of ${expected.name}, but received ${this.received.constructor.name}`,
       "toBeInstanceOf",
     );
   }

@@ -11,12 +11,15 @@ Thank you for your interest in contributing to our project! This document outlin
 ## Contribution Process
 
 ### 1. Create an Issue First
+
 Before making any changes, create an issue describing what you want to implement or fix. This ensures:
+
 - No duplicate work
 - Discussion of the proposed changes
 - Agreement on the approach before work begins
 
 ### 2. Branch Naming Convention
+
 Create a dedicated branch for your issue using the following convention:
 
 - `fix/issue-number/brief-description` - for bug fixes
@@ -28,6 +31,7 @@ Create a dedicated branch for your issue using the following convention:
 Example: `feat/123/add-user-authentication`
 
 ### 3. Commit Message Guidelines
+
 Follow these conventions for commit messages:
 
 ```
@@ -39,6 +43,7 @@ Follow these conventions for commit messages:
 ```
 
 Types:
+
 - `fix:` - bug fixes
 - `feat:` - new features
 - `docs:` - documentation changes
@@ -48,6 +53,7 @@ Types:
 - `chore:` - maintenance tasks
 
 Example:
+
 ```
 feat: add user authentication system
 
@@ -95,6 +101,7 @@ Closes #123
 ## Questions or Need Help?
 
 If you have questions or need help with the contribution process, please:
+
 1. Check existing issues
 2. Create a new issue with the `question` label
 3. Wait for maintainer response

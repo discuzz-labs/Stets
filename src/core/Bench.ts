@@ -7,28 +7,28 @@
 export interface BenchmarkOptions {
   /**
    * Number of iterations to run the benchmark
-   * 
+   *
    * @type {number | undefined}
    */
   iterations?: number;
 
   /**
    * Number of warmup iterations to run before benchmarking
-   * 
+   *
    * @type {number | undefined}
    */
   warmup?: number;
 
   /**
    * Timeout value in milliseconds for the benchmark
-   * 
+   *
    * @type {number | undefined}
    */
   timeout?: number;
 
   /**
    * Confidence level for the benchmark results
-   * 
+   *
    * @type {number | undefined}
    */
   confidence?: number;
@@ -37,42 +37,42 @@ export interface BenchmarkOptions {
 export interface BenchmarkMetrics {
   /**
    * Mean latency in milliseconds
-   * 
+   *
    * @type {number}
    */
   meanLatency: number;
 
   /**
    * Median latency in milliseconds
-   * 
+   *
    * @type {number}
    */
   medianLatency: number;
 
   /**
    * 95th percentile latency in milliseconds
-   * 
+   *
    * @type {number}
    */
   p95Latency: number;
 
   /**
    * Standard deviation of latency in milliseconds
-   * 
+   *
    * @type {number}
    */
   stdDev: number;
 
   /**
    * Operations per second
-   * 
+   *
    * @type {number}
    */
   opsPerSecond: number;
 
   /**
    * Confidence interval for the benchmark results
-   * 
+   *
    * @type {{ lower: number, upper: number }}
    */
   confidenceInterval: {
@@ -82,26 +82,25 @@ export interface BenchmarkMetrics {
 
   /**
    * Number of samples collected during benchmarking
-   * 
+   *
    * @type {number}
    */
   samples: number;
 
   /**
    * Timestamp when the benchmark was completed
-   * 
+   *
    * @type {number}
    */
   timestamp: number;
 
   /**
    * Whether the benchmark timed out
-   * 
+   *
    * @type {boolean}
    */
   timedOut: boolean;
 }
-
 
 export class Bench {
   static async run(
@@ -152,7 +151,7 @@ export class Bench {
   private static getHighResTime(): number {
     if (typeof process !== "undefined" && process.hrtime) {
       const [seconds, nanoseconds] = process.hrtime();
-      return seconds * 1000 + nanoseconds / 1_000_000; 
+      return seconds * 1000 + nanoseconds / 1_000_000;
     }
     return performance.now();
   }

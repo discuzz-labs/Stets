@@ -11,3 +11,4 @@ export { json } from "./reporter/json.js";
 
 export { is, assert, Assertion } from "./framework/Assertion.js";
 export { isFn, Fn, spyOn, TrackFn } from "./framework/Fn.js";
+export { TestCase } from "./framework/TestCase.js";

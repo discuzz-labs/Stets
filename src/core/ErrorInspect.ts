@@ -62,7 +62,6 @@ export interface ErrorInspectOptions {
   noColor?: boolean;
 }
 
-
 export class ErrorInspect {
   private static readonly STACK_FRAME_REGEX =
     /^\s*at (?!new Script) ?(?:([^\(]+) )?\(?([^:]+):(\d+):(\d+)\)?\s*$/i;
@@ -96,7 +95,7 @@ export class ErrorInspect {
   }
 
   private static parse(line: string): ParsedStackFrame | null {
-    if(line.trim().length > 1000) {
+    if (line.trim().length > 1000) {
       return null;
     }
     const parts = this.STACK_FRAME_REGEX.exec(line.trim());

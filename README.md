@@ -65,7 +65,7 @@ No additional steps—just fast, type-safe tests.
 - **Fast and Lightweight**: Minimal yet powerful.
 - **Isolation**: Complete control with customizable VM contexts and esbuild plugins.
 - **Simple Setup**: Zero config.
-- 
+-
 
 ### 🔒 Limitations
 

@@ -16,7 +16,7 @@ export interface spec extends Reporter {}
 
 /**
  * The specification for the specReporter that generates and outputs a test report to the console.
- * 
+ *
  * @type {spec}
  */
 export const spec: spec = {

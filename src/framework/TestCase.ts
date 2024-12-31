@@ -13,21 +13,21 @@ export type TestFunction = () => void | Promise<void>;
 
 export type HookFunction = () => void | Promise<void>;
 
-export type Status = 
+export type Status =
   /**
    * Test status types: passed, failed, softfailed, skipped, or todo
    * @type {'passed' | 'failed' | 'softfailed' | 'skipped' | 'todo'}
    */
   "passed" | "failed" | "softfailed" | "skipped" | "todo";
 
-export type TestCaseStatus = 
+export type TestCaseStatus =
   /**
    * Test case status types: passed, failed, pending, or empty
    * @type {'passed' | 'failed' | 'pending' | 'empty'}
    */
   "passed" | "failed" | "pending" | "empty";
 
-export type HookTypes = 
+export type HookTypes =
   /**
    * Hook types for setup and teardown: afterAll, afterEach, beforeAll, or beforeEach
    * @type {'afterAll' | 'afterEach' | 'beforeAll' | 'beforeEach'}
@@ -226,7 +226,7 @@ export interface TestReport {
 export interface Options {
   /**
    * The maximum time (in milliseconds) a test is allowed to run before timing out
-   * 
+   *
    * @type {number}
    * @default 300000
    */
@@ -234,7 +234,7 @@ export interface Options {
 
   /**
    * Indicates whether the test should be skipped
-   * 
+   *
    * @type {boolean}
    * @default false
    */
@@ -243,7 +243,7 @@ export interface Options {
   /**
    * A condition to determine whether the test should run
    * Can be a boolean, a function returning a boolean, or a promise resolving to a boolean
-   * 
+   *
    * @type {boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined)}
    * @default true
    */
@@ -255,7 +255,7 @@ export interface Options {
 
   /**
    * The number of times the test should be retried upon failure
-   * 
+   *
    * @type {number}
    * @default 0
    */
@@ -263,7 +263,7 @@ export interface Options {
 
   /**
    * Indicates whether the test should allow soft failures without halting the test suite
-   * 
+   *
    * @type {boolean}
    * @default false
    */
@@ -271,7 +271,7 @@ export interface Options {
 
   /**
    * Indicates whether the test should be run sequentially
-   * 
+   *
    * @type {boolean}
    * @default false
    */
@@ -279,7 +279,7 @@ export interface Options {
 
   /**
    * Indicates whether the test is a benchmark test
-   * 
+   *
    * @type {boolean}
    * @default false
    */
@@ -287,7 +287,7 @@ export interface Options {
 
   /**
    * Indicates whether the test is marked as a 'to-do' item
-   * 
+   *
    * @type {boolean}
    * @default false
    */
@@ -295,7 +295,7 @@ export interface Options {
 
   /**
    * The number of iterations the test should run
-   * 
+   *
    * @type {number | undefined}
    * @default 1000
    */
@@ -303,7 +303,7 @@ export interface Options {
 
   /**
    * The number of warmup iterations before the actual test begins
-   * 
+   *
    * @type {number | undefined}
    * @default 50
    */
@@ -313,7 +313,7 @@ export interface Options {
    * The confidence level for statistical calculations (between 0 and 1)
    * Used to calculate confidence intervals for the benchmark results
    * Higher values mean more confidence but wider intervals
-   * 
+   *
    * @type {number | undefined}
    * @default 0.95
    */
@@ -487,7 +487,6 @@ export interface TestCase {
    */
   run(): Promise<TestReport>;
 }
-
 
 const DEFAULT_OPTIONS: Options = {
   timeout: 300_000,

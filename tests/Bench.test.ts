@@ -1,4 +1,4 @@
-import "veve";
+import { assert } from "veve";
 import {
   Bench,
   BenchmarkOptions,

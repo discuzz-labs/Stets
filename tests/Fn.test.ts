@@ -1,4 +1,4 @@
-import "veve";
+import { assert, spyOn, Fn } from "veve";
 import { isFn } from "../dist/framework/Fn.js";
 
 should("Test TrackFn utilities");

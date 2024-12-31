@@ -16,7 +16,7 @@ export interface junit extends Reporter {}
 
 /**
  * Generates a JUnit XML report from the provided test results.
- * 
+ *
  * @type {junit}
  */
 

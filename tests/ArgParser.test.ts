@@ -1,4 +1,4 @@
-import "veve";
+import { assert } from "veve";
 import proxyquire from "proxyquire";
 
 should("Test ArgParser");

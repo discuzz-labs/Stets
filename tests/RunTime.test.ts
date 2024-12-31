@@ -1,5 +1,5 @@
 import proxyquire from "proxyquire";
-import "veve";
+import { assert } from "veve";
 
 should("Test RunTime");
 

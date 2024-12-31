@@ -7,7 +7,7 @@ const config: Veve = {
     "**/*.test.js",
     "**/*.spec.ts",
     "**/*.spec.js",
-    "**/__tests__/**/*.ts", 
+    "**/__tests__/**/*.ts",
     "**/__tests__/**/*.js",
   ],
   exclude: [

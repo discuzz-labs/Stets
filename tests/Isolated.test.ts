@@ -1,6 +1,6 @@
 import { Isolated } from "../dist/core/Isolated.js";
 import { Script, createContext } from "vm";
-import "veve";
+import { assert } from "veve";
 
 should("Test Isolated");
 

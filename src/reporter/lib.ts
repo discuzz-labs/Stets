@@ -1,6 +1,11 @@
 import { SourceMapConsumer } from "source-map";
 import { BenchmarkMetrics } from "../core/Bench.js";
-import { TestCaseStatus, TestReport, Stats, Status } from "../framework/TestCase.js";
+import {
+  TestCaseStatus,
+  TestReport,
+  Stats,
+  Status,
+} from "../framework/TestCase.js";
 import kleur from "kleur";
 import { ErrorInspect, ErrorMetadata } from "../core/ErrorInspect.js";
 
@@ -10,49 +15,49 @@ import { ErrorInspect, ErrorMetadata } from "../core/ErrorInspect.js";
 export interface LogArgs {
   /**
    * A description of the test case or log entry
-   * 
+   *
    * @type {string}
    */
   description: string;
 
   /**
    * The file associated with the test case, if any
-   * 
+   *
    * @type {string | undefined}
    */
   file?: string;
 
   /**
    * The duration of the test case in milliseconds
-   * 
+   *
    * @type {number | undefined}
    */
   duration?: number;
 
   /**
    * The status of the test case (e.g., passed, failed)
-   * 
+   *
    * @type {TestCaseStatus | undefined}
    */
   status?: TestCaseStatus;
 
   /**
    * The statistics related to the test case
-   * 
+   *
    * @type {Stats | undefined}
    */
   stats?: Stats;
 
   /**
    * Metadata related to an error that occurred during the test
-   * 
+   *
    * @type {ErrorMetadata | undefined}
    */
   error?: ErrorMetadata;
 
   /**
    * The number of retries for the test case
-   * 
+   *
    * @type {number | undefined}
    * @default 0
    */
@@ -60,7 +65,7 @@ export interface LogArgs {
 
   /**
    * Indicates whether the test case failed softly (without breaking the suite)
-   * 
+   *
    * @type {boolean | undefined}
    * @default false
    */
@@ -68,7 +73,7 @@ export interface LogArgs {
 
   /**
    * Benchmark metrics related to the test case
-   * 
+   *
    * @type {BenchmarkMetrics | null | undefined}
    */
   bench?: BenchmarkMetrics | null;
@@ -80,21 +85,21 @@ export interface LogArgs {
 export interface ReportOptions {
   /**
    * The file path where the report will be saved
-   * 
+   *
    * @type {string}
    */
   file: string;
 
   /**
    * The actual test report data
-   * 
+   *
    * @type {TestReport}
    */
   report: TestReport;
 
   /**
    * The source map consumer for mapping code to original source
-   * 
+   *
    * @type {SourceMapConsumer}
    */
   sourceMap: SourceMapConsumer;
@@ -143,7 +148,7 @@ export function log(
 
 /**
  * Formats benchmark metrics into a readable string
- * 
+ *
  * @param {BenchmarkMetrics} data - The benchmark metrics to format
  * @returns {string} - A formatted string displaying the benchmark results
  */
@@ -188,7 +193,7 @@ export function benchFormat(data: BenchmarkMetrics): string {
 
 /**
  * Generates a detailed test report based on the test results and a source map
- * 
+ *
  * @param {ReportOptions} options - The report options containing the file, report data, and source map
  * @param {string} options.file - The file path to associate with the report
  * @param {TestReport} options.report - The report data including test results
@@ -196,7 +201,11 @@ export function benchFormat(data: BenchmarkMetrics): string {
  * @returns {string} - A formatted string representing the generated report
  */
 
-export function generateReport({ file, report, sourceMap }: ReportOptions): string {
+export function generateReport({
+  file,
+  report,
+  sourceMap,
+}: ReportOptions): string {
   const items = [...report.tests, ...report.hooks];
   if (items.length === 0) {
     return `${report.description} is empty`;
@@ -230,7 +239,7 @@ export function generateReport({ file, report, sourceMap }: ReportOptions): stri
 
 /**
  * Generates a summary of the test run results
- * 
+ *
  * @param {Object} stats - The statistics of the test run
  * @param {number} stats.total - The total number of tests
  * @param {number} stats.passed - The number of passed tests

@@ -1,5 +1,5 @@
 import { Logger } from "../dist/core/Logger.js";
-import "veve";
+import { assert } from "veve";
 
 should("Test Logger");
 
