@@ -2,23 +2,66 @@ import esbuild from "esbuild";
 import { SourceMapConsumer } from "source-map";
 import kleur from "kleur";
 
+/**
+ * Represents a parsed stack frame.
+ */
 interface ParsedStackFrame {
+  /**
+   * The file where the error occurred.
+   */
   file?: string;
+
+  /**
+   * The line number where the error occurred.
+   */
   lineNumber?: number;
+
+  /**
+   * The column number where the error occurred.
+   */
   column?: number;
 }
 
+/**
+ * Metadata associated with an error.
+ */
 export interface ErrorMetadata {
+  /**
+   * The error message.
+   */
   message: string;
+
+  /**
+   * The stack trace of the error (optional).
+   */
   stack?: string;
 }
 
+/**
+ * Options for inspecting an error.
+ */
 export interface ErrorInspectOptions {
+  /**
+   * The error to be inspected. Can be a custom error object or a native JavaScript Error.
+   */
   error: ErrorMetadata | Error;
+
+  /**
+   * The file in which the error occurred (optional).
+   */
   file?: string;
+
+  /**
+   * The source map to resolve the error's stack trace (optional).
+   */
   sourceMap?: SourceMapConsumer;
+
+  /**
+   * Whether to disable colored output in the error inspection (optional).
+   */
   noColor?: boolean;
 }
+
 
 export class ErrorInspect {
   private static readonly STACK_FRAME_REGEX =

@@ -10,102 +10,242 @@ import { ErrorMetadata } from "../core/ErrorInspect.js";
 import { BenchmarkMetrics } from "../core/Bench.js";
 
 export type TestFunction = () => void | Promise<void>;
+
 export type HookFunction = () => void | Promise<void>;
-export type Status = "passed" | "failed" | "softfailed" | "skipped" | "todo";
-export type TestCaseStatus = "passed" | "failed" | "pending" | "empty";
-export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
+
+export type Status = 
+  /**
+   * Test status types: passed, failed, softfailed, skipped, or todo
+   * @type {'passed' | 'failed' | 'softfailed' | 'skipped' | 'todo'}
+   */
+  "passed" | "failed" | "softfailed" | "skipped" | "todo";
+
+export type TestCaseStatus = 
+  /**
+   * Test case status types: passed, failed, pending, or empty
+   * @type {'passed' | 'failed' | 'pending' | 'empty'}
+   */
+  "passed" | "failed" | "pending" | "empty";
+
+export type HookTypes = 
+  /**
+   * Hook types for setup and teardown: afterAll, afterEach, beforeAll, or beforeEach
+   * @type {'afterAll' | 'afterEach' | 'beforeAll' | 'beforeEach'}
+   */
+  "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
 
 export interface Test {
+  /**
+   * Description of the test
+   * @type {string}
+   */
   description: string;
+
+  /**
+   * The function to execute for the test
+   * @type {TestFunction}
+   */
   fn: TestFunction;
+
+  /**
+   * Test options
+   * @type {Options}
+   */
   options: Options;
 }
 
 export interface Hook {
+  /**
+   * Description of the hook
+   * @type {HookTypes}
+   */
   description: HookTypes;
+
+  /**
+   * The function to execute for the hook
+   * @type {HookFunction}
+   */
   fn: HookFunction;
+
+  /**
+   * Hook options
+   * @type {Options}
+   */
   options: Options;
 }
 
 export type TestResult = {
+  /**
+   * Description of the test result
+   * @type {string}
+   */
   description: string;
+
+  /**
+   * The status of the test result
+   * @type {Status}
+   */
   status: Status;
+
+  /**
+   * Number of retries for the test
+   * @type {number}
+   */
   retries: number;
+
+  /**
+   * Duration of the test in milliseconds
+   * @type {number}
+   */
   duration: number;
+
+  /**
+   * Error metadata if the test failed
+   * @type {ErrorMetadata | undefined}
+   */
   error?: ErrorMetadata;
+
+  /**
+   * Benchmark metrics for the test
+   * @type {BenchmarkMetrics | null}
+   */
   bench: BenchmarkMetrics | null;
 };
 
 export type HookResult = {
+  /**
+   * Description of the hook result
+   * @type {HookTypes}
+   */
   description: HookTypes;
+
+  /**
+   * The status of the hook result
+   * @type {Status}
+   */
   status: Status;
+
+  /**
+   * Number of retries for the hook
+   * @type {number}
+   */
   retries: number;
+
+  /**
+   * Duration of the hook in milliseconds
+   * @type {number}
+   */
   duration: number;
+
+  /**
+   * Error metadata if the hook failed
+   * @type {ErrorMetadata | undefined}
+   */
   error?: ErrorMetadata;
+
+  /**
+   * Benchmark metrics for the hook (always null)
+   * @type {null}
+   */
   bench: null;
 };
 
 export interface Stats {
+  /**
+   * Total number of tests
+   * @type {number}
+   */
   total: number;
+
+  /**
+   * Number of skipped tests
+   * @type {number}
+   */
   skipped: number;
+
+  /**
+   * Number of passed tests
+   * @type {number}
+   */
   passed: number;
+
+  /**
+   * Number of failed tests
+   * @type {number}
+   */
   failed: number;
+
+  /**
+   * Number of softfailed tests
+   * @type {number}
+   */
   softfailed: number;
+
+  /**
+   * Number of tests marked as todo
+   * @type {number}
+   */
   todo: number;
 }
 
 export interface TestReport {
+  /**
+   * Test statistics
+   * @type {Stats}
+   */
   stats: Stats;
+
+  /**
+   * Description of the test report
+   * @type {string}
+   */
   description: string;
+
+  /**
+   * Overall status of the test case
+   * @type {TestCaseStatus}
+   */
   status: TestCaseStatus;
+
+  /**
+   * List of test results
+   * @type {TestResult[]}
+   */
   tests: TestResult[];
+
+  /**
+   * List of hook results
+   * @type {HookResult[]}
+   */
   hooks: HookResult[];
 }
 
-const DEFAULT_OPTIONS: Options = {
-  timeout: 300_000,
-  skip: false,
-  softfail: false,
-  if: true,
-  retry: 0,
-  sequential: false,
-  bench: false,
-  todo: false,
-  iterations: 1000,
-  warmup: 50,
-  confidence: 0.95,
-};
-
-// Merge the provided options with the default options
-function mergeOptions(options?: Partial<Options>): Options {
-  return { ...DEFAULT_OPTIONS, ...options };
-}
-
 /**
- * Interface representing configuration options for a test case.
+ * Interface representing configuration options for a test case
  */
 export interface Options {
   /**
-   * The maximum time (in milliseconds) a test is allowed to run before timing out.
+   * The maximum time (in milliseconds) a test is allowed to run before timing out
+   * 
    * @type {number}
-   * @example 5000 // 5 seconds timeout
+   * @default 300000
    */
   timeout: number;
 
   /**
-   * Indicates whether the test should be skipped.
+   * Indicates whether the test should be skipped
+   * 
    * @type {boolean}
-   * @example true // Test will be skipped
+   * @default false
    */
   skip: boolean;
 
   /**
-   * A condition to determine whether the test should run.
-   * Can be a boolean, a function returning a boolean, or a promise resolving to a boolean.
+   * A condition to determine whether the test should run
+   * Can be a boolean, a function returning a boolean, or a promise resolving to a boolean
+   * 
    * @type {boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined)}
-   * @example
-   * true // Test will run
-   * () => environment === 'production' // Conditional test execution
+   * @default true
    */
   if:
     | boolean
@@ -114,62 +254,68 @@ export interface Options {
     | (() => boolean | Promise<boolean> | null | undefined);
 
   /**
-   * The number of times the test should be retried upon failure.
+   * The number of times the test should be retried upon failure
+   * 
    * @type {number}
-   * @example 3 // Retry the test 3 times
+   * @default 0
    */
   retry: number;
 
   /**
-   * Indicates whether the test should allow soft failures without halting the test suite.
+   * Indicates whether the test should allow soft failures without halting the test suite
+   * 
    * @type {boolean}
-   * @example true // Test can fail without breaking the suite
+   * @default false
    */
   softfail: boolean;
 
   /**
-   * Indicates whether the test should be run sequentially.
+   * Indicates whether the test should be run sequentially
+   * 
    * @type {boolean}
-   * @example true // Test will run in sequence with others
+   * @default false
    */
   sequential: boolean;
 
   /**
-   * Indicates whether the test is a benchmark test.
+   * Indicates whether the test is a benchmark test
+   * 
    * @type {boolean}
-   * @example true // Marks the test as a benchmark
+   * @default false
    */
   bench: boolean;
 
   /**
-   * Indicates whether the test is marked as a 'to-do' item.
+   * Indicates whether the test is marked as a 'to-do' item
+   * 
    * @type {boolean}
-   * @example true // Test is marked as a to-do
+   * @default false
    */
   todo: boolean;
 
   /**
-   * The number of iterations the test should run.
+   * The number of iterations the test should run
+   * 
    * @type {number | undefined}
-   * @example 100 // Run the test 100 times
+   * @default 1000
    */
   iterations: number;
 
   /**
-   * The number of warmup iterations before the actual test begins.
+   * The number of warmup iterations before the actual test begins
+   * 
    * @type {number | undefined}
-   * @example 10 // Perform 10 warmup iterations before testing
+   * @default 50
    */
   warmup: number;
 
   /**
-   * The confidence level for statistical calculations (between 0 and 1).
-   * Used to calculate confidence intervals for the benchmark results.
-   * Higher values mean more confidence but wider intervals.
+   * The confidence level for statistical calculations (between 0 and 1)
+   * Used to calculate confidence intervals for the benchmark results
+   * Higher values mean more confidence but wider intervals
+   * 
    * @type {number | undefined}
    * @default 0.95
-   * @example 0.99 // Use 99% confidence level for more rigorous results
-   * @example 0.90 // Use 90% confidence level for narrower intervals
    */
   confidence: number;
 }
@@ -366,7 +512,26 @@ export interface TestCase {
   run(): Promise<TestReport>;
 }
 
-// Top Level API
+
+const DEFAULT_OPTIONS: Options = {
+  timeout: 300_000,
+  skip: false,
+  softfail: false,
+  if: true,
+  retry: 0,
+  sequential: false,
+  bench: false,
+  todo: false,
+  iterations: 1000,
+  warmup: 50,
+  confidence: 0.95,
+};
+
+// Merge the provided options with the default options
+function mergeOptions(options?: Partial<Options>): Options {
+  return { ...DEFAULT_OPTIONS, ...options };
+}
+
 export class TestCase {
   public description: string;
   public tests: Test[];

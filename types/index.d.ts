@@ -2,80 +2,500 @@
 
 import { Plugin as Plugin$1 } from 'esbuild';
 import { SourceMapConsumer } from 'source-map';
-import "./global"
 
 export interface LogEntry {
 	type: string;
 	args: any[];
 }
+/**
+ * Metadata associated with an error.
+ */
 export interface ErrorMetadata {
+	/**
+	 * The error message.
+	 */
 	message: string;
+	/**
+	 * The stack trace of the error (optional).
+	 */
 	stack?: string;
 }
-export interface ErrorInspectOptions {
-	error: ErrorMetadata | Error;
-	file?: string;
-	sourceMap?: SourceMapConsumer;
-	noColor?: boolean;
-}
-export declare class ErrorInspect {
-	private static readonly STACK_FRAME_REGEX;
-	private static readonly CONTEXT_LINES;
-	private static colorize;
-	private static line;
-	private static parse;
-	private static stack;
-	private static context;
-	private static buildMessage;
-	static format(options: ErrorInspectOptions): string;
-}
 export interface BenchmarkMetrics {
+	/**
+	 * Mean latency in milliseconds
+	 *
+	 * @type {number}
+	 */
 	meanLatency: number;
+	/**
+	 * Median latency in milliseconds
+	 *
+	 * @type {number}
+	 */
 	medianLatency: number;
+	/**
+	 * 95th percentile latency in milliseconds
+	 *
+	 * @type {number}
+	 */
 	p95Latency: number;
+	/**
+	 * Standard deviation of latency in milliseconds
+	 *
+	 * @type {number}
+	 */
 	stdDev: number;
+	/**
+	 * Operations per second
+	 *
+	 * @type {number}
+	 */
 	opsPerSecond: number;
+	/**
+	 * Confidence interval for the benchmark results
+	 *
+	 * @type {{ lower: number, upper: number }}
+	 */
 	confidenceInterval: {
 		lower: number;
 		upper: number;
 	};
+	/**
+	 * Number of samples collected during benchmarking
+	 *
+	 * @type {number}
+	 */
 	samples: number;
+	/**
+	 * Timestamp when the benchmark was completed
+	 *
+	 * @type {number}
+	 */
 	timestamp: number;
+	/**
+	 * Whether the benchmark timed out
+	 *
+	 * @type {boolean}
+	 */
 	timedOut: boolean;
 }
-export type Status = "passed" | "failed" | "softfailed" | "skipped" | "todo";
-export type TestCaseStatus = "passed" | "failed" | "pending" | "empty";
-export type HookTypes = "afterAll" | "afterEach" | "beforeAll" | "beforeEach";
-export type TestResult = {
+export type TestFunction = () => void | Promise<void>;
+export type HookFunction = () => void | Promise<void>;
+export type Status = 
+/**
+ * Test status types: passed, failed, softfailed, skipped, or todo
+ * @type {'passed' | 'failed' | 'softfailed' | 'skipped' | 'todo'}
+ */
+"passed" | "failed" | "softfailed" | "skipped" | "todo";
+export type TestCaseStatus = 
+/**
+ * Test case status types: passed, failed, pending, or empty
+ * @type {'passed' | 'failed' | 'pending' | 'empty'}
+ */
+"passed" | "failed" | "pending" | "empty";
+export type HookTypes = 
+/**
+ * Hook types for setup and teardown: afterAll, afterEach, beforeAll, or beforeEach
+ * @type {'afterAll' | 'afterEach' | 'beforeAll' | 'beforeEach'}
+ */
+"afterAll" | "afterEach" | "beforeAll" | "beforeEach";
+export interface Test {
+	/**
+	 * Description of the test
+	 * @type {string}
+	 */
 	description: string;
+	/**
+	 * The function to execute for the test
+	 * @type {TestFunction}
+	 */
+	fn: TestFunction;
+	/**
+	 * Test options
+	 * @type {Options}
+	 */
+	options: Options;
+}
+export interface Hook {
+	/**
+	 * Description of the hook
+	 * @type {HookTypes}
+	 */
+	description: HookTypes;
+	/**
+	 * The function to execute for the hook
+	 * @type {HookFunction}
+	 */
+	fn: HookFunction;
+	/**
+	 * Hook options
+	 * @type {Options}
+	 */
+	options: Options;
+}
+export type TestResult = {
+	/**
+	 * Description of the test result
+	 * @type {string}
+	 */
+	description: string;
+	/**
+	 * The status of the test result
+	 * @type {Status}
+	 */
 	status: Status;
+	/**
+	 * Number of retries for the test
+	 * @type {number}
+	 */
 	retries: number;
+	/**
+	 * Duration of the test in milliseconds
+	 * @type {number}
+	 */
 	duration: number;
+	/**
+	 * Error metadata if the test failed
+	 * @type {ErrorMetadata | undefined}
+	 */
 	error?: ErrorMetadata;
+	/**
+	 * Benchmark metrics for the test
+	 * @type {BenchmarkMetrics | null}
+	 */
 	bench: BenchmarkMetrics | null;
 };
 export type HookResult = {
+	/**
+	 * Description of the hook result
+	 * @type {HookTypes}
+	 */
 	description: HookTypes;
+	/**
+	 * The status of the hook result
+	 * @type {Status}
+	 */
 	status: Status;
+	/**
+	 * Number of retries for the hook
+	 * @type {number}
+	 */
 	retries: number;
+	/**
+	 * Duration of the hook in milliseconds
+	 * @type {number}
+	 */
 	duration: number;
+	/**
+	 * Error metadata if the hook failed
+	 * @type {ErrorMetadata | undefined}
+	 */
 	error?: ErrorMetadata;
+	/**
+	 * Benchmark metrics for the hook (always null)
+	 * @type {null}
+	 */
 	bench: null;
 };
 export interface Stats {
+	/**
+	 * Total number of tests
+	 * @type {number}
+	 */
 	total: number;
+	/**
+	 * Number of skipped tests
+	 * @type {number}
+	 */
 	skipped: number;
+	/**
+	 * Number of passed tests
+	 * @type {number}
+	 */
 	passed: number;
+	/**
+	 * Number of failed tests
+	 * @type {number}
+	 */
 	failed: number;
+	/**
+	 * Number of softfailed tests
+	 * @type {number}
+	 */
 	softfailed: number;
+	/**
+	 * Number of tests marked as todo
+	 * @type {number}
+	 */
 	todo: number;
 }
 export interface TestReport {
+	/**
+	 * Test statistics
+	 * @type {Stats}
+	 */
 	stats: Stats;
+	/**
+	 * Description of the test report
+	 * @type {string}
+	 */
 	description: string;
+	/**
+	 * Overall status of the test case
+	 * @type {TestCaseStatus}
+	 */
 	status: TestCaseStatus;
+	/**
+	 * List of test results
+	 * @type {TestResult[]}
+	 */
 	tests: TestResult[];
+	/**
+	 * List of hook results
+	 * @type {HookResult[]}
+	 */
 	hooks: HookResult[];
+}
+/**
+ * Interface representing configuration options for a test case
+ */
+export interface Options {
+	/**
+	 * The maximum time (in milliseconds) a test is allowed to run before timing out
+	 *
+	 * @type {number}
+	 * @default 300000
+	 */
+	timeout: number;
+	/**
+	 * Indicates whether the test should be skipped
+	 *
+	 * @type {boolean}
+	 * @default false
+	 */
+	skip: boolean;
+	/**
+	 * A condition to determine whether the test should run
+	 * Can be a boolean, a function returning a boolean, or a promise resolving to a boolean
+	 *
+	 * @type {boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined)}
+	 * @default true
+	 */
+	if: boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined);
+	/**
+	 * The number of times the test should be retried upon failure
+	 *
+	 * @type {number}
+	 * @default 0
+	 */
+	retry: number;
+	/**
+	 * Indicates whether the test should allow soft failures without halting the test suite
+	 *
+	 * @type {boolean}
+	 * @default false
+	 */
+	softfail: boolean;
+	/**
+	 * Indicates whether the test should be run sequentially
+	 *
+	 * @type {boolean}
+	 * @default false
+	 */
+	sequential: boolean;
+	/**
+	 * Indicates whether the test is a benchmark test
+	 *
+	 * @type {boolean}
+	 * @default false
+	 */
+	bench: boolean;
+	/**
+	 * Indicates whether the test is marked as a 'to-do' item
+	 *
+	 * @type {boolean}
+	 * @default false
+	 */
+	todo: boolean;
+	/**
+	 * The number of iterations the test should run
+	 *
+	 * @type {number | undefined}
+	 * @default 1000
+	 */
+	iterations: number;
+	/**
+	 * The number of warmup iterations before the actual test begins
+	 *
+	 * @type {number | undefined}
+	 * @default 50
+	 */
+	warmup: number;
+	/**
+	 * The confidence level for statistical calculations (between 0 and 1)
+	 * Used to calculate confidence intervals for the benchmark results
+	 * Higher values mean more confidence but wider intervals
+	 *
+	 * @type {number | undefined}
+	 * @default 0.95
+	 */
+	confidence: number;
+}
+/**
+ * Interface representing a test case and its associated methods and properties.
+ */
+export interface TestCase {
+	/**
+	 * The description of the test case.
+	 * @example 'User login tests'
+	 */
+	description: string;
+	/**
+	 * Updates the description of the test case.
+	 * @param description - The new description for the test case.
+	 * @example testCase.should('Updated description');
+	 */
+	should(description: string): void;
+	/**
+	 * Defines a benchmark test.
+	 * @param description - The description of the test.
+	 * @param fn - The function to benchmark.
+	 * @param options - Additional test options.
+	 * @example testCase.bench('Measure performance', () => doWork());
+	 */
+	bench(description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Defines a parameterized test for each entry in the provided table.
+	 * @param table - An array of test data.
+	 * @param description - The description template.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example
+	 * testCase.each([[1, 2], [3, 4]], 'adds %d and %d', (a, b) => expect(a + b).toBeGreaterThan(0));
+	 */
+	each(table: any[], description: string, fn: (...args: any[]) => void | Promise<void>, options?: Partial<Options>): void;
+	/**
+	 * Defines a standard test.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.it('should login successfully', () => login());
+	 */
+	it(description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Defines a test to run in sequence.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.sequence('processes data sequentially', () => processData());
+	 */
+	sequence(description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Defines a test with retry logic.
+	 * @param retry - The number of retries.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.retry(3, 'retryable test', () => flakyTest());
+	 */
+	retry(retry: number, description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Defines a test with a timeout.
+	 * @param timeout - The timeout in milliseconds.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.timeout(5000, 'should finish within 5 seconds', () => quickTest());
+	 */
+	timeout(timeout: number, description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Adds a todo test.
+	 * @param description - The description of the test.
+	 * @param options - Additional test options.
+	 * @example testCase.todo('Implement this later');
+	 */
+	todo(description: string, options?: Partial<Options>): void;
+	/**
+	 * Conditionally runs a test if the condition is met.
+	 * @param condition - A boolean or function returning a boolean.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.itIf(true, 'conditionally run this test', () => doTest());
+	 */
+	itIf(condition: boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined), description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Marks a test to allow soft failures.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.fail('non-critical test', () => flakyTest());
+	 */
+	fail(description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Marks a test to run exclusively.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.only('critical test', () => runCriticalTest());
+	 */
+	only(description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Skips a test.
+	 * @param description - The description of the test.
+	 * @param fn - The test function.
+	 * @param options - Additional test options.
+	 * @example testCase.skip('skipped test', () => doNotRun());
+	 */
+	skip(description: string, fn: TestFunction, options?: Partial<Options>): void;
+	/**
+	 * Adds a 'beforeAll' hook to the test case.
+	 * @param fn - The hook function.
+	 * @param options - Additional options.
+	 * @example testCase.beforeAll(() => setup());
+	 */
+	beforeAll(fn: HookFunction, options?: Partial<Options>): void;
+	/**
+	 * Adds a 'beforeEach' hook to the test case.
+	 * @param fn - The hook function.
+	 * @param options - Additional options.
+	 * @example testCase.beforeEach(() => setupEach());
+	 */
+	beforeEach(fn: HookFunction, options?: Partial<Options>): void;
+	/**
+	 * Adds an 'afterAll' hook to the test case.
+	 * @param fn - The hook function.
+	 * @param options - Additional options.
+	 * @example testCase.afterAll(() => teardown());
+	 */
+	afterAll(fn: HookFunction, options?: Partial<Options>): void;
+	/**
+	 * Adds an 'afterEach' hook to the test case.
+	 * @param fn - The hook function.
+	 * @param options - Additional options.
+	 * @example testCase.afterEach(() => cleanupEach());
+	 */
+	afterEach(fn: HookFunction, options?: Partial<Options>): void;
+	/**
+	 * Runs the test case and returns a test report.
+	 * @returns {Promise<TestReport>} The test report after execution.
+	 * @example const report = await testCase.run();
+	 */
+	run(): Promise<TestReport>;
+}
+export declare class TestCase {
+	description: string;
+	tests: Test[];
+	sequenceTests: Test[];
+	sequenceOnlyTests: Test[];
+	onlyTests: Test[];
+	hooks: {
+		beforeAll?: Hook;
+		beforeEach?: Hook;
+		afterAll?: Hook;
+		afterEach?: Hook;
+	};
+	constructor(description: string);
 }
 export interface PoolResult {
 	error: any;
@@ -88,302 +508,290 @@ export interface ReporterPlugin {
 	reporter: Reporter;
 	options?: Record<any, any>;
 }
+/**
+ * Configuration options for generating a report.
+ *
+ * @interface ReportOptions
+ */
+export interface ReportOptions {
+	/**
+	 * A map containing report data where:
+	 * The key is a unique string identifier for the report
+	 * The value is an object of type `PoolResult`
+	 *
+	 * @type {Map<string, PoolResult>}
+	 */
+	reports: Map<string, PoolResult>;
+	/**
+	 * The directory where the report should be saved.
+	 * This is required if the reporter type is `"file"`. If not provided, the report may be logged to the console.
+	 *
+	 * @type {string | undefined}
+	 */
+	outputDir?: string;
+	/**
+	 * Additional configuration options for the report generation.
+	 * You can pass custom settings based on the reporter's needs, such as a custom format or logging level.
+	 *
+	 * @type {object}
+	 */
+	[key: string]: any;
+}
+/**
+ * A reporter plugin responsible for generating and outputting reports.
+ *
+ * @interface Reporter
+ */
 export interface Reporter {
-	/** Name of the reporter plugin */
+	/** Name of the reporter plugin. This is typically a descriptive name, e.g., "FileReporter".
+	 *
+	 * @type {string}
+	 */
 	name: string;
 	/**
-	 * The type of the reporter plugin.
+	 * The type of the reporter plugin, which determines how the report is generated and output.
 	 *
-	 * - `"file"`: Writes the report to a file.
-	 * - `"console"`: Outputs the report to the console.
+	 * @type {('file' | 'console')}
 	 */
 	type: "file" | "console";
 	/**
 	 * Generates a report based on the provided options.
 	 *
-	 * @param {Object} options - Configuration for generating the report.
-	 * @param {Map<string, PoolResult>} options.reports - A map containing report data where the key is a string identifier and the value is a `PoolResult`.
-	 * @param {string} [options.outputDir] - Directory where the report should be saved. Required if the plugin type is `"file"`.
+	 * @param {ReportOptions} options - Configuration for generating the report.
+	 * @returns {Promise<any>} A `Promise` that resolves when the report is successfully generated. If an error occurs, it should be thrown.
+	 * @throws {Error} If there is an issue generating the report (e.g., missing required output directory for file-based reports).
 	 *
-	 * @example
-	 * const plugin: ReporterPlugin = {
-	 *   name: "FileReporter",
-	 *   type: "file",
-	 *   report: async (options) => {
-	 *     console.log("Generating report...");
-	 *     // Implementation here...
-	 *   },
-	 * };
-	 *
-	 * @returns {Promise<void>} Resolves when the report is successfully generated.
 	 */
-	report(options: {
-		/**
-		 * A map containing report data where:
-		 * - The key is a unique string identifier for the report.
-		 * - The value is an object of type `PoolResult`.
-		 */
-		reports: Map<string, PoolResult>;
-		/**
-		 * The directory where the report should be saved.
-		 */
-		outputDir?: string;
-		[key: string]: any;
-	}): Promise<void>;
+	report(options: ReportOptions): Promise<any>;
 }
 /**
- * Type representing the configuration options for Veve.
+ * Type representing the configuration options for Veve
  */
 export interface Veve {
 	/**
-	 * A list of patterns to include for processing.
-	 * @example ['src/app.ts', 'src/utils.tsx']
+	 * A list of patterns to include for processing
+	 *
+	 * @type {string[]}
 	 */
 	pattern: string[];
 	/**
-	 * A list of patterns to exclude from processing.
-	 * @example ['node_modules', 'dist']
+	 * A list of patterns to exclude from processing
+	 *
+	 * @type {string[]}
 	 */
 	exclude: string[];
 	/**
-	 * A list of environment names where this configuration will be applied.
-	 * @example ['development', 'production', 'test']
+	 * A list of environment names where this configuration will be applied
+	 *
+	 * @type {string[]}
 	 */
 	envs: string[];
 	/**
-	 * A list of eabuild plugins to be used in the configuration.
+	 * A list of eabuild plugins to be used in the configuration
+	 *
+	 * @type {Plugin[]}
 	 */
 	plugins: Plugin$1[];
 	/**
-	 * The timeout value in milliseconds for operations.
-	 * @example 3000
+	 * The timeout value in milliseconds for operations
+	 *
+	 * @type {number}
 	 */
 	timeout: number;
 	/**
-	 * A context object that can hold any key-value pair.
-	 * @example { key: 'value', flag: true }
+	 * A context object that can hold any key-value pair
+	 *
+	 * @type {Record<any, any>}
 	 */
 	context: Record<any, any>;
 	/**
-	 * The TypeScript configuration options.
-	 * @example { strict: true, baseUrl: './' }
+	 * The TypeScript configuration options
+	 *
+	 * @type {Tsconfig}
 	 */
 	tsconfig: Tsconfig;
 	/**
-	 * Whether to watch files for changes.
-	 * @example true
+	 * Whether to watch files for changes
+	 *
+	 * @type {boolean}
 	 */
 	watch: boolean;
 	/**
 	 * List of modules to auto require inside the testing files
-	 * @example ["jsdom-global/register"]
+	 *
+	 * @type {string[]}
 	 */
 	require: string[];
 	/**
 	 * List of reporter plugins
-	 * @example ["jsdom-global/register"]
+	 *
+	 * @type {ReporterPlugin[]}
 	 */
 	reporters: ReporterPlugin[];
 	/**
-	 * Defines the file path for reporters to save their outputs.
-	 * @example "./reports"
+	 * Defines the file path for reporters to save their outputs
+	 *
+	 * @type {string}
 	 */
 	output: string;
 }
 /**
- * Interface representing TypeScript configuration options.
+ * Interface representing TypeScript configuration options
  */
 export interface Tsconfig {
 	/**
-	 * Whether to enforce strict mode in all files.
-	 * @example true
+	 * Whether to enforce strict mode in all files
+	 *
+	 * @type {boolean | undefined}
 	 */
 	alwaysStrict?: boolean;
 	/**
-	 * The base URL for module resolution.
-	 * @example './src'
+	 * The base URL for module resolution
+	 *
+	 * @type {string | undefined}
 	 */
 	baseUrl?: string;
 	/**
-	 * Enables experimental decorator support.
-	 * @example true
+	 * Enables experimental decorator support
+	 *
+	 * @type {boolean | undefined}
 	 */
 	experimentalDecorators?: boolean;
 	/**
-	 * Specifies how imports not used as values should be treated.
-	 * @example 'remove'
+	 * Specifies how imports not used as values should be treated
+	 *
+	 * @type {'remove' | 'preserve' | 'error' | undefined}
 	 */
 	importsNotUsedAsValues?: "remove" | "preserve" | "error";
 	/**
-	 * Specifies the JSX code generation style.
-	 * @example 'react-jsx'
+	 * Specifies the JSX code generation style
+	 *
+	 * @type {'preserve' | 'react-native' | 'react' | 'react-jsx' | 'react-jsxdev' | undefined}
 	 */
 	jsx?: "preserve" | "react-native" | "react" | "react-jsx" | "react-jsxdev";
 	/**
-	 * Factory function for creating JSX elements.
-	 * @example 'React.createElement'
+	 * Factory function for creating JSX elements
+	 *
+	 * @type {string | undefined}
 	 */
 	jsxFactory?: string;
 	/**
-	 * Factory function for creating JSX fragment elements.
-	 * @example 'React.Fragment'
+	 * Factory function for creating JSX fragment elements
+	 *
+	 * @type {string | undefined}
 	 */
 	jsxFragmentFactory?: string;
 	/**
-	 * Specifies the module specifier for JSX imports.
-	 * @example '@emotion/react'
+	 * Specifies the module specifier for JSX imports
+	 *
+	 * @type {string | undefined}
 	 */
 	jsxImportSource?: string;
 	/**
-	 * A mapping of module paths to arrays of paths.
-	 * @example { '@utils': ['./src/utils'] }
+	 * A mapping of module paths to arrays of paths
+	 *
+	 * @type {Record<string, string[]> | undefined}
 	 */
 	paths?: Record<string, string[]>;
 	/**
-	 * Whether to preserve value imports in the emitted JavaScript.
-	 * @example true
+	 * Whether to preserve value imports in the emitted JavaScript
+	 *
+	 * @type {boolean | undefined}
 	 */
 	preserveValueImports?: boolean;
 	/**
-	 * Whether to enable strict type checking options.
-	 * @example true
+	 * Whether to enable strict type checking options
+	 *
+	 * @type {boolean | undefined}
 	 */
 	strict?: boolean;
 	/**
-	 * Whether to use `define` for class field initialization.
-	 * @example true
+	 * Whether to use `define` for class field initialization
+	 *
+	 * @type {boolean | undefined}
 	 */
 	useDefineForClassFields?: boolean;
 	/**
-	 * Whether to keep the module syntax as-is in the emitted JavaScript.
-	 * @example true
+	 * Whether to keep the module syntax as-is in the emitted JavaScript
+	 *
+	 * @type {boolean | undefined}
 	 */
 	verbatimModuleSyntax?: boolean;
 }
 declare function veve(config: Partial<Veve>): Partial<Veve>;
 export interface spec extends Reporter {
 }
+/**
+ * The specification for the specReporter that generates and outputs a test report to the console.
+ *
+ * @type {spec}
+ */
 export declare const spec: spec;
 export interface junit extends Reporter {
 }
 /**
- * Generates a JUnit XML report for the provided test results.
+ * Generates a JUnit XML report from the provided test results.
  *
- * @returns {Promise<void>} Resolves when the XML report is successfully written to a file.
+ * @type {junit}
  */
 export declare const junit: junit;
 export interface json extends Reporter {
 }
 /**
- * Generates a comprehensive JSON report for the provided test results.
+ * Generates a detailed test report in JSON format and writes it to a file.
  *
- * @returns {Promise<void>} Resolves when the JSON report is successfully written to a file.
+ * @type {json}
  */
 export declare const json: json;
-/**
- * Represents the contract for an XML document writer.
- * Provides methods to build XML documents with support for tags, attributes, and content.
- */
-export interface XML {
-	/**
-	 * Opens a new XML tag with optional attributes.
-	 *
-	 * @param name - The name of the tag
-	 * @param attributes - Optional key-value pairs of attributes
-	 * @returns The XMLWriter instance for method chaining
-	 *
-	 * @example
-	 * writer.openTag('person', { id: 1, type: 'employee' })
-	 */
-	openTag(name: string, attributes?: Record<string, string | number>): XML;
-	/**
-	 * Adds a self-closing XML tag with optional attributes.
-	 *
-	 * @param name - The name of the tag
-	 * @param attributes - Optional key-value pairs of attributes
-	 * @returns The XMLWriter instance for method chaining
-	 *
-	 * @example
-	 * writer.selfClosingTag('image', { src: 'profile.jpg', width: 100 })
-	 */
-	selfClosingTag(name: string, attributes?: Record<string, string | number>): XML;
-	/**
-	 * Adds an XML tag with content and optional attributes.
-	 *
-	 * @param name - The name of the tag
-	 * @param content - The text content of the tag
-	 * @param attributes - Optional key-value pairs of attributes
-	 * @returns The XMLWriter instance for method chaining
-	 *
-	 * @example
-	 * writer.tag('name', 'John Doe', { type: 'full' })
-	 */
-	tag(name: string, content: string, attributes?: Record<string, string | number>): XML;
-	/**
-	 * Closes the most recently opened tag.
-	 *
-	 * @param name - The name of the tag to close
-	 * @returns The XMLWriter instance for method chaining
-	 *
-	 * @example
-	 * writer.openTag('person').closeTag('person')
-	 */
-	closeTag(name: string): XML;
-	/**
-	 * Generates the complete XML document as a string.
-	 *
-	 * @returns The full XML document
-	 *
-	 * @example
-	 * const xmlString = writer.toString();
-	 */
-	toString(): string;
-}
-export declare class XML {
-	private buffer;
-	private indent;
-	constructor();
-	private escapeXml;
-}
 /**
  * A class providing assertion methods for testing.
  */
 export interface Assertion {
 	/**
 	 * Asserts that the received value is defined (not `undefined`).
-	 * @returns {Assertion | boolean} Assertion result.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(5).toBeDefined(); // Passes
 	 * assert(undefined).toBeDefined(); // Fails
 	 */
 	toBeDefined(): Assertion | boolean;
 	/**
-	 * Checks if the received value is `undefined`
-	 * @returns {Assertion | boolean} - The result of the assertion
+	 * Asserts that the received value is `undefined`.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(undefined).toBeUndefined(); // Passes
 	 * assert(42).toBeUndefined(); // Fails
 	 */
 	toBeUndefined(): Assertion | boolean;
 	/**
-	 * Checks if the received value is `null`
-	 * @returns {Assertion | boolean} - The result of the assertion
+	 * Asserts that the received value is `null`.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(null).toBeNull(); // Passes
 	 * assert(42).toBeNull(); // Fails
 	 */
 	toBeNull(): Assertion | boolean;
 	/**
-	 * Checks if the received value evaluates to `true` in a boolean context
-	 * @returns {Assertion | boolean} - The result of the assertion
+	 * Asserts that the received value evaluates to `true` in a boolean context.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(1).toBeTruthy(); // Passes
 	 * assert(false).toBeTruthy(); // Fails
 	 */
 	toBeTruthy(): Assertion | boolean;
 	/**
-	 * Asserts that the received value is falsy (evaluates to `false` in a boolean context).
-	 * @returns {Assertion | boolean} Assertion result.
+	 * Asserts that the received value evaluates to `false` in a boolean context.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(false).toBeFalsy(); // Passes
 	 * assert(1).toBeFalsy(); // Fails
@@ -391,333 +799,337 @@ export interface Assertion {
 	toBeFalsy(): Assertion | boolean;
 	/**
 	 * Asserts that the received value is greater than the expected value.
-	 * @param {number | bigint} expected - The expected value.
-	 * @returns {Assertion | boolean} Assertion result.
+	 * @param {number | bigint} expected The expected value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(5).toBeGreaterThan(3); // Passes
 	 * assert(1).toBeGreaterThan(5); // Fails
 	 */
 	toBeGreaterThan(expected: number | bigint): Assertion | boolean;
 	/**
-	 * Checks if the received value is greater than or equal to the expected value
-	 * @param {number | bigint} expected - The value to compare against
-	 * @returns {Assertion | boolean} - The result of the assertion
+	 * Asserts that the received value is greater than or equal to the expected value.
+	 * @param {number | bigint} expected The expected value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(10).toBeGreaterThanOrEqual(10); // Passes
 	 * assert(5).toBeGreaterThanOrEqual(10); // Fails
 	 */
 	toBeGreaterThanOrEqual(expected: number | bigint): Assertion | boolean;
 	/**
-	 * Checks if the received value is less than the expected value
-	 * @param {number | bigint} expected - The value to compare against
-	 * @returns {Assertion | boolean} - The result of the assertion
+	 * Asserts that the received value is less than the expected value.
+	 * @param {number | bigint} expected The expected value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(5).toBeLessThan(10); // Passes
 	 * assert(10).toBeLessThan(5); // Fails
 	 */
 	toBeLessThan(expected: number | bigint): Assertion | boolean;
 	/**
-	 * Checks if the received value is an instance of the given class or constructor
-	 * @param {Function} expectedClass - The class or constructor to check against
-	 * @returns {Assertion | boolean} - The result of the assertion
+	 * Asserts that the received value is an instance of the given class.
+	 * @param {Function} expectedClass The class to check against
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(new Date()).toBeInstanceOf(Date); // Passes
 	 * assert({}).toBeInstanceOf(Date); // Fails
 	 */
 	toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean;
 	/**
-	 * Checks if the received value is less than or equal to the expected value
-	 * @param {number | bigint} expected - The value to compare against
-	 * @returns {Assertion | boolean} - The result of the assertion
+	 * Asserts that the received value is less than or equal to the expected value.
+	 * @param {number | bigint} expected The expected value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(10).toBeLessThanOrEqual(10); // Passes
 	 * assert(15).toBeLessThanOrEqual(10); // Fails
 	 */
 	toBeLessThanOrEqual(expected: number | bigint): Assertion | boolean;
 	/**
-	 * Checks if a value is `NaN`.
-	 * @returns {Assertion | boolean} Assertion result.
+	 * Asserts that the received value is `NaN`.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert(NaN).toBeNaN(); // Passes
 	 * assert(5).toBeNaN(); // Fails
 	 */
 	toBeNaN(): Assertion | boolean;
 	/**
-	 * Asserts that the received value matches the provided regular expression or string.
-	 * @param {RegExp | string} expected - The expected pattern.
-	 * @returns {Assertion | boolean} Assertion result.
+	 * Asserts that the received value matches the provided pattern.
+	 * @param {RegExp | string} expected The expected pattern
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * assert("hello").toMatch(/he/); // Passes
 	 * assert("world").toMatch("wor"); // Passes
 	 */
 	toMatch(expected: RegExp | string): Assertion | boolean;
 	/**
-	 * Checks if the received value is strictly equal to the expected value
-	 * @param {any} expected - The value to compare against
-	 * @returns {Assertion | boolean} Assertion result
-	 * @example
-	 * // Passes
-	 * assert(5).toBe(5)
+	 * Asserts that the received value is strictly equal to the expected value.
+	 * @param {any} expected The expected value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
 	 *
-	 * // Fails
-	 * assert(5).toBe(6)
+	 * @example
+	 * assert(5).toBe(5); // Passes
+	 * assert(5).toBe(6); // Fails
 	 */
 	toBe(expected: any): Assertion | boolean;
 	/**
-	 * Checks if the received value is strictly between the min and max (exclusive).
-	 * @param {number | bigint} min - The lower bound (exclusive).
-	 * @param {number | bigint} max - The upper bound (exclusive).
-	 * @returns {Assertion | boolean} Assertion result.
-	 * @example
-	 * // Passes
-	 * assert(15).toBeBetween(10, 20);
+	 * Asserts that the received value is strictly between the min and max (exclusive).
+	 * @param {number | bigint} min The lower bound (exclusive)
+	 * @param {number | bigint} max The upper bound (exclusive)
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
 	 *
-	 * // Fails
-	 * assert(15).toBeBetween(15, 20);
+	 * @example
+	 * assert(15).toBeBetween(10, 20); // Passes
+	 * assert(15).toBeBetween(15, 20); // Fails
 	 */
 	toBeBetween(min: number | bigint, max: number | bigint): Assertion | boolean;
 	/**
-	 * Checks if the received value is between the min and max (inclusive).
-	 * @param {number | bigint} min - The lower bound (inclusive).
-	 * @param {number | bigint} max - The upper bound (inclusive).
-	 * @returns {Assertion | boolean} Assertion result.
-	 * @example
-	 * // Passes
-	 * assert(15).toBeBetweenOrEqual(10, 15);
+	 * Asserts that the received value is between the min and max (inclusive).
+	 * @param {number | bigint} min The lower bound (inclusive)
+	 * @param {number | bigint} max The upper bound (inclusive)
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
 	 *
-	 * // Fails
-	 * assert(15).toBeBetweenOrEqual(16, 20);
+	 * @example
+	 * assert(15).toBeBetweenOrEqual(10, 15); // Passes
+	 * assert(15).toBeBetweenOrEqual(16, 20); // Fails
 	 */
 	toBeBetweenOrEqual(min: number | bigint, max: number | bigint): Assertion | boolean;
 	/**
-	 * Checks if the received value is greater than or equal to the min value.
-	 * @param {number | bigint} min - The minimum value (inclusive).
-	 * @returns {Assertion | boolean} Assertion result.
-	 * @example
-	 * // Passes
-	 * assert(15).toBeAboveMin(10);
+	 * Asserts that the received value is greater than or equal to the min value.
+	 * @param {number | bigint} min The minimum value (inclusive)
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
 	 *
-	 * // Fails
-	 * assert(5).toBeAboveMin(10);
+	 * @example
+	 * assert(15).toBeAboveMin(10); // Passes
+	 * assert(5).toBeAboveMin(10); // Fails
 	 */
 	toBeAboveMin(min: number | bigint): Assertion | boolean;
 	/**
-	 * Checks if the received value is less than or equal to the max value.
-	 * @param {number | bigint} max - The maximum value (inclusive).
-	 * @returns {Assertion | boolean} Assertion result.
-	 * @example
-	 * // Passes
-	 * assert(15).toBeBelowMax(20);
+	 * Asserts that the received value is less than or equal to the max value.
+	 * @param {number | bigint} max The maximum value (inclusive)
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
 	 *
-	 * // Fails
-	 * assert(25).toBeBelowMax(20);
+	 * @example
+	 * assert(15).toBeBelowMax(20); // Passes
+	 * assert(25).toBeBelowMax(20); // Fails
 	 */
 	toBeBelowMax(max: number | bigint): Assertion | boolean;
 	/**
 	 * Asserts that the received value is deeply equal to the expected value.
-	 * - Performs a deep comparison between the received and expected values,
-	 *   checking all nested properties for equality.
-	 * - Suitable for comparing objects, arrays, and primitives.
-	 *
-	 * @param {any} expected - The value to compare against the received value.
-	 * @returns {Assertion | boolean} - Returns an Assertion instance or a boolean depending on configuration.
+	 * @param {any} expected The expected value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
 	 *
 	 * @example
-	 * // Objects with the same structure pass
 	 * assert({ a: 1, b: { c: 2 } }).toEqual({ a: 1, b: { c: 2 } }); // Passes
-	 *
-	 * // Arrays with the same elements pass
 	 * assert([1, 2, 3]).toEqual([1, 2, 3]); // Passes
-	 *
-	 * // Primitives with the same value pass
-	 * assert(42).toEqual(42); // Passes
 	 */
 	toEqual(expected: any): Assertion | boolean;
 	/**
-	 * Checks if the received value contains the expected value.
-	 * - For arrays, it checks if the array includes the expected value.
-	 * - For strings, it checks if the string includes the expected substring.
+	 * Asserts that the received value contains the expected value.
+	 * @param {any} expected The expected value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
 	 *
-	 * @param {any} expected - The value to check for in the received value.
-	 * @returns {Assertion | boolean} - The result of the assertion.
 	 * @example
 	 * assert([1, 2, 3]).toContain(2); // Passes
 	 * assert("hello world").toContain("world"); // Passes
-	 * assert([1, 2, 3]).toContain(5); // Fails
 	 */
 	toContain(expected: any): Assertion | boolean;
 	/**
-  Asserts that a tracked function throws an exception that matches the expected value.
-   * This method checks the last exception thrown by a tracked function and compares it with the expected exception.
-   * If the exception does not match, it will display the differences between the thrown exception and the expected one.
-   *
-   * If no exceptions are thrown, it will fail the assertion with a message: "No exceptions were thrown!".
-   * If an exception is thrown, it compares the exception with the expected value and reports any differences.
-   *
-   * @param {any} expected - The expected exception or value to compare against the thrown exception.
-   * This could be an exact match or a complex object that will be compared with the thrown exception.
-   *
-   * @throws {Error} Throws an error if the function is not being tracked or if the exception does not match the expected value.
-   *
-   * @returns {boolean} Returns `true` if the exception matches the expected value (no differences), otherwise returns `false` and logs the exception differences.
-   *
-   * @example
-   * assert(() => { throw new Error("Expected error") }).toThrow("Expected error") // Passes
-   */
+	 * Asserts that a tracked function throws an expected exception.
+	 * @param {any} expected The expected exception
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
+	 * @example
+	 * assert(() => { throw new Error("Expected error") }).toThrow("Expected error"); // Passes
+	 */
 	toThrow(expected: any): Assertion | boolean;
 	/**
-	 * Checks if the number is close to another number within a specified precision
-	 * @param {number} expected - Expected number
-	 * @param {number} [numDigits=2] - Number of decimal places to compare
-	 * @returns {Assertion | boolean} Assertion result
+	 * Asserts that the number is close to another number within a specified precision.
+	 * @param {number} expected The expected number
+	 * @param {number} [numDigits=2] The number of decimal places to compare
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
-	 * assert(3.14159).toBeCloseTo(Math.PI, 2)
+	 * assert(3.14159).toBeCloseTo(Math.PI, 2); // Passes
 	 */
 	toBeCloseTo(expected: number, numDigits?: number): Assertion | boolean;
 	/**
-	 * Checks if the received function has been called
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the received function is tracked.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => {});
-	 * mockFn();
-	 * assert(mockFn).toHaveBeenCalled()
+	 * assert(mockFn).toBeTracked(); // Passes
 	 */
 	toBeTracked(): Assertion | boolean;
 	/**
-	 * Checks if the received function has been called
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the received function has been called.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => {});
 	 * mockFn();
-	 * assert(mockFn).toHaveBeenCalled()
+	 * assert(mockFn).toHaveBeenCalled(); // Passes
 	 */
 	toHaveBeenCalled(): Assertion | boolean;
 	/**
-	 * Checks if the received function has been called exactly n times
-	 * @param {number} times - Number of expected calls
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the received function has been called exactly n times.
+	 * @param {number} times The expected number of calls
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => {});
 	 * mockFn();
 	 * mockFn();
-	 * assert(mockFn).toHaveBeenCalledTimes(2)
+	 * assert(mockFn).toHaveBeenCalledTimes(2); // Passes
 	 */
 	toHaveBeenCalledTimes(times: number): Assertion | boolean;
 	/**
-	 * Checks if the received function was called with specific arguments
-	 * @param {...any} args - Arguments to check
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the received function was called with specific arguments.
+	 * @param {...any} args The expected arguments
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn((a: number, b: string) => {});
 	 * mockFn(42, "hello");
-	 * assert(mockFn).toHaveBeenCalledWith(42, "hello")
+	 * assert(mockFn).toHaveBeenCalledWith(42, "hello"); // Passes
 	 */
 	toHaveBeenCalledWith(...args: any[]): Assertion | boolean;
 	/**
-	 * Checks if the function was last called with specific arguments
-	 * @param {...any} args - Arguments to check for the last call
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the function was last called with specific arguments.
+	 * @param {...any} args The expected arguments
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn((a: number) => {});
 	 * mockFn(1);
 	 * mockFn(2);
-	 * assert(mockFn).toHaveBeenLastCalledWith(2)
+	 * assert(mockFn).toHaveBeenLastCalledWith(2); // Passes
 	 */
 	toHaveBeenLastCalledWith(...args: any[]): Assertion | boolean;
 	/**
-	 * Checks if the nth call of the function was with specific arguments
-	 * @param {number} n - The call number to check (1-indexed)
-	 * @param {...any} args - Arguments to check for the nth call
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the nth call of the function was with specific arguments.
+	 * @param {number} n The call number to check (1-indexed)
+	 * @param {...any} args The expected arguments
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn((a: number) => {});
 	 * mockFn(1);
 	 * mockFn(2);
-	 * mockFn(3);
-	 * assert(mockFn).toHaveBeenNthCalledWith(2, 2)
+	 * assert(mockFn).toHaveBeenNthCalledWith(2, 2); // Passes
 	 */
 	toHaveBeenNthCalledWith(n: number, ...args: any[]): Assertion | boolean;
 	/**
-	 * Checks if the function has returned at least once
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the function has returned at least once.
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => 42);
 	 * mockFn();
-	 * assert(mockFn).toHaveReturned()
+	 * assert(mockFn).toHaveReturned(); // Passes
 	 */
 	toHaveReturned(): Assertion | boolean;
 	/**
-	 * Checks if the function has returned exactly n times
-	 * @param {number} times - Number of expected returns
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the function has returned exactly n times.
+	 * @param {number} times The expected number of returns
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => 42);
 	 * mockFn();
 	 * mockFn();
-	 * assert(mockFn).toHaveReturnedTimes(2)
+	 * assert(mockFn).toHaveReturnedTimes(2); // Passes
 	 */
 	toHaveReturnedTimes(times: number): Assertion | boolean;
 	/**
-	 * Checks if the function has returned with a specific value
-	 * @param {any} value - The value to check for in return values
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the function has returned with a specific value.
+	 * @param {any} value The expected return value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => 42);
 	 * mockFn();
-	 * assert(mockFn).toHaveReturnedWith(42)
+	 * assert(mockFn).toHaveReturnedWith(42); // Passes
 	 */
-	toHaveReturnedWith(value: any): Assertion | boolean;
+	(value: any): Assertion | boolean;
 	/**
-	 * Checks if the function's last return was a specific value
-	 * @param {any} value - The value to check for in the last return
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the function's last return was a specific value.
+	 * @param {any} value The expected return value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => 42);
 	 * mockFn();
 	 * mockFn();
-	 * assert(mockFn).toHaveLastReturnedWith(42)
+	 * assert(mockFn).toHaveLastReturnedWith(42); // Passes
 	 */
 	toHaveLastReturnedWith(value: any): Assertion | boolean;
 	/**
-	 * Checks if the nth return of the function was a specific value
-	 * @param {number} n - The return number to check (1-indexed)
-	 * @param {any} value - The value to check for in the nth return
-	 * @returns {Assertion | boolean} Assertion result
-	 * @throws {Error} If received is not a tracked function
+	 * Asserts that the nth return of the function was a specific value.
+	 * @param {number} n The return number to check (1-indexed)
+	 * @param {any} value The expected return value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
 	 * const mockFn = Fn(() => 42);
 	 * mockFn();
 	 * mockFn();
-	 * assert(mockFn).toHaveNthReturnedWith(2, 42)
+	 * assert(mockFn).toHaveNthReturnedWith(2, 42); // Passes
 	 */
 	toHaveNthReturnedWith(n: number, value: any): Assertion | boolean;
 	/**
-	 * Checks if the received value has a specific length
-	 * @param {number} length - Expected length
-	 * @returns {Assertion | boolean} Assertion result
+	 * Asserts that the received value has a specific length.
+	 * @param {number} length The expected length
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
-	 * assert([1, 2, 3]).toHaveLength(3)
-	 * assert("hello").toHaveLength(5)
+	 * assert([1, 2, 3]).toHaveLength(3); // Passes
+	 * assert("hello").toHaveLength(5); // Passes
 	 */
 	toHaveLength(length: number): Assertion | boolean;
 	/**
-	 * Checks if the received object has a specific property with an optional value
-	 * @param {string} keyPath - Dot-notation path to the property
-	 * @param {any} [value] - Optional expected value of the property
-	 * @returns {Assertion | boolean} Assertion result
+	 * Asserts that the received object has a specific property.
+	 * @param {string} keyPath The dot-notation path to the property
+	 * @param {any} [value] The expected property value
+	 * @returns {Assertion | boolean} The assertion result
+	 * @throws {AssertionError} If the assertion fails
+	 *
 	 * @example
-	 * assert({ a: { b: 42 } }).toHaveProperty('a.b', 42)
-	 * assert({ x: 1 }).toHaveProperty('x')
+	 * assert({ a: { b: 42 } }).toHaveProperty('a.b', 42); // Passes
+	 * assert({ x: 1 }).toHaveProperty('x'); // Passes
 	 */
 	toHaveProperty(keyPath: string, value?: any): Assertion | boolean;
 }
@@ -731,6 +1143,7 @@ export declare class Assertion {
 	get resolves(): this;
 	get rejects(): this;
 	private assert;
+	toHaveReturnedWith(value: any): Assertion | boolean;
 }
 /**
  * Creates a new assertion instance for the provided value.
@@ -756,10 +1169,28 @@ export declare function assert(received: any): Assertion;
  * @returns {Assertion} An `Assertion` instance configured to silently handle failures.
  */
 export declare function is(received: any): Assertion;
+/**
+ * Utility type that extracts the names of all methods (functions) in a given type `T`.
+ *
+ * @template T - The type from which method names are to be extracted.
+ */
 export type MethodNames<T> = {
 	[K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
+/**
+ * A type that combines a function `T` with a `TrackFn` interface or type.
+ * This can be used to create a tracked function that includes additional properties or methods.
+ *
+ * @template T - The type of the function to be tracked.
+ */
 export type TrackedFunction<T extends (...args: any[]) => any> = T & TrackFn;
+/**
+ * Utility type that extracts the type of a specific method from a type `T` given the method's key `K`.
+ * If the key `K` does not correspond to a function, it returns `never`.
+ *
+ * @template T - The type from which the method type is extracted.
+ * @template K - The key of the method whose type is to be extracted.
+ */
 export type MethodType<T, K extends keyof T> = T[K] extends (...args: any[]) => any ? T[K] : never;
 /**
  * Interface representing a tracking function with utilities for inspecting calls, arguments, and results.
@@ -768,106 +1199,129 @@ export type MethodType<T, K extends keyof T> = T[K] extends (...args: any[]) => 
  */
 export interface TrackFn {
 	/**
-	 * Retrieves all the function calls made to the tracked function.
-	 * @returns {ReadonlyArray<FunctionCall>} An array of recorded function calls.
-	 * @example trackFn.getCalls();
-	 */
-	getCalls(): ReadonlyArray<FunctionCall>;
-	/**
-	 * Retrieves a specific function call by index.
-	 * @param {number} index - The index of the function call.
-	 * @returns {FunctionCall | undefined} The function call at the specified index, or undefined if not found.
-	 * @example trackFn.getCall(0);
-	 */
-	getCall(index: number): FunctionCall | undefined;
-	/**
-	 * Retrieves the most recent function call made to the tracked function.
-	 * @returns {FunctionCall | undefined} The latest function call, or undefined if no calls have been made.
-	 * @example trackFn.getLatestCall();
-	 */
-	getLatestCall(): FunctionCall | undefined;
-	/**
-	 * Retrieves the total number of times the tracked function has been called.
-	 * @returns {number} The total call count.
-	 * @example trackFn.getCallCount();
-	 */
-	getCallCount(): number;
-	/**
-	 * Retrieves the arguments passed to all function calls.
-	 * @returns {ReadonlyArray<any[]>} An array of arguments for each call.
-	 * @example trackFn.getAllArgs();
+	 * Retrieves the arguments passed to all function calls
+	 * @returns {ReadonlyArray<any[]>} An array of argument arrays for each call
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.getAllArgs()
 	 */
 	getAllArgs(): ReadonlyArray<any[]>;
 	/**
-	 * Retrieves the arguments passed to a specific function call by index.
-	 * @param {number} index - The index of the function call.
-	 * @returns {any[] | undefined} The arguments for the specified call, or undefined if not found.
-	 * @example trackFn.getArgsForCall(1);
+	 * Retrieves the arguments passed to a specific function call by index
+	 * @param {number} index - The index of the function call
+	 * @returns {any[] | undefined} The arguments of the specified call, or `undefined` if not found
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.getArgsForCall(1)
 	 */
 	getArgsForCall(index: number): any[] | undefined;
 	/**
-	 * Retrieves the return values of all function calls.
-	 * @returns {ReadonlyArray<any>} An array of return values.
-	 * @example trackFn.getReturnValues();
+	 * Retrieves the return values of all function calls
+	 * @returns {ReadonlyArray<any>} An array of return values for each call
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.getReturnValues()
 	 */
 	getReturnValues(): ReadonlyArray<any>;
 	/**
-	 * Retrieves the exceptions thrown during function calls.
-	 * @returns {ReadonlyArray<FunctionException>} An array of thrown exceptions.
-	 * @example trackFn.getExceptions();
+	 * Retrieves the exceptions thrown during function calls
+	 * @returns {ReadonlyArray<FunctionException>} An array of thrown exceptions
+	 *
+	 * @example
+	 * const throwError = () => { throw new Error('Test error') }
+	 * const trackFn = Fn(throwError)
+	 * trackFn.getExceptions()
 	 */
 	getExceptions(): ReadonlyArray<FunctionException>;
 	/**
-	 * Checks if the tracked function was called at least once.
-	 * @returns {boolean} True if the function was called, otherwise false.
-	 * @example trackFn.wasCalled();
+	 * Checks if the tracked function was called at least once
+	 * @returns {boolean} `true` if the function was called, otherwise `false`
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.wasCalled()
 	 */
 	wasCalled(): boolean;
 	/**
-	 * Checks if the tracked function was called with specific arguments.
-	 * @param {...any[]} args - The arguments to check.
-	 * @returns {boolean} True if the function was called with the specified arguments, otherwise false.
-	 * @example trackFn.wasCalledWith('arg1', 'arg2');
+	 * Checks if the tracked function was called with specific arguments
+	 * @param {...any[]} args - The arguments to check
+	 * @returns {boolean} `true` if the function was called with the specified arguments, otherwise `false`
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.wasCalledWith(1, 2)
 	 */
 	wasCalledWith(...args: any[]): boolean;
 	/**
-	 * Checks if the tracked function was called a specific number of times.
-	 * @param {number} n - The number of calls to check.
-	 * @returns {boolean} True if the function was called exactly n times, otherwise false.
-	 * @example trackFn.wasCalledTimes(3);
+	 * Checks if the tracked function was called a specific number of times
+	 * @param {number} n - The number of calls to check
+	 * @returns {boolean} `true` if the function was called exactly `n` times, otherwise `false`
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.wasCalledTimes(2)
 	 */
 	wasCalledTimes(n: number): boolean;
 	/**
-	 * Sets the return value for the tracked function.
-	 * @param {any} value - The value to be returned.
-	 * @returns {TrackFn} The updated tracked function.
-	 * @example trackFn.return('value');
+	 * Sets the return value for the tracked function
+	 * @param {any} value - The value to be returned
+	 * @returns {TrackFn} The updated tracked function with the configured return value
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.return(5)
 	 */
 	return(value: any): TrackFn;
 	/**
-	 * Configures the tracked function to throw a specific error.
-	 * @param {Error} error - The error to be thrown.
-	 * @returns {TrackFn} The updated tracked function.
-	 * @example trackFn.throw(new Error('Something went wrong'));
+	 * Configures the tracked function to throw a specific error
+	 * @param {Error} error - The error to be thrown
+	 * @returns {TrackFn} The updated tracked function with the configured error
+	 *
+	 * @example
+	 * const throwError = () => { throw new Error('Test error') }
+	 * const trackFn = Fn(throwError)
+	 * trackFn.throw(new Error('Custom error'))
 	 */
 	throw(error: Error): TrackFn;
 	/**
-	 * Replaces the tracked function with a custom implementation.
-	 * @param {Function} fn - The custom function to use.
-	 * @returns {TrackFn} The updated tracked function.
-	 * @example trackFn.use((arg1, arg2) => arg1 + arg2);
+	 * Replaces the tracked function with a custom implementation
+	 * @param {Function} fn - The custom function to be used
+	 * @returns {TrackFn} The updated tracked function with the custom implementation
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.use((a, b) => a * b)
 	 */
 	use(fn: Function): TrackFn;
 	/**
-	 * Resets the state of the tracked function, clearing all recorded calls, arguments, and results.
-	 * @returns {TrackFn} The reset tracked function.
-	 * @example trackFn.reset();
+	 * Resets the state of the tracked function, clearing all recorded calls, arguments, and results
+	 * @returns {TrackFn} The reset tracked function
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.reset()
 	 */
 	reset(): TrackFn;
 	/**
-	 * Clears all recorded calls and arguments but retains custom behavior configurations.
-	 * @returns {TrackFn} The cleared tracked function.
-	 * @example trackFn.clear();
+	 * Clears all recorded calls and arguments but retains custom behavior configurations
+	 * @returns {TrackFn} The cleared tracked function with retained behavior configurations
+	 *
+	 * @example
+	 * const add = (a, b) => a + b
+	 * const trackFn = Fn(add)
+	 * trackFn.clear()
 	 */
 	clear(): TrackFn;
 }
@@ -893,6 +1347,10 @@ export declare class TrackFn implements TrackFn {
 	private recordException;
 	returns(value: any): TrackFn;
 	throws(error: Error): TrackFn;
+	getCalls(): ReadonlyArray<FunctionCall>;
+	getCall(index: number): FunctionCall | undefined;
+	getLatestCall(): FunctionCall | undefined;
+	getCallCount(): number;
 }
 /**
  * Checks if a value is a tracked function.
@@ -920,20 +1378,6 @@ export declare function isFn(value: any): boolean;
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // Returns 3
  * console.log(trackedAdd.getCallCount()); // Returns 1
- *
- * @example
- * // Track an async function
- * const fetchData = async (id: string) => ({ id, data: 'some data' });
- * const trackedFetch = Fn(fetchData);
- * await trackedFetch('123');
- * console.log(trackedFetch.getAllArgs()); // Returns [['123']]
- *
- * @example
- * // Modify tracked function behavior
- * const greet = (name: string) => `Hello ${name}`;
- * const trackedGreet = Fn(greet);
- * trackedGreet.return('Fixed response');
- * console.log(trackedGreet('Alice')); // Returns 'Fixed response'
  */
 export declare function Fn<T extends (...args: any[]) => any>(implementation: T): TrackedFunction<T>;
 /**
@@ -957,19 +1401,6 @@ export declare function Fn<T extends (...args: any[]) => any>(implementation: T)
  * const trackedAdd = spyOn(calculator, 'add');
  * calculator.add(2, 3); // Returns 5
  * console.log(trackedAdd.getCallCount()); // Returns 1
- *
- * @example
- * // Track and modify method behavior
- * const api = {
- *   fetch: async (url: string) => ({ data: 'response' })
- * };
- * const trackedFetch = spyOn(api, 'fetch');
- * trackedFetch.throw(new Error('Network error'));
- * try {
- *   await api.fetch('/data');
- * } catch (error) {
- *   console.log(error.message); // Prints: Network error
- * }
  */
 export declare function spyOn<T extends object, K extends keyof T>(obj: T, method: K & MethodNames<T>): TrackedFunction<MethodType<T, K>>;
 

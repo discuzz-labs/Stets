@@ -7,11 +7,31 @@
 import { isDeepStrictEqual } from "util";
 import { getType } from "../utils/index.js";
 
-type MethodNames<T> = {
+/**
+ * Utility type that extracts the names of all methods (functions) in a given type `T`.
+ * 
+ * @template T - The type from which method names are to be extracted.
+ */
+export type MethodNames<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
+
+/**
+ * A type that combines a function `T` with a `TrackFn` interface or type.
+ * This can be used to create a tracked function that includes additional properties or methods.
+ * 
+ * @template T - The type of the function to be tracked.
+ */
 export type TrackedFunction<T extends (...args: any[]) => any> = T & TrackFn;
-type MethodType<T, K extends keyof T> = T[K] extends (...args: any[]) => any 
+
+/**
+ * Utility type that extracts the type of a specific method from a type `T` given the method's key `K`.
+ * If the key `K` does not correspond to a function, it returns `never`.
+ * 
+ * @template T - The type from which the method type is extracted.
+ * @template K - The key of the method whose type is to be extracted.
+ */
+export type MethodType<T, K extends keyof T> = T[K] extends (...args: any[]) => any 
   ? T[K] 
   : never;
 
@@ -22,124 +42,144 @@ type MethodType<T, K extends keyof T> = T[K] extends (...args: any[]) => any
  */
 export interface TrackFn {
   /**
-   * Retrieves all the function calls made to the tracked function.
-   * @returns {ReadonlyArray<FunctionCall>} An array of recorded function calls.
-   * @example trackFn.getCalls();
+   * Retrieves the arguments passed to all function calls
+   * @returns {ReadonlyArray<any[]>} An array of argument arrays for each call
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.getAllArgs()
    */
-  getCalls(): ReadonlyArray<FunctionCall>;
+  getAllArgs(): ReadonlyArray<any[]>
 
   /**
-   * Retrieves a specific function call by index.
-   * @param {number} index - The index of the function call.
-   * @returns {FunctionCall | undefined} The function call at the specified index, or undefined if not found.
-   * @example trackFn.getCall(0);
+   * Retrieves the arguments passed to a specific function call by index
+   * @param {number} index - The index of the function call
+   * @returns {any[] | undefined} The arguments of the specified call, or `undefined` if not found
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.getArgsForCall(1)
    */
-  getCall(index: number): FunctionCall | undefined;
+  getArgsForCall(index: number): any[] | undefined
 
   /**
-   * Retrieves the most recent function call made to the tracked function.
-   * @returns {FunctionCall | undefined} The latest function call, or undefined if no calls have been made.
-   * @example trackFn.getLatestCall();
+   * Retrieves the return values of all function calls
+   * @returns {ReadonlyArray<any>} An array of return values for each call
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.getReturnValues()
    */
-  getLatestCall(): FunctionCall | undefined;
+  getReturnValues(): ReadonlyArray<any>
 
   /**
-   * Retrieves the total number of times the tracked function has been called.
-   * @returns {number} The total call count.
-   * @example trackFn.getCallCount();
+   * Retrieves the exceptions thrown during function calls
+   * @returns {ReadonlyArray<FunctionException>} An array of thrown exceptions
+   * 
+   * @example
+   * const throwError = () => { throw new Error('Test error') }
+   * const trackFn = Fn(throwError)
+   * trackFn.getExceptions()
    */
-  getCallCount(): number;
+  getExceptions(): ReadonlyArray<FunctionException>
 
   /**
-   * Retrieves the arguments passed to all function calls.
-   * @returns {ReadonlyArray<any[]>} An array of arguments for each call.
-   * @example trackFn.getAllArgs();
+   * Checks if the tracked function was called at least once
+   * @returns {boolean} `true` if the function was called, otherwise `false`
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.wasCalled()
    */
-  getAllArgs(): ReadonlyArray<any[]>;
+  wasCalled(): boolean
 
   /**
-   * Retrieves the arguments passed to a specific function call by index.
-   * @param {number} index - The index of the function call.
-   * @returns {any[] | undefined} The arguments for the specified call, or undefined if not found.
-   * @example trackFn.getArgsForCall(1);
+   * Checks if the tracked function was called with specific arguments
+   * @param {...any[]} args - The arguments to check
+   * @returns {boolean} `true` if the function was called with the specified arguments, otherwise `false`
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.wasCalledWith(1, 2)
    */
-  getArgsForCall(index: number): any[] | undefined;
+  wasCalledWith(...args: any[]): boolean
 
   /**
-   * Retrieves the return values of all function calls.
-   * @returns {ReadonlyArray<any>} An array of return values.
-   * @example trackFn.getReturnValues();
+   * Checks if the tracked function was called a specific number of times
+   * @param {number} n - The number of calls to check
+   * @returns {boolean} `true` if the function was called exactly `n` times, otherwise `false`
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.wasCalledTimes(2)
    */
-  getReturnValues(): ReadonlyArray<any>;
+  wasCalledTimes(n: number): boolean
 
   /**
-   * Retrieves the exceptions thrown during function calls.
-   * @returns {ReadonlyArray<FunctionException>} An array of thrown exceptions.
-   * @example trackFn.getExceptions();
+   * Sets the return value for the tracked function
+   * @param {any} value - The value to be returned
+   * @returns {TrackFn} The updated tracked function with the configured return value
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.return(5)
    */
-  getExceptions(): ReadonlyArray<FunctionException>;
+  return(value: any): TrackFn
 
   /**
-   * Checks if the tracked function was called at least once.
-   * @returns {boolean} True if the function was called, otherwise false.
-   * @example trackFn.wasCalled();
+   * Configures the tracked function to throw a specific error
+   * @param {Error} error - The error to be thrown
+   * @returns {TrackFn} The updated tracked function with the configured error
+   * 
+   * @example
+   * const throwError = () => { throw new Error('Test error') }
+   * const trackFn = Fn(throwError)
+   * trackFn.throw(new Error('Custom error'))
    */
-  wasCalled(): boolean;
+  throw(error: Error): TrackFn
 
   /**
-   * Checks if the tracked function was called with specific arguments.
-   * @param {...any[]} args - The arguments to check.
-   * @returns {boolean} True if the function was called with the specified arguments, otherwise false.
-   * @example trackFn.wasCalledWith('arg1', 'arg2');
+   * Replaces the tracked function with a custom implementation
+   * @param {Function} fn - The custom function to be used
+   * @returns {TrackFn} The updated tracked function with the custom implementation
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.use((a, b) => a * b)
    */
-  wasCalledWith(...args: any[]): boolean;
+  use(fn: Function): TrackFn
 
   /**
-   * Checks if the tracked function was called a specific number of times.
-   * @param {number} n - The number of calls to check.
-   * @returns {boolean} True if the function was called exactly n times, otherwise false.
-   * @example trackFn.wasCalledTimes(3);
+   * Resets the state of the tracked function, clearing all recorded calls, arguments, and results
+   * @returns {TrackFn} The reset tracked function
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.reset()
    */
-  wasCalledTimes(n: number): boolean;
+  reset(): TrackFn
 
   /**
-   * Sets the return value for the tracked function.
-   * @param {any} value - The value to be returned.
-   * @returns {TrackFn} The updated tracked function.
-   * @example trackFn.return('value');
-   */
-  return(value: any): TrackFn;
-
-  /**
-   * Configures the tracked function to throw a specific error.
-   * @param {Error} error - The error to be thrown.
-   * @returns {TrackFn} The updated tracked function.
-   * @example trackFn.throw(new Error('Something went wrong'));
-   */
-  throw(error: Error): TrackFn;
-
-  /**
-   * Replaces the tracked function with a custom implementation.
-   * @param {Function} fn - The custom function to use.
-   * @returns {TrackFn} The updated tracked function.
-   * @example trackFn.use((arg1, arg2) => arg1 + arg2);
-   */
-  use(fn: Function): TrackFn;
-
-  /**
-   * Resets the state of the tracked function, clearing all recorded calls, arguments, and results.
-   * @returns {TrackFn} The reset tracked function.
-   * @example trackFn.reset();
-   */
-  reset(): TrackFn;
-
-  /**
-   * Clears all recorded calls and arguments but retains custom behavior configurations.
-   * @returns {TrackFn} The cleared tracked function.
-   * @example trackFn.clear();
+   * Clears all recorded calls and arguments but retains custom behavior configurations
+   * @returns {TrackFn} The cleared tracked function with retained behavior configurations
+   * 
+   * @example
+   * const add = (a, b) => a + b
+   * const trackFn = Fn(add)
+   * trackFn.clear()
    */
   clear(): TrackFn;
 }
+
 
 export interface FunctionCall {
   args: any[];
@@ -345,20 +385,6 @@ export function isFn(value: any): boolean {
  * const trackedAdd = Fn(add);
  * trackedAdd(1, 2); // Returns 3
  * console.log(trackedAdd.getCallCount()); // Returns 1
- * 
- * @example
- * // Track an async function
- * const fetchData = async (id: string) => ({ id, data: 'some data' });
- * const trackedFetch = Fn(fetchData);
- * await trackedFetch('123');
- * console.log(trackedFetch.getAllArgs()); // Returns [['123']]
- * 
- * @example
- * // Modify tracked function behavior
- * const greet = (name: string) => `Hello ${name}`;
- * const trackedGreet = Fn(greet);
- * trackedGreet.return('Fixed response');
- * console.log(trackedGreet('Alice')); // Returns 'Fixed response'
  */
 export function Fn<T extends (...args: any[]) => any>(
   implementation: T
@@ -387,19 +413,6 @@ export function Fn<T extends (...args: any[]) => any>(
  * const trackedAdd = spyOn(calculator, 'add');
  * calculator.add(2, 3); // Returns 5
  * console.log(trackedAdd.getCallCount()); // Returns 1
- * 
- * @example
- * // Track and modify method behavior
- * const api = {
- *   fetch: async (url: string) => ({ data: 'response' })
- * };
- * const trackedFetch = spyOn(api, 'fetch');
- * trackedFetch.throw(new Error('Network error'));
- * try {
- *   await api.fetch('/data');
- * } catch (error) {
- *   console.log(error.message); // Prints: Network error
- * }
  */
 export function spyOn<T extends object, K extends keyof T>(
   obj: T, 

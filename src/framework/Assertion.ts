@@ -16,144 +16,177 @@ import { getOrdinal, getType } from "../utils/index.js";
 export interface Assertion {
   /**
    * Asserts that the received value is defined (not `undefined`).
-   * @returns {Assertion | boolean} Assertion result.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(5).toBeDefined(); // Passes
    * assert(undefined).toBeDefined(); // Fails
    */
   toBeDefined(): Assertion | boolean;
+
   /**
-   * Checks if the received value is `undefined`
-   * @returns {Assertion | boolean} - The result of the assertion
+   * Asserts that the received value is `undefined`.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(undefined).toBeUndefined(); // Passes
    * assert(42).toBeUndefined(); // Fails
    */
   toBeUndefined(): Assertion | boolean;
+
   /**
-   * Checks if the received value is `null`
-   * @returns {Assertion | boolean} - The result of the assertion
+   * Asserts that the received value is `null`.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(null).toBeNull(); // Passes
    * assert(42).toBeNull(); // Fails
    */
   toBeNull(): Assertion | boolean;
+
   /**
-   * Checks if the received value evaluates to `true` in a boolean context
-   * @returns {Assertion | boolean} - The result of the assertion
+   * Asserts that the received value evaluates to `true` in a boolean context.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(1).toBeTruthy(); // Passes
    * assert(false).toBeTruthy(); // Fails
    */
   toBeTruthy(): Assertion | boolean;
+
   /**
-   * Asserts that the received value is falsy (evaluates to `false` in a boolean context).
-   * @returns {Assertion | boolean} Assertion result.
+   * Asserts that the received value evaluates to `false` in a boolean context.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(false).toBeFalsy(); // Passes
    * assert(1).toBeFalsy(); // Fails
    */
   toBeFalsy(): Assertion | boolean;
+
   /**
    * Asserts that the received value is greater than the expected value.
-   * @param {number | bigint} expected - The expected value.
-   * @returns {Assertion | boolean} Assertion result.
+   * @param {number | bigint} expected The expected value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(5).toBeGreaterThan(3); // Passes
    * assert(1).toBeGreaterThan(5); // Fails
    */
   toBeGreaterThan(expected: number | bigint): Assertion | boolean;
+
   /**
-   * Checks if the received value is greater than or equal to the expected value
-   * @param {number | bigint} expected - The value to compare against
-   * @returns {Assertion | boolean} - The result of the assertion
+   * Asserts that the received value is greater than or equal to the expected value.
+   * @param {number | bigint} expected The expected value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(10).toBeGreaterThanOrEqual(10); // Passes
    * assert(5).toBeGreaterThanOrEqual(10); // Fails
    */
   toBeGreaterThanOrEqual(expected: number | bigint): Assertion | boolean;
+
   /**
-   * Checks if the received value is less than the expected value
-   * @param {number | bigint} expected - The value to compare against
-   * @returns {Assertion | boolean} - The result of the assertion
+   * Asserts that the received value is less than the expected value.
+   * @param {number | bigint} expected The expected value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(5).toBeLessThan(10); // Passes
    * assert(10).toBeLessThan(5); // Fails
    */
   toBeLessThan(expected: number | bigint): Assertion | boolean;
+
   /**
-   * Checks if the received value is an instance of the given class or constructor
-   * @param {Function} expectedClass - The class or constructor to check against
-   * @returns {Assertion | boolean} - The result of the assertion
+   * Asserts that the received value is an instance of the given class.
+   * @param {Function} expectedClass The class to check against
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(new Date()).toBeInstanceOf(Date); // Passes
    * assert({}).toBeInstanceOf(Date); // Fails
    */
   toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean;
+
   /**
-   * Checks if the received value is less than or equal to the expected value
-   * @param {number | bigint} expected - The value to compare against
-   * @returns {Assertion | boolean} - The result of the assertion
+   * Asserts that the received value is less than or equal to the expected value.
+   * @param {number | bigint} expected The expected value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(10).toBeLessThanOrEqual(10); // Passes
    * assert(15).toBeLessThanOrEqual(10); // Fails
    */
   toBeLessThanOrEqual(expected: number | bigint): Assertion | boolean;
+
   /**
-   * Checks if a value is `NaN`.
-   * @returns {Assertion | boolean} Assertion result.
+   * Asserts that the received value is `NaN`.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert(NaN).toBeNaN(); // Passes
    * assert(5).toBeNaN(); // Fails
    */
   toBeNaN(): Assertion | boolean;
+
   /**
-   * Asserts that the received value matches the provided regular expression or string.
-   * @param {RegExp | string} expected - The expected pattern.
-   * @returns {Assertion | boolean} Assertion result.
+   * Asserts that the received value matches the provided pattern.
+   * @param {RegExp | string} expected The expected pattern
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * assert("hello").toMatch(/he/); // Passes
    * assert("world").toMatch("wor"); // Passes
    */
   toMatch(expected: RegExp | string): Assertion | boolean;
+
   /**
-   * Checks if the received value is strictly equal to the expected value
-   * @param {any} expected - The value to compare against
-   * @returns {Assertion | boolean} Assertion result
-   * @example
-   * // Passes
-   * assert(5).toBe(5)
+   * Asserts that the received value is strictly equal to the expected value.
+   * @param {any} expected The expected value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
    *
-   * // Fails
-   * assert(5).toBe(6)
+   * @example
+   * assert(5).toBe(5); // Passes
+   * assert(5).toBe(6); // Fails
    */
   toBe(expected: any): Assertion | boolean;
 
   /**
-   * Checks if the received value is strictly between the min and max (exclusive).
-   * @param {number | bigint} min - The lower bound (exclusive).
-   * @param {number | bigint} max - The upper bound (exclusive).
-   * @returns {Assertion | boolean} Assertion result.
-   * @example
-   * // Passes
-   * assert(15).toBeBetween(10, 20);
+   * Asserts that the received value is strictly between the min and max (exclusive).
+   * @param {number | bigint} min The lower bound (exclusive)
+   * @param {number | bigint} max The upper bound (exclusive)
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
    *
-   * // Fails
-   * assert(15).toBeBetween(15, 20);
+   * @example
+   * assert(15).toBeBetween(10, 20); // Passes
+   * assert(15).toBeBetween(15, 20); // Fails
    */
   toBeBetween(min: number | bigint, max: number | bigint): Assertion | boolean;
 
   /**
-   * Checks if the received value is between the min and max (inclusive).
-   * @param {number | bigint} min - The lower bound (inclusive).
-   * @param {number | bigint} max - The upper bound (inclusive).
-   * @returns {Assertion | boolean} Assertion result.
-   * @example
-   * // Passes
-   * assert(15).toBeBetweenOrEqual(10, 15);
+   * Asserts that the received value is between the min and max (inclusive).
+   * @param {number | bigint} min The lower bound (inclusive)
+   * @param {number | bigint} max The upper bound (inclusive)
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
    *
-   * // Fails
-   * assert(15).toBeBetweenOrEqual(16, 20);
+   * @example
+   * assert(15).toBeBetweenOrEqual(10, 15); // Passes
+   * assert(15).toBeBetweenOrEqual(16, 20); // Fails
    */
   toBeBetweenOrEqual(
     min: number | bigint,
@@ -161,236 +194,245 @@ export interface Assertion {
   ): Assertion | boolean;
 
   /**
-   * Checks if the received value is greater than or equal to the min value.
-   * @param {number | bigint} min - The minimum value (inclusive).
-   * @returns {Assertion | boolean} Assertion result.
-   * @example
-   * // Passes
-   * assert(15).toBeAboveMin(10);
+   * Asserts that the received value is greater than or equal to the min value.
+   * @param {number | bigint} min The minimum value (inclusive)
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
    *
-   * // Fails
-   * assert(5).toBeAboveMin(10);
+   * @example
+   * assert(15).toBeAboveMin(10); // Passes
+   * assert(5).toBeAboveMin(10); // Fails
    */
   toBeAboveMin(min: number | bigint): Assertion | boolean;
 
   /**
-   * Checks if the received value is less than or equal to the max value.
-   * @param {number | bigint} max - The maximum value (inclusive).
-   * @returns {Assertion | boolean} Assertion result.
-   * @example
-   * // Passes
-   * assert(15).toBeBelowMax(20);
+   * Asserts that the received value is less than or equal to the max value.
+   * @param {number | bigint} max The maximum value (inclusive)
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
    *
-   * // Fails
-   * assert(25).toBeBelowMax(20);
+   * @example
+   * assert(15).toBeBelowMax(20); // Passes
+   * assert(25).toBeBelowMax(20); // Fails
    */
   toBeBelowMax(max: number | bigint): Assertion | boolean;
+
   /**
    * Asserts that the received value is deeply equal to the expected value.
-   * - Performs a deep comparison between the received and expected values,
-   *   checking all nested properties for equality.
-   * - Suitable for comparing objects, arrays, and primitives.
-   *
-   * @param {any} expected - The value to compare against the received value.
-   * @returns {Assertion | boolean} - Returns an Assertion instance or a boolean depending on configuration.
+   * @param {any} expected The expected value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
    *
    * @example
-   * // Objects with the same structure pass
    * assert({ a: 1, b: { c: 2 } }).toEqual({ a: 1, b: { c: 2 } }); // Passes
-   *
-   * // Arrays with the same elements pass
    * assert([1, 2, 3]).toEqual([1, 2, 3]); // Passes
-   *
-   * // Primitives with the same value pass
-   * assert(42).toEqual(42); // Passes
    */
   toEqual(expected: any): Assertion | boolean;
+
   /**
-   * Checks if the received value contains the expected value.
-   * - For arrays, it checks if the array includes the expected value.
-   * - For strings, it checks if the string includes the expected substring.
+   * Asserts that the received value contains the expected value.
+   * @param {any} expected The expected value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
    *
-   * @param {any} expected - The value to check for in the received value.
-   * @returns {Assertion | boolean} - The result of the assertion.
    * @example
    * assert([1, 2, 3]).toContain(2); // Passes
    * assert("hello world").toContain("world"); // Passes
-   * assert([1, 2, 3]).toContain(5); // Fails
    */
   toContain(expected: any): Assertion | boolean;
 
   /**
-Asserts that a tracked function throws an exception that matches the expected value.
- * This method checks the last exception thrown by a tracked function and compares it with the expected exception.
- * If the exception does not match, it will display the differences between the thrown exception and the expected one.
- * 
- * If no exceptions are thrown, it will fail the assertion with a message: "No exceptions were thrown!".
- * If an exception is thrown, it compares the exception with the expected value and reports any differences.
- * 
- * @param {any} expected - The expected exception or value to compare against the thrown exception.
- * This could be an exact match or a complex object that will be compared with the thrown exception.
- * 
- * @throws {Error} Throws an error if the function is not being tracked or if the exception does not match the expected value.
- * 
- * @returns {boolean} Returns `true` if the exception matches the expected value (no differences), otherwise returns `false` and logs the exception differences.
- * 
- * @example
- * assert(() => { throw new Error("Expected error") }).toThrow("Expected error") // Passes
- */
-  toThrow(expected: any): Assertion | boolean;
-  /**
-   * Checks if the number is close to another number within a specified precision
-   * @param {number} expected - Expected number
-   * @param {number} [numDigits=2] - Number of decimal places to compare
-   * @returns {Assertion | boolean} Assertion result
+   * Asserts that a tracked function throws an expected exception.
+   * @param {any} expected The expected exception
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
-   * assert(3.14159).toBeCloseTo(Math.PI, 2)
+   * assert(() => { throw new Error("Expected error") }).toThrow("Expected error"); // Passes
+   */
+  toThrow(expected: any): Assertion | boolean;
+
+  /**
+   * Asserts that the number is close to another number within a specified precision.
+   * @param {number} expected The expected number
+   * @param {number} [numDigits=2] The number of decimal places to compare
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
+   * @example
+   * assert(3.14159).toBeCloseTo(Math.PI, 2); // Passes
    */
   toBeCloseTo(expected: number, numDigits?: number): Assertion | boolean;
+
   /**
-   * Checks if the received function has been called
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the received function is tracked.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => {});
-   * mockFn();
-   * assert(mockFn).toHaveBeenCalled()
+   * assert(mockFn).toBeTracked(); // Passes
    */
   toBeTracked(): Assertion | boolean;
+
   /**
-   * Checks if the received function has been called
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the received function has been called.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => {});
    * mockFn();
-   * assert(mockFn).toHaveBeenCalled()
+   * assert(mockFn).toHaveBeenCalled(); // Passes
    */
   toHaveBeenCalled(): Assertion | boolean;
+
   /**
-   * Checks if the received function has been called exactly n times
-   * @param {number} times - Number of expected calls
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the received function has been called exactly n times.
+   * @param {number} times The expected number of calls
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => {});
    * mockFn();
    * mockFn();
-   * assert(mockFn).toHaveBeenCalledTimes(2)
+   * assert(mockFn).toHaveBeenCalledTimes(2); // Passes
    */
   toHaveBeenCalledTimes(times: number): Assertion | boolean;
+
   /**
-   * Checks if the received function was called with specific arguments
-   * @param {...any} args - Arguments to check
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the received function was called with specific arguments.
+   * @param {...any} args The expected arguments
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn((a: number, b: string) => {});
    * mockFn(42, "hello");
-   * assert(mockFn).toHaveBeenCalledWith(42, "hello")
+   * assert(mockFn).toHaveBeenCalledWith(42, "hello"); // Passes
    */
   toHaveBeenCalledWith(...args: any[]): Assertion | boolean;
+
   /**
-   * Checks if the function was last called with specific arguments
-   * @param {...any} args - Arguments to check for the last call
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the function was last called with specific arguments.
+   * @param {...any} args The expected arguments
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn((a: number) => {});
    * mockFn(1);
    * mockFn(2);
-   * assert(mockFn).toHaveBeenLastCalledWith(2)
+   * assert(mockFn).toHaveBeenLastCalledWith(2); // Passes
    */
   toHaveBeenLastCalledWith(...args: any[]): Assertion | boolean;
+
   /**
-   * Checks if the nth call of the function was with specific arguments
-   * @param {number} n - The call number to check (1-indexed)
-   * @param {...any} args - Arguments to check for the nth call
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the nth call of the function was with specific arguments.
+   * @param {number} n The call number to check (1-indexed)
+   * @param {...any} args The expected arguments
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn((a: number) => {});
    * mockFn(1);
    * mockFn(2);
-   * mockFn(3);
-   * assert(mockFn).toHaveBeenNthCalledWith(2, 2)
+   * assert(mockFn).toHaveBeenNthCalledWith(2, 2); // Passes
    */
   toHaveBeenNthCalledWith(n: number, ...args: any[]): Assertion | boolean;
+
   /**
-   * Checks if the function has returned at least once
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the function has returned at least once.
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => 42);
    * mockFn();
-   * assert(mockFn).toHaveReturned()
+   * assert(mockFn).toHaveReturned(); // Passes
    */
   toHaveReturned(): Assertion | boolean;
+
   /**
-   * Checks if the function has returned exactly n times
-   * @param {number} times - Number of expected returns
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the function has returned exactly n times.
+   * @param {number} times The expected number of returns
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => 42);
    * mockFn();
    * mockFn();
-   * assert(mockFn).toHaveReturnedTimes(2)
+   * assert(mockFn).toHaveReturnedTimes(2); // Passes
    */
   toHaveReturnedTimes(times: number): Assertion | boolean;
+
   /**
-   * Checks if the function has returned with a specific value
-   * @param {any} value - The value to check for in return values
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the function has returned with a specific value.
+   * @param {any} value The expected return value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => 42);
    * mockFn();
-   * assert(mockFn).toHaveReturnedWith(42)
+   * assert(mockFn).toHaveReturnedWith(42); // Passes
    */
-  toHaveReturnedWith(value: any): Assertion | boolean;
+  (value: any): Assertion | boolean;
+
   /**
-   * Checks if the function's last return was a specific value
-   * @param {any} value - The value to check for in the last return
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the function's last return was a specific value.
+   * @param {any} value The expected return value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => 42);
    * mockFn();
    * mockFn();
-   * assert(mockFn).toHaveLastReturnedWith(42)
+   * assert(mockFn).toHaveLastReturnedWith(42); // Passes
    */
   toHaveLastReturnedWith(value: any): Assertion | boolean;
+
   /**
-   * Checks if the nth return of the function was a specific value
-   * @param {number} n - The return number to check (1-indexed)
-   * @param {any} value - The value to check for in the nth return
-   * @returns {Assertion | boolean} Assertion result
-   * @throws {Error} If received is not a tracked function
+   * Asserts that the nth return of the function was a specific value.
+   * @param {number} n The return number to check (1-indexed)
+   * @param {any} value The expected return value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
    * const mockFn = Fn(() => 42);
    * mockFn();
    * mockFn();
-   * assert(mockFn).toHaveNthReturnedWith(2, 42)
+   * assert(mockFn).toHaveNthReturnedWith(2, 42); // Passes
    */
   toHaveNthReturnedWith(n: number, value: any): Assertion | boolean;
+
   /**
-   * Checks if the received value has a specific length
-   * @param {number} length - Expected length
-   * @returns {Assertion | boolean} Assertion result
+   * Asserts that the received value has a specific length.
+   * @param {number} length The expected length
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
-   * assert([1, 2, 3]).toHaveLength(3)
-   * assert("hello").toHaveLength(5)
+   * assert([1, 2, 3]).toHaveLength(3); // Passes
+   * assert("hello").toHaveLength(5); // Passes
    */
   toHaveLength(length: number): Assertion | boolean;
+
   /**
-   * Checks if the received object has a specific property with an optional value
-   * @param {string} keyPath - Dot-notation path to the property
-   * @param {any} [value] - Optional expected value of the property
-   * @returns {Assertion | boolean} Assertion result
+   * Asserts that the received object has a specific property.
+   * @param {string} keyPath The dot-notation path to the property
+   * @param {any} [value] The expected property value
+   * @returns {Assertion | boolean} The assertion result
+   * @throws {AssertionError} If the assertion fails
+   *
    * @example
-   * assert({ a: { b: 42 } }).toHaveProperty('a.b', 42)
-   * assert({ x: 1 }).toHaveProperty('x')
+   * assert({ a: { b: 42 } }).toHaveProperty('a.b', 42); // Passes
+   * assert({ x: 1 }).toHaveProperty('x'); // Passes
    */
   toHaveProperty(keyPath: string, value?: any): Assertion | boolean;
 }

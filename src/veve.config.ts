@@ -7,8 +7,8 @@ const config: Veve = {
     "**/*.test.js",
     "**/*.spec.ts",
     "**/*.spec.js",
-    "**/__tests__/**/*.ts", // Test files within __tests__ folders (TypeScript)
-    "**/__tests__/**/*.js", // Test files within __tests__ folders (JavaScript)
+    "**/__tests__/**/*.ts", 
+    "**/__tests__/**/*.js",
   ],
   exclude: [
     "**/dist/**", // Compiled or distribution files

@@ -13,10 +13,11 @@ import kleur from "kleur";
 export interface json extends Reporter {}
 
 /**
- * Generates a comprehensive JSON report for the provided test results.
+ * Generates a detailed test report in JSON format and writes it to a file.
  *
- * @returns {Promise<void>} Resolves when the JSON report is successfully written to a file.
+ * @type {json}
  */
+
 export const json: json = {
   name: "jsonReporter",
   type: "file",
