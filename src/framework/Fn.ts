@@ -10,6 +10,10 @@ import { getType } from "../utils/index.js";
 type MethodNames<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;
 }[keyof T];
+export type TrackedFunction<T extends (...args: any[]) => any> = T & TrackFn;
+type MethodType<T, K extends keyof T> = T[K] extends (...args: any[]) => any 
+  ? T[K] 
+  : never;
 
 /**
  * Interface representing a tracking function with utilities for inspecting calls, arguments, and results.
@@ -291,20 +295,6 @@ export class TrackFn implements TrackFn {
   }
 }
 
-/**
- * Creates a tracked version of a given function.
- *
- * @param {Function} implementation - The original function implementation.
- * @returns {TrackFn & Function} A tracked version of the provided function.
- *
- * @example
- * const add = (a: number, b: number) => a + b;
- * const trackedAdd = Fn(add);
- * trackedAdd(1, 2); // 3
- */
-export function Fn(implementation: Function): Function {
-  return new TrackFn(implementation).track();
-}
 
 /**
  * Checks if a value is a tracked function.
@@ -341,70 +331,90 @@ export function isFn(value: any): boolean {
 }
 
 /**
- * Replaces a method on an object with a tracked version of the method.
- *
- * @param {object} obj - The object containing the method.
- * @param {string} method - The name of the method to replace.
- * @returns {TrackFn & Function} The tracked version of the method.
- *
- * @throws {Error} If the method does not exist on the object or is not a function.
- *
+ * Creates a tracked version of a given function, preserving its original type signature while 
+ * adding tracking capabilities. The returned function maintains the same behavior as the original
+ * while providing additional methods for tracking calls, arguments, and results.
+ * 
+ * @template T - The type of the function being tracked, must extend (...args: any[]) => any
+ * @param {T} implementation - The original function implementation to track
+ * @returns {TrackedFunction<T>} A function that combines the original implementation with tracking capabilities
+ * 
  * @example
- * const obj = { multiply: (a: number, b: number) => a * b };
- * const trackedMultiply = spyOn(obj, 'multiply');
- * obj.multiply(2, 3); // 6
- * console.log(trackedMultiply.getCallCount()); // 1
+ * // Track a simple addition function
+ * const add = (a: number, b: number) => a + b;
+ * const trackedAdd = Fn(add);
+ * trackedAdd(1, 2); // Returns 3
+ * console.log(trackedAdd.getCallCount()); // Returns 1
+ * 
+ * @example
+ * // Track an async function
+ * const fetchData = async (id: string) => ({ id, data: 'some data' });
+ * const trackedFetch = Fn(fetchData);
+ * await trackedFetch('123');
+ * console.log(trackedFetch.getAllArgs()); // Returns [['123']]
+ * 
+ * @example
+ * // Modify tracked function behavior
+ * const greet = (name: string) => `Hello ${name}`;
+ * const trackedGreet = Fn(greet);
+ * trackedGreet.return('Fixed response');
+ * console.log(trackedGreet('Alice')); // Returns 'Fixed response'
  */
-export function spyOn(obj: any, method: string): Function {
+export function Fn<T extends (...args: any[]) => any>(
+  implementation: T
+): TrackedFunction<T> {
+  return new TrackFn(implementation).track() as TrackedFunction<T>;
+}
+
+/**
+ * Replaces a method on an object with a tracked version while preserving its original type signature.
+ * The original method is replaced with a tracked version that maintains the same behavior but provides
+ * additional tracking capabilities. The tracked version is both assigned to the object and returned
+ * for convenience.
+ * 
+ * @template T - The type of the object containing the method to track
+ * @template K - The key type of the method to track, must be a key of T
+ * @param {T} obj - The object containing the method to track
+ * @param {K & MethodNames<T>} method - The name of the method to track
+ * @returns {TrackedFunction<MethodType<T, K>>} A tracked version of the specified method
+ * @throws {Error} If the specified method doesn't exist on the object or isn't a function
+ * 
+ * @example
+ * // Track a method on a simple object
+ * const calculator = {
+ *   add: (a: number, b: number) => a + b
+ * };
+ * const trackedAdd = spyOn(calculator, 'add');
+ * calculator.add(2, 3); // Returns 5
+ * console.log(trackedAdd.getCallCount()); // Returns 1
+ * 
+ * @example
+ * // Track and modify method behavior
+ * const api = {
+ *   fetch: async (url: string) => ({ data: 'response' })
+ * };
+ * const trackedFetch = spyOn(api, 'fetch');
+ * trackedFetch.throw(new Error('Network error'));
+ * try {
+ *   await api.fetch('/data');
+ * } catch (error) {
+ *   console.log(error.message); // Prints: Network error
+ * }
+ */
+export function spyOn<T extends object, K extends keyof T>(
+  obj: T, 
+  method: K & MethodNames<T>
+): TrackedFunction<MethodType<T, K>> {
   if (!obj || typeof obj[method] !== "function") {
-    throw new Error(`Method '${method}' not found on the object.`);
+    throw new Error(`Method '${String(method)}' not found on the object.`);
   }
 
-  const originalMethod = obj[method];
+  const originalMethod = obj[method] as MethodType<T, K>;
   const trackedFn = Fn(originalMethod);
 
-  obj[method] = trackedFn;
+  // Type assertion needed since we validated the method exists
+  obj[method] = trackedFn as any;
 
   return trackedFn;
 }
 
-/**
- * Creates a spied version of a specific method in a class instance.
- *
- * @param {T} instance - The class instance containing the method
- * @param {K} methodName - The name of the method to spy on
- * @returns {TrackFn & Function} The tracked version of the method
- *
- * @example
- * class Calculator {
- *   add(a: number, b: number) { return a + b; }
- * }
- *
- * const calc = new Calculator();
- * const spiedAdd = spyOnMethod(calc, 'add');
- * calc.add(1, 2);
- * console.log(spiedAdd.getCallCount()); // 1
- */
-export function spyOnMethod<T extends object, K extends MethodNames<T>>(
-  instance: T,
-  methodName: K,
-): TrackFn & Function {
-  const method = instance[methodName];
-
-  if (typeof method !== "function") {
-    throw new Error(
-      `Method '${String(methodName)}' not found on the instance.`,
-    );
-  }
-
-  const trackedMethod = Fn(method.bind(instance)) as TrackFn & Function;
-
-  // Replace the method with the tracked version
-  Object.defineProperty(instance, methodName, {
-    value: trackedMethod,
-    configurable: true,
-    writable: true,
-  });
-
-  return trackedMethod;
-}
