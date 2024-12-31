@@ -1,6 +1,6 @@
-modules = ["nodejs-21", "nix", "nodejs-22"]
+modules = ["nodejs-16", "nix"]
 hidden = [".config", "package-lock.json"]
-run = "npm run build:watch"
+run = "node index.js"
 
 [gitHubImport]
 requiredFiles = [".replit", "replit.nix", "package.json", "package-lock.json"]

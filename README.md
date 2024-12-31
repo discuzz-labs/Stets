@@ -34,7 +34,7 @@ $ npx veve-setup
 #### Step 1: Write Your Tests in TypeScript
 
 ```typescript
-import "veve";
+import { assert } "veve";
 
 const add = (a: number, b: number): number => a + b;
 
@@ -77,7 +77,7 @@ No additional steps—just fast, type-safe tests.
 
 ### 📚 Resources
 
-- **Documentation**: [https://tinytools.vercel.app/veve](https://tinytools.vercel.app/veve)
+- **Documentation**: [https://tinytools.vercel.app/docs/veve](https://tinytools.vercel.app/veve)
 - **GitHub**: [https://github.com/tinytools-oss/veve](https://github.com/tinytools-oss/veve)
 
 ---
