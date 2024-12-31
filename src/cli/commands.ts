@@ -104,7 +104,7 @@ const COMMANDS: Record<
 };
 
 function version() {
-  return kleur.green("v" + "1.0.4");
+  return kleur.green("v" + "1.0.7");
 }
 
 function help(): string {

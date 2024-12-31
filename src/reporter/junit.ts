@@ -15,10 +15,11 @@ import { XML } from "../utils/xml.js";
 export interface junit extends Reporter {}
 
 /**
- * Generates a JUnit XML report for the provided test results.
- *
- * @returns {Promise<void>} Resolves when the XML report is successfully written to a file.
+ * Generates a JUnit XML report from the provided test results.
+ * 
+ * @type {junit}
  */
+
 export const junit: junit = {
   name: "junitReporter",
   type: "file",

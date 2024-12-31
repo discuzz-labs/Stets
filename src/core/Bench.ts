@@ -5,26 +5,103 @@
  */
 
 export interface BenchmarkOptions {
+  /**
+   * Number of iterations to run the benchmark
+   * 
+   * @type {number | undefined}
+   */
   iterations?: number;
+
+  /**
+   * Number of warmup iterations to run before benchmarking
+   * 
+   * @type {number | undefined}
+   */
   warmup?: number;
+
+  /**
+   * Timeout value in milliseconds for the benchmark
+   * 
+   * @type {number | undefined}
+   */
   timeout?: number;
-  confidence?: number; // Confidence level for statistical calculations
+
+  /**
+   * Confidence level for the benchmark results
+   * 
+   * @type {number | undefined}
+   */
+  confidence?: number;
 }
 
 export interface BenchmarkMetrics {
+  /**
+   * Mean latency in milliseconds
+   * 
+   * @type {number}
+   */
   meanLatency: number;
+
+  /**
+   * Median latency in milliseconds
+   * 
+   * @type {number}
+   */
   medianLatency: number;
-  p95Latency: number; // 95th percentile latency
-  stdDev: number; // Standard deviation
-  opsPerSecond: number; // Operations per second
+
+  /**
+   * 95th percentile latency in milliseconds
+   * 
+   * @type {number}
+   */
+  p95Latency: number;
+
+  /**
+   * Standard deviation of latency in milliseconds
+   * 
+   * @type {number}
+   */
+  stdDev: number;
+
+  /**
+   * Operations per second
+   * 
+   * @type {number}
+   */
+  opsPerSecond: number;
+
+  /**
+   * Confidence interval for the benchmark results
+   * 
+   * @type {{ lower: number, upper: number }}
+   */
   confidenceInterval: {
     lower: number;
     upper: number;
   };
+
+  /**
+   * Number of samples collected during benchmarking
+   * 
+   * @type {number}
+   */
   samples: number;
+
+  /**
+   * Timestamp when the benchmark was completed
+   * 
+   * @type {number}
+   */
   timestamp: number;
+
+  /**
+   * Whether the benchmark timed out
+   * 
+   * @type {boolean}
+   */
   timedOut: boolean;
 }
+
 
 export class Bench {
   static async run(
@@ -75,9 +152,8 @@ export class Bench {
   private static getHighResTime(): number {
     if (typeof process !== "undefined" && process.hrtime) {
       const [seconds, nanoseconds] = process.hrtime();
-      return seconds * 1000 + nanoseconds / 1_000_000; // Convert to milliseconds
+      return seconds * 1000 + nanoseconds / 1_000_000; 
     }
-    // For browsers, using performance.now() for higher precision timing
     return performance.now();
   }
 
@@ -105,7 +181,7 @@ export class Bench {
       medianLatency: this.percentile(sorted, 0.5),
       p95Latency: this.percentile(sorted, 0.95),
       stdDev,
-      opsPerSecond: samples.length / (mean / 1000), // Convert ms to ops/second
+      opsPerSecond: samples.length / (mean / 1000),
       confidenceInterval,
       samples: samples.length,
       timestamp: Date.now(),

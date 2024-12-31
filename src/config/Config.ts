@@ -13,157 +13,184 @@ import { ErrorInspect } from "../core/ErrorInspect.js";
 import { ReporterPlugin } from "../reporter/Reporter.js";
 
 /**
- * Type representing the configuration options for Veve.
+ * Type representing the configuration options for Veve
  */
 export interface Veve {
   /**
-   * A list of patterns to include for processing.
-   * @example ['src/app.ts', 'src/utils.tsx']
+   * A list of patterns to include for processing
+   * 
+   * @type {string[]}
    */
   pattern: string[];
 
   /**
-   * A list of patterns to exclude from processing.
-   * @example ['node_modules', 'dist']
+   * A list of patterns to exclude from processing
+   * 
+   * @type {string[]}
    */
   exclude: string[];
 
   /**
-   * A list of environment names where this configuration will be applied.
-   * @example ['development', 'production', 'test']
+   * A list of environment names where this configuration will be applied
+   * 
+   * @type {string[]}
    */
   envs: string[];
 
   /**
-   * A list of eabuild plugins to be used in the configuration.
+   * A list of eabuild plugins to be used in the configuration
+   * 
+   * @type {Plugin[]}
    */
   plugins: Plugin[];
 
   /**
-   * The timeout value in milliseconds for operations.
-   * @example 3000
+   * The timeout value in milliseconds for operations
+   * 
+   * @type {number}
    */
   timeout: number;
 
   /**
-   * A context object that can hold any key-value pair.
-   * @example { key: 'value', flag: true }
+   * A context object that can hold any key-value pair
+   * 
+   * @type {Record<any, any>}
    */
   context: Record<any, any>;
 
   /**
-   * The TypeScript configuration options.
-   * @example { strict: true, baseUrl: './' }
+   * The TypeScript configuration options
+   * 
+   * @type {Tsconfig}
    */
   tsconfig: Tsconfig;
 
   /**
-   * Whether to watch files for changes.
-   * @example true
+   * Whether to watch files for changes
+   * 
+   * @type {boolean}
    */
   watch: boolean;
 
   /**
    * List of modules to auto require inside the testing files
-   * @example ["jsdom-global/register"]
+   * 
+   * @type {string[]}
    */
   require: string[];
 
   /**
    * List of reporter plugins
-   * @example ["jsdom-global/register"]
+   * 
+   * @type {ReporterPlugin[]}
    */
   reporters: ReporterPlugin[];
 
   /**
-   * Defines the file path for reporters to save their outputs.
-   * @example "./reports"
+   * Defines the file path for reporters to save their outputs
+   * 
+   * @type {string}
    */
   output: string;
 }
 
 /**
- * Interface representing TypeScript configuration options.
+ * Interface representing TypeScript configuration options
  */
 export interface Tsconfig {
   /**
-   * Whether to enforce strict mode in all files.
-   * @example true
+   * Whether to enforce strict mode in all files
+   * 
+   * @type {boolean | undefined}
    */
   alwaysStrict?: boolean;
 
   /**
-   * The base URL for module resolution.
-   * @example './src'
+   * The base URL for module resolution
+   * 
+   * @type {string | undefined}
    */
   baseUrl?: string;
 
   /**
-   * Enables experimental decorator support.
-   * @example true
+   * Enables experimental decorator support
+   * 
+   * @type {boolean | undefined}
    */
   experimentalDecorators?: boolean;
 
   /**
-   * Specifies how imports not used as values should be treated.
-   * @example 'remove'
+   * Specifies how imports not used as values should be treated
+   * 
+   * @type {'remove' | 'preserve' | 'error' | undefined}
    */
   importsNotUsedAsValues?: "remove" | "preserve" | "error";
 
   /**
-   * Specifies the JSX code generation style.
-   * @example 'react-jsx'
+   * Specifies the JSX code generation style
+   * 
+   * @type {'preserve' | 'react-native' | 'react' | 'react-jsx' | 'react-jsxdev' | undefined}
    */
   jsx?: "preserve" | "react-native" | "react" | "react-jsx" | "react-jsxdev";
 
   /**
-   * Factory function for creating JSX elements.
-   * @example 'React.createElement'
+   * Factory function for creating JSX elements
+   * 
+   * @type {string | undefined}
    */
   jsxFactory?: string;
 
   /**
-   * Factory function for creating JSX fragment elements.
-   * @example 'React.Fragment'
+   * Factory function for creating JSX fragment elements
+   * 
+   * @type {string | undefined}
    */
   jsxFragmentFactory?: string;
 
   /**
-   * Specifies the module specifier for JSX imports.
-   * @example '@emotion/react'
+   * Specifies the module specifier for JSX imports
+   * 
+   * @type {string | undefined}
    */
   jsxImportSource?: string;
 
   /**
-   * A mapping of module paths to arrays of paths.
-   * @example { '@utils': ['./src/utils'] }
+   * A mapping of module paths to arrays of paths
+   * 
+   * @type {Record<string, string[]> | undefined}
    */
   paths?: Record<string, string[]>;
 
   /**
-   * Whether to preserve value imports in the emitted JavaScript.
-   * @example true
+   * Whether to preserve value imports in the emitted JavaScript
+   * 
+   * @type {boolean | undefined}
    */
   preserveValueImports?: boolean;
 
   /**
-   * Whether to enable strict type checking options.
-   * @example true
+   * Whether to enable strict type checking options
+   * 
+   * @type {boolean | undefined}
    */
   strict?: boolean;
 
   /**
-   * Whether to use `define` for class field initialization.
-   * @example true
+   * Whether to use `define` for class field initialization
+   * 
+   * @type {boolean | undefined}
    */
   useDefineForClassFields?: boolean;
 
   /**
-   * Whether to keep the module syntax as-is in the emitted JavaScript.
-   * @example true
+   * Whether to keep the module syntax as-is in the emitted JavaScript
+   * 
+   * @type {boolean | undefined}
    */
   verbatimModuleSyntax?: boolean;
 }
+
+
 
 export function veve(config: Partial<Veve>): Partial<Veve> {
   return config;
