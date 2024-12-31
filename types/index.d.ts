@@ -1150,7 +1150,7 @@ export interface TrackFn {
 	 * @returns {TrackFn} The updated tracked function.
 	 * @example trackFn.use((arg1, arg2) => arg1 + arg2);
 	 */
-	use(fn: Function): TrackFn;
+	use<A extends any[], R>(fn: (...args: A) => R): TrackFn;
 	/**
 	 * Resets the state of the tracked function, clearing all recorded calls, arguments, and results.
 	 * @returns {TrackFn} The reset tracked function.
