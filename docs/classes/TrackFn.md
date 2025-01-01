@@ -1,0 +1,717 @@
+[**veve**](../README.md)
+
+***
+
+[veve](../globals.md) / TrackFn
+
+# Class: TrackFn
+
+Defined in: [framework/Fn.ts:45](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L45)
+
+## Implements
+
+- [`TrackFn`](TrackFn.md)
+
+## Constructors
+
+### new TrackFn()
+
+> **new TrackFn**(`_implementation`): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:203](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L203)
+
+#### Parameters
+
+##### \_implementation
+
+`Function`
+
+#### Returns
+
+[`TrackFn`](TrackFn.md)
+
+## Methods
+
+### clear()
+
+> **clear**(): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:182](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L182)
+
+Clears all recorded calls and arguments but retains custom behavior configurations
+
+#### Returns
+
+[`TrackFn`](TrackFn.md)
+
+The cleared tracked function with retained behavior configurations
+
+#### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.clear()
+```
+
+***
+
+### getAllArgs()
+
+#### Call Signature
+
+> **getAllArgs**(): readonly `any`[][]
+
+Defined in: [framework/Fn.ts:55](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L55)
+
+Retrieves the arguments passed to all function calls
+
+##### Returns
+
+readonly `any`[][]
+
+An array of argument arrays for each call
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.getAllArgs()
+```
+
+#### Call Signature
+
+> **getAllArgs**(): readonly `any`[][]
+
+Defined in: [framework/Fn.ts:306](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L306)
+
+Retrieves the arguments passed to all function calls
+
+##### Returns
+
+readonly `any`[][]
+
+An array of argument arrays for each call
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.getAllArgs()
+```
+
+***
+
+### getArgsForCall()
+
+#### Call Signature
+
+> **getArgsForCall**(`index`): `undefined` \| `any`[]
+
+Defined in: [framework/Fn.ts:67](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L67)
+
+Retrieves the arguments passed to a specific function call by index
+
+##### Parameters
+
+###### index
+
+`number`
+
+The index of the function call
+
+##### Returns
+
+`undefined` \| `any`[]
+
+The arguments of the specified call, or `undefined` if not found
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.getArgsForCall(1)
+```
+
+#### Call Signature
+
+> **getArgsForCall**(`index`): `undefined` \| `any`[]
+
+Defined in: [framework/Fn.ts:310](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L310)
+
+Retrieves the arguments passed to a specific function call by index
+
+##### Parameters
+
+###### index
+
+`number`
+
+The index of the function call
+
+##### Returns
+
+`undefined` \| `any`[]
+
+The arguments of the specified call, or `undefined` if not found
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.getArgsForCall(1)
+```
+
+***
+
+### getCall()
+
+> **getCall**(`index`): `undefined` \| `FunctionCall`
+
+Defined in: [framework/Fn.ts:294](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L294)
+
+#### Parameters
+
+##### index
+
+`number`
+
+#### Returns
+
+`undefined` \| `FunctionCall`
+
+***
+
+### getCallCount()
+
+> **getCallCount**(): `number`
+
+Defined in: [framework/Fn.ts:302](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L302)
+
+#### Returns
+
+`number`
+
+***
+
+### getCalls()
+
+> **getCalls**(): readonly `FunctionCall`[]
+
+Defined in: [framework/Fn.ts:290](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L290)
+
+#### Returns
+
+readonly `FunctionCall`[]
+
+***
+
+### getExceptions()
+
+#### Call Signature
+
+> **getExceptions**(): readonly `FunctionException`[]
+
+Defined in: [framework/Fn.ts:89](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L89)
+
+Retrieves the exceptions thrown during function calls
+
+##### Returns
+
+readonly `FunctionException`[]
+
+An array of thrown exceptions
+
+##### Example
+
+```ts
+const throwError = () => { throw new Error('Test error') }
+const trackFn = Fn(throwError)
+trackFn.getExceptions()
+```
+
+#### Call Signature
+
+> **getExceptions**(): readonly `FunctionException`[]
+
+Defined in: [framework/Fn.ts:318](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L318)
+
+Retrieves the exceptions thrown during function calls
+
+##### Returns
+
+readonly `FunctionException`[]
+
+An array of thrown exceptions
+
+##### Example
+
+```ts
+const throwError = () => { throw new Error('Test error') }
+const trackFn = Fn(throwError)
+trackFn.getExceptions()
+```
+
+***
+
+### getLatestCall()
+
+> **getLatestCall**(): `undefined` \| `FunctionCall`
+
+Defined in: [framework/Fn.ts:298](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L298)
+
+#### Returns
+
+`undefined` \| `FunctionCall`
+
+***
+
+### getReturnValues()
+
+#### Call Signature
+
+> **getReturnValues**(): readonly `any`[]
+
+Defined in: [framework/Fn.ts:78](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L78)
+
+Retrieves the return values of all function calls
+
+##### Returns
+
+readonly `any`[]
+
+An array of return values for each call
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.getReturnValues()
+```
+
+#### Call Signature
+
+> **getReturnValues**(): readonly `any`[]
+
+Defined in: [framework/Fn.ts:314](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L314)
+
+Retrieves the return values of all function calls
+
+##### Returns
+
+readonly `any`[]
+
+An array of return values for each call
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.getReturnValues()
+```
+
+***
+
+### reset()
+
+#### Call Signature
+
+> **reset**(): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:171](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L171)
+
+Resets the state of the tracked function, clearing all recorded calls, arguments, and results
+
+##### Returns
+
+[`TrackFn`](TrackFn.md)
+
+The reset tracked function
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.reset()
+```
+
+#### Call Signature
+
+> **reset**(): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:261](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L261)
+
+Resets the state of the tracked function, clearing all recorded calls, arguments, and results
+
+##### Returns
+
+[`TrackFn`](TrackFn.md)
+
+The reset tracked function
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.reset()
+```
+
+***
+
+### return()
+
+> **return**(`value`): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:136](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L136)
+
+Sets the return value for the tracked function
+
+#### Parameters
+
+##### value
+
+`any`
+
+The value to be returned
+
+#### Returns
+
+[`TrackFn`](TrackFn.md)
+
+The updated tracked function with the configured return value
+
+#### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.return(5)
+```
+
+***
+
+### returns()
+
+> **returns**(`value`): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:272](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L272)
+
+#### Parameters
+
+##### value
+
+`any`
+
+#### Returns
+
+[`TrackFn`](TrackFn.md)
+
+***
+
+### throw()
+
+> **throw**(`error`): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:148](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L148)
+
+Configures the tracked function to throw a specific error
+
+#### Parameters
+
+##### error
+
+`Error`
+
+The error to be thrown
+
+#### Returns
+
+[`TrackFn`](TrackFn.md)
+
+The updated tracked function with the configured error
+
+#### Example
+
+```ts
+const throwError = () => { throw new Error('Test error') }
+const trackFn = Fn(throwError)
+trackFn.throw(new Error('Custom error'))
+```
+
+***
+
+### throws()
+
+> **throws**(`error`): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:277](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L277)
+
+#### Parameters
+
+##### error
+
+`Error`
+
+#### Returns
+
+[`TrackFn`](TrackFn.md)
+
+***
+
+### track()
+
+> **track**(): `Function`
+
+Defined in: [framework/Fn.ts:206](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L206)
+
+#### Returns
+
+`Function`
+
+***
+
+### use()
+
+#### Call Signature
+
+> **use**(`fn`): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:160](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L160)
+
+Replaces the tracked function with a custom implementation
+
+##### Parameters
+
+###### fn
+
+(...`args`) => `any`
+
+The custom function to be used
+
+##### Returns
+
+[`TrackFn`](TrackFn.md)
+
+The updated tracked function with the custom implementation
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.use((a, b) => a * b)
+```
+
+#### Call Signature
+
+> **use**(`fn`): [`TrackFn`](TrackFn.md)
+
+Defined in: [framework/Fn.ts:284](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L284)
+
+Replaces the tracked function with a custom implementation
+
+##### Parameters
+
+###### fn
+
+`Function`
+
+The custom function to be used
+
+##### Returns
+
+[`TrackFn`](TrackFn.md)
+
+The updated tracked function with the custom implementation
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.use((a, b) => a * b)
+```
+
+***
+
+### wasCalled()
+
+#### Call Signature
+
+> **wasCalled**(): `boolean`
+
+Defined in: [framework/Fn.ts:100](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L100)
+
+Checks if the tracked function was called at least once
+
+##### Returns
+
+`boolean`
+
+`true` if the function was called, otherwise `false`
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.wasCalled()
+```
+
+#### Call Signature
+
+> **wasCalled**(): `boolean`
+
+Defined in: [framework/Fn.ts:322](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L322)
+
+Checks if the tracked function was called at least once
+
+##### Returns
+
+`boolean`
+
+`true` if the function was called, otherwise `false`
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.wasCalled()
+```
+
+***
+
+### wasCalledTimes()
+
+#### Call Signature
+
+> **wasCalledTimes**(`n`): `boolean`
+
+Defined in: [framework/Fn.ts:124](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L124)
+
+Checks if the tracked function was called a specific number of times
+
+##### Parameters
+
+###### n
+
+`number`
+
+The number of calls to check
+
+##### Returns
+
+`boolean`
+
+`true` if the function was called exactly `n` times, otherwise `false`
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.wasCalledTimes(2)
+```
+
+#### Call Signature
+
+> **wasCalledTimes**(`n`): `boolean`
+
+Defined in: [framework/Fn.ts:334](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L334)
+
+Checks if the tracked function was called a specific number of times
+
+##### Parameters
+
+###### n
+
+`number`
+
+The number of calls to check
+
+##### Returns
+
+`boolean`
+
+`true` if the function was called exactly `n` times, otherwise `false`
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.wasCalledTimes(2)
+```
+
+***
+
+### wasCalledWith()
+
+#### Call Signature
+
+> **wasCalledWith**(...`args`): `boolean`
+
+Defined in: [framework/Fn.ts:112](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L112)
+
+Checks if the tracked function was called with specific arguments
+
+##### Parameters
+
+###### args
+
+...`any`[]
+
+The arguments to check
+
+##### Returns
+
+`boolean`
+
+`true` if the function was called with the specified arguments, otherwise `false`
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.wasCalledWith(1, 2)
+```
+
+#### Call Signature
+
+> **wasCalledWith**(...`args`): `boolean`
+
+Defined in: [framework/Fn.ts:326](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L326)
+
+Checks if the tracked function was called with specific arguments
+
+##### Parameters
+
+###### args
+
+...`any`[]
+
+The arguments to check
+
+##### Returns
+
+`boolean`
+
+`true` if the function was called with the specified arguments, otherwise `false`
+
+##### Example
+
+```ts
+const add = (a, b) => a + b
+const trackFn = Fn(add)
+trackFn.wasCalledWith(1, 2)
+```
