@@ -1,6 +1,6 @@
 {
   "name": "veve",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Veve - A zero-config, type-safe, TypeScript-native testing framework and runner!",
   "main": "dist/index.js",
   "types": "types/index.d.ts",
@@ -11,7 +11,9 @@
   "files": [
     "dist/*",
     "bin/*",
-    "types/*"
+    "types/*",
+    "LISCENSE",
+    "README.md"
   ],
   "keywords": [
     "testing",
@@ -39,7 +41,8 @@
     "build:watch": "tsc -w",
     "build:dts": "dts-bundle-generator src/index.ts -o types/index.d.ts",
     "fmt": "prettier --write '**/*.{ts,json,md}'",
-    "test": "./bin/index.js --watch",
+    "test:watch": "./bin/index.js --watch",
+    "test": "./bin/index.js",
     "docs": "typedoc src --plugin typedoc-plugin-markdown --out ./docs"
   },
   "devDependencies": {
