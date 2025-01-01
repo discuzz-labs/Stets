@@ -30,15 +30,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Set version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            npm version ${{ github.event.inputs.version }} --no-git-tag-version
-          else
-            # For push events, use package.json version
-            echo "Using version from package.json"
-          fi
-
       - name: Publish to NPM
         run: npm publish
         env:
