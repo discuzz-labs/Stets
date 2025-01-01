@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build package
+        run: npm run build
+
       - name: Run tests
         run: npm test
 
@@ -35,9 +38,6 @@ jobs:
             # For push events, use package.json version
             echo "Using version from package.json"
           fi
-
-      - name: Build package
-        run: npm run build
 
       - name: Publish to NPM
         run: npm publish
