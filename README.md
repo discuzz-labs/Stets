@@ -76,11 +76,9 @@ No additional steps—just fast, type-safe tests.
 
 ### 📚 Resources
 
-<<<<<<< HEAD
-- **Documentation**: [https://tinytools.vercel.app/docs/veve](https://tinytools-oss.vercel.app/docs/veve)
-=======
-- **Documentation**: [https://tinytools-oss.vercel.app/docs/veve](https://tinytools-oss.vercel.app/veve)
->>>>>>> d594b1b (Update README.md)
+
+- **Documentation**: [https://tinytools-oss.vercel.app/docs/veve](https://tinytools-oss.vercel.app/docs/veve)
+
 - **GitHub**: [https://github.com/tinytools-oss/veve](https://github.com/tinytools-oss/veve)
 
 ---
