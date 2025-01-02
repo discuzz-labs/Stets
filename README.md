@@ -34,11 +34,10 @@ $ npx veve-setup
 #### Step 1: Write Your Tests in TypeScript
 
 ```typescript
-import { assert } "veve";
-
-const add = (a: number, b: number): number => a + b;
+import { assert } from "veve";
 
 it("should add two numbers", () => {
+  const add = (a: number, b: number): number => a + b;
   // Enjoy TypeScript autocomplete!
   assert(add(1, 2)).toBe(3);
 });
@@ -77,7 +76,11 @@ No additional steps—just fast, type-safe tests.
 
 ### 📚 Resources
 
+<<<<<<< HEAD
 - **Documentation**: [https://tinytools.vercel.app/docs/veve](https://tinytools-oss.vercel.app/docs/veve)
+=======
+- **Documentation**: [https://tinytools-oss.vercel.app/docs/veve](https://tinytools-oss.vercel.app/veve)
+>>>>>>> d594b1b (Update README.md)
 - **GitHub**: [https://github.com/tinytools-oss/veve](https://github.com/tinytools-oss/veve)
 
 ---
