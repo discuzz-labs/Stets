@@ -52,31 +52,19 @@ Types:
 - `test:` - adding or modifying tests
 - `chore:` - maintenance tasks
 
-Example:
-
-```
-feat: add user authentication system
-
-- Implement JWT token generation
-- Add password hashing
-- Create login endpoints
-
-Closes #123
-```
-
 ### 4. Development Workflow
 
-1. Create your branch from `dev`
+1. Create your branch from `main`
 2. Make your changes
 3. Write or update tests if necessary
 4. Update documentation if needed
 5. Ensure all tests pass
 6. Push your changes to your fork
-7. Create a Pull Request to the `dev` branch
+7. Create a Pull Request to the `main` branch
 
 ### 5. Pull Request Process
 
-1. Open a PR against the `dev` branch
+1. Open a PR against the `main` branch
 2. Link the related issue in the PR description
 3. Provide a clear description of the changes
 4. Wait for code review
@@ -85,18 +73,11 @@ Closes #123
 
 ### 6. Review and Merge Process
 
-1. Changes will be reviewed in the `dev` branch
+1. Changes will be reviewed 
 2. After approval, changes will be tested in the development environment
 3. Once testing is successful, changes will be merged to `main`
 4. A new release will be created with appropriate version number
 
-## Release Process
-
-1. Changes accumulated in `main` will be tagged with a version number
-2. A release will be created following semantic versioning:
-   - MAJOR version for incompatible API changes
-   - MINOR version for backwards-compatible functionality
-   - PATCH version for backwards-compatible bug fixes
 
 ## Questions or Need Help?
 
