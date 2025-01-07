@@ -73,11 +73,10 @@ Types:
 
 ### 6. Review and Merge Process
 
-1. Changes will be reviewed 
+1. Changes will be reviewed
 2. After approval, changes will be tested in the development environment
 3. Once testing is successful, changes will be merged to `main`
 4. A new release will be created with appropriate version number
-
 
 ## Questions or Need Help?
 

@@ -6,9 +6,9 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Reporter } from "./Reporter";
-import { PoolResult } from "../core/Pool";
-import { ErrorInspect } from "../core/ErrorInspect";
+import { Reporter } from "./Reporter.js";
+import { PoolResult } from "../core/Pool.js";
+import { ErrorInspect } from "../core/ErrorInspect.js";
 import kleur from "kleur";
 import { XML } from "../utils/xml.js";
 

@@ -6,8 +6,8 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { Reporter } from "./Reporter";
-import { PoolResult } from "../core/Pool";
+import { Reporter } from "./Reporter.js";
+import { PoolResult } from "../core/Pool.js";
 import kleur from "kleur";
 
 export interface json extends Reporter {}

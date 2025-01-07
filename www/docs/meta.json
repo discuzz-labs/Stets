@@ -1,0 +1,31 @@
+{
+  "title": "Veve",
+  "description": "Testing Framework.",
+  "icon": "TestTubeDiagonal",
+  "root": true,
+  "pages": [
+    "---Guide---",
+    "index",
+    "Terminology",
+    "QuickStart",
+    "Cli",
+    "---Configuration---",
+    "ConfigUsage",
+    "Env",
+    "Context",
+    "ConfigReference",
+    "TsconfigReference",
+    "---Framework---",
+    "FrameworkUsage",
+    "TestCase",
+    "Options",
+    "Assertion",
+    "Fn",
+    "spyOn",
+    "---Reportering---",
+    "ReportingUsage",
+    "Reporters",
+    "---Types---",
+    "..."
+  ]
+}
