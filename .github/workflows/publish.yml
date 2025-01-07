@@ -19,6 +19,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Veve
+        run: npm install file:.
+
       - name: Build package
         run: npm run build
 
