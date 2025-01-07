@@ -45,7 +45,7 @@ export class Pool {
   }
 
   async run(): Promise<number> {
-    const exitCode = 0;
+    let exitCode = 0;
 
     // Initialize terminal with "pending" state for all files
     this.options.testFiles.forEach((file) => {
@@ -82,6 +82,11 @@ export class Pool {
               timeout: this.options.timeout,
             });
 
+            // Update exitCode
+            if(exec.error || exec.report?.status === "failed") {
+              exitCode = 1
+            }
+
             const end = Date.now();
             const status = exec.report ? exec.report.status : "failed";
 
@@ -95,6 +100,9 @@ export class Pool {
               sourceMap,
             });
           } catch (error) {
+            // Update exitCode
+            exitCode = 1
+            
             const end = Date.now();
             this.reports.set(file, {
               error,

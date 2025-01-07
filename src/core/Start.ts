@@ -56,7 +56,7 @@ export class Start {
     } else {
       const { exitCode, reports } = await this.exec(this.options.files);
       await report(reports, this.options.reporters, this.options.output);
-      process.exit(exitCode);
+      process.exit(exitCode)
     }
   }
 
