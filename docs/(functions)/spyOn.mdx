@@ -1,0 +1,63 @@
+---
+title: spyOn Function
+---
+
+[veve](./Types) / spyOn
+
+
+# Function: spyOn()
+
+> **spyOn**\<`T`, `K`\>(`obj`, `method`): `TrackedFunction`\<`MethodType`\<`T`, `K`\>\>
+
+Defined in: [framework/Fn.ts:417](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Fn.ts#L417)
+
+Replaces a method on an object with a tracked version while preserving its original type signature.
+The original method is replaced with a tracked version that maintains the same behavior but provides
+additional tracking capabilities. The tracked version is both assigned to the object and returned
+for convenience.
+
+## Type Parameters
+
+• **T** *extends* `object`
+
+The type of the object containing the method to track
+
+• **K** *extends* `string` \| `number` \| `symbol`
+
+The key type of the method to track, must be a key of T
+
+## Parameters
+
+### obj
+
+`T`
+
+The object containing the method to track
+
+### method
+
+`K` & `MethodNames`\<`T`\>
+
+The name of the method to track
+
+## Returns
+
+`TrackedFunction`\<`MethodType`\<`T`, `K`\>\>
+
+A tracked version of the specified method
+
+## Throws
+
+If the specified method doesn't exist on the object or isn't a function
+
+## Example
+
+```ts
+// Track a method on a simple object
+const calculator = {
+  add: (a: number, b: number) => a + b
+};
+const trackedAdd = spyOn(calculator, 'add');
+calculator.add(2, 3); // Returns 5
+console.log(trackedAdd.getCallCount()); // Returns 1
+```

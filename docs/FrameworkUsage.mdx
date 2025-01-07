@@ -1,0 +1,52 @@
+---
+title: Usage
+description: How to use veve?
+---
+
+**Veve** is a streamlined testing framework designed to simplify writing and managing tests. This guide will help you get started and make the most of **Veve's** features.
+
+## Importing Veve
+
+Veve minimizes boilerplate code.
+
+```ts twoslash title="test.test.ts"
+import "veve" // Import Veve for auto-completion
+
+it("should pass", () => {})
+
+run() // Run the tests
+```
+
+This is all you need to start writing tests with Veve!
+
+## TypeScript & Auto-Completion
+
+### TypeScript Support
+
+Veve is an **ESM** (ECMAScript Module) and does **not** support CommonJS. For the best experience, we recommend using **TypeScript** in your testing environment.
+
+To enable TypeScript support, change the file extension from `.js` to `.ts`. This will provide type checking and auto-completion.
+
+### Enable Auto-Completion
+
+To ensure full auto-completion and type safety, import Veve at the top of each test file:
+
+```ts twoslash title="test.test.ts"
+import "veve" // Automatically loads types for improved auto-completion
+```
+
+This ensures that the necessary types and JSDoc comments are available, making it easier to write and maintain your tests.
+
+## Running Tests
+
+Once you've written your tests, call the `run()` function at the end of your file to execute them and generate a **TestReport**.
+
+```ts twoslash title="test.test.ts"
+import "veve"
+
+it("should pass", () => {})
+
+run() // Crucial to trigger test execution and generate a TestReport
+```
+
+**Important:** The `run()` function is essential. Without it, your tests won't execute, and no results will be generated.

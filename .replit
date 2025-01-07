@@ -1,4 +1,4 @@
-modules = ["nodejs-16", "nix"]
+modules = ["nodejs-22", "nix"]
 hidden = [".config", "package-lock.json"]
 run = ["npm", "run", "build"]
 

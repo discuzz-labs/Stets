@@ -1,0 +1,51 @@
+---
+title: Usage
+description: How to config veve ?
+---
+
+## Veve Configuration File
+
+**Veve** automatically tries to load a config file from the current working directory (`cwd`) if one is found. The following configuration files are recognized by **Veve**:
+
+- `veve.config.js`
+- `veve.config.ts`
+- `veve.js`
+- `veve.ts`
+- `test.config.js`
+- `test.config.ts`
+
+### Configuration Loading Order
+
+- **Veve** will first load the config passed via command-line arguments.
+- If no config is passed via arguments, **Veve** will then load the config from one of the above config files if found in the current working directory.
+- If neither is found, **Veve** will load the [default config](https://github.com/tinytools-oss/veve/blob/main/src/veve.config.ts).
+
+All config files will be treated as executable scripts, so you can run `js` or `ts` code inside them if needed.
+
+## Usage
+
+Any config file must export a default configuration that is compatible with the [`Veve`](/docs/veve/ConfigReference) interface. We recommend using the `veve` config helper to enable auto-completion and type safety. Below is an example of a valid configuration file:
+
+```ts twoslash title="veve.config.ts"
+import veve , { spec } from "veve";
+
+export default veve({
+  // Configuration goes here
+  pattern: ['src/**/*.ts', 'src/**/*.tsx'],
+  exclude: ['node_modules'],
+  envs: ['.env.local'],
+  plugins: [/* array of esbuild plugins */],
+  timeout: 300_000,
+  context: { test: true },
+  tsconfig: {
+    strict: true,
+    jsx: 'react',
+    alwaysStrict: true
+  },
+  watch: true,
+  require: [],
+  reporters: [{
+    reporter: spec
+  }],
+  output: './veve'
+});

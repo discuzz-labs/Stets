@@ -1,0 +1,52 @@
+---
+title: Reporters
+description: Builtin reporter from veve
+---
+
+**Veve** peovides you with a 3 different reporters. The `spec` reporter , `junit` reporter and a `json` reporter.
+
+## Spec reporter
+
+<Callout type="info">
+  This is the default reporter.
+</Callout>
+
+```ts twoslash title="veve.config.ts"
+import veve , { spec } from "veve";
+
+export default veve({
+  reporters: [{
+    reporter: spec,
+    options: {} // No options
+  }],
+  output: './veve'
+});
+```
+
+## JUnit reporter
+
+```ts twoslash title="veve.config.ts"
+import veve , { junit } from "veve";
+
+export default veve({
+  reporters: [{
+    reporter: junit,
+    options: {} // No options
+  }],
+  // output: './veve'
+});
+```
+
+## JSON reporter
+
+```ts twoslash title="veve.config.ts"
+import veve , { json } from "veve";
+
+export default veve({
+  reporters: [{
+    reporter: json,
+    options: {} // No options
+  }],
+  // output: './veve'
+});
+```

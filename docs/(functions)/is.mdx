@@ -1,0 +1,37 @@
+---
+title: is Function
+---
+
+[veve](./Types) / is
+
+
+# Function: is()
+
+> **is**(`received`): [`Assertion`](../classes/Assertion.md)
+
+Defined in: [framework/Assertion.ts:983](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/Assertion.ts#L983)
+
+Creates a new assertion instance for the provided value.
+- This function performs non-throwing assertions, which do not raise errors on failure.
+- Use this for scenarios where you want to test conditions without interrupting execution.
+
+## Parameters
+
+### received
+
+`any`
+
+The value to be strictly asserted.
+
+## Returns
+
+[`Assertion`](../classes/Assertion.md)
+
+An `Assertion` instance configured to silently handle failures.
+
+## Example
+
+```ts
+is(42).toBe(42); // Passes
+is("hello").toBe("world"); // Does not throw, but marks failure
+```

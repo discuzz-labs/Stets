@@ -1,0 +1,145 @@
+---
+title: Tsconfig Reference
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+## Tsconfig Reference Table
+
+<TypeTable
+  type={{
+    alwaysStrict: {
+      description: 'Whether to enforce strict mode in all files.',
+      type: 'boolean | undefined',
+      default: 'undefined'
+    },
+    baseUrl: {
+      description: 'The base URL for module resolution.',
+      type: 'string | undefined',
+      default: 'undefined'
+    },
+    experimentalDecorators: {
+      description: 'Enables experimental decorator support.',
+      type: 'boolean | undefined',
+      default: 'undefined'
+    },
+    importsNotUsedAsValues: {
+      description: 'Specifies how imports not used as values should be treated.',
+      type: "'remove' | 'preserve' | 'error' | undefined",
+      default: 'undefined'
+    },
+    jsx: {
+      description: 'Specifies the JSX code generation style.',
+      type: "'preserve' | 'react-native' | 'react' | 'react-jsx' | 'react-jsxdev' | undefined",
+      default: 'undefined'
+    },
+    jsxFactory: {
+      description: 'Factory function for creating JSX elements.',
+      type: 'string | undefined',
+      default: 'undefined'
+    },
+    jsxFragmentFactory: {
+      description: 'Factory function for creating JSX fragment elements.',
+      type: 'string | undefined',
+      default: 'undefined'
+    },
+    jsxImportSource: {
+      description: 'Specifies the module specifier for JSX imports.',
+      type: 'string | undefined',
+      default: 'undefined'
+    },
+    paths: {
+      description: 'A mapping of module paths to arrays of paths.',
+      type: 'Record<string, string[]> | undefined',
+      default: 'undefined'
+    },
+    preserveValueImports: {
+      description: 'Whether to preserve value imports in the emitted JavaScript.',
+      type: 'boolean | undefined',
+      default: 'undefined'
+    },
+    strict: {
+      description: 'Whether to enable strict type checking options.',
+      type: 'boolean | undefined',
+      default: 'undefined'
+    },
+    useDefineForClassFields: {
+      description: 'Whether to use `define` for class field initialization.',
+      type: 'boolean | undefined',
+      default: 'undefined'
+    },
+    verbatimModuleSyntax: {
+      description: 'Whether to keep the module syntax as-is in the emitted JavaScript.',
+      type: 'boolean | undefined',
+      default: 'undefined'
+    }
+  }}
+/>
+
+
+## Tsconfig Fields
+
+### `alwaysStrict`
+  Description: Whether to enforce strict mode in all files.  
+  Type: `boolean | undefined`  
+  Default: `undefined`
+
+### `baseUrl`
+  Description: The base URL for module resolution.  
+  Type: `string | undefined`  
+  Default: `undefined`
+
+### `experimentalDecorators`
+  Description: Enables experimental decorator support.  
+  Type: `boolean | undefined`  
+  Default: `undefined`
+
+### `importsNotUsedAsValues`
+  Description: Specifies how imports not used as values should be treated.  
+  Type: `'remove' | 'preserve' | 'error' | undefined`  
+  Default: `undefined`
+
+### `jsx`
+  Description: Specifies the JSX code generation style.  
+  Type: `'preserve' | 'react-native' | 'react' | 'react-jsx' | 'react-jsxdev' | undefined`  
+  Default: `undefined`
+
+### `jsxFactory`
+  Description: Factory function for creating JSX elements.  
+  Type: `string | undefined`  
+  Default: `undefined`
+
+### `jsxFragmentFactory`
+  Description: Factory function for creating JSX fragment elements.  
+  Type: `string | undefined`  
+  Default: `undefined`
+
+### `jsxImportSource`
+  Description: Specifies the module specifier for JSX imports.  
+  Type: `string | undefined`  
+  Default: `undefined`
+
+### `paths`
+  Description: A mapping of module paths to arrays of paths.  
+  Type: `Record<string, string[]> | undefined`  
+  Default: `undefined`
+
+### `preserveValueImports`
+  Description: Whether to preserve value imports in the emitted JavaScript.  
+  Type: `boolean | undefined`  
+  Default: `undefined`
+
+### `strict`
+  Description: Whether to enable strict type checking options.  
+  Type: `boolean | undefined`  
+  Default: `undefined`
+
+### `useDefineForClassFields`
+  Description: Whether to use `define` for class field initialization.  
+  Type: `boolean | undefined`  
+  Default: `undefined`
+
+### `verbatimModuleSyntax`
+  Description: Whether to keep the module syntax as-is in the emitted JavaScript.  
+  Type: `boolean | undefined`  
+  Default: `undefined`

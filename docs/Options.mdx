@@ -1,0 +1,151 @@
+---
+title: Options
+description: TestCase Options.
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+The `Options` interface is used to configure test behavior and parameters. It includes various settings that control test execution, retries, and conditions. 
+
+## Usage Example
+
+`Options` can only be passed as a third arguments to every `TestCase` method.
+
+```ts twoslash title="test.test.ts"
+import "veve"
+
+it("should pass", () => {}, {
+  // Options can be passed here
+  bench: true,
+  timeout: 5000 
+})
+```
+
+## Options Reference Table
+
+<TypeTable
+  type={{
+    timeout: {
+      description: 'The maximum time (in milliseconds) a test is allowed to run before timing out.',
+      type: 'number',
+      default: "300.000"
+    },
+    skip: {
+      description: 'Indicates whether the test should be skipped.',
+      type: 'boolean',
+      default: "false"
+    },
+    if: {
+      description:
+        'A condition to determine whether the test should run. Can be a boolean, a function returning a boolean, or a promise resolving to a boolean.',
+      type: 'boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined)',
+      default: "true"
+    },
+    retry: {
+      description: 'The number of times the test should be retried upon failure.',
+      type: 'number',
+      default: "0"
+    },
+    softfail: {
+      description:
+        'Indicates whether the test should allow soft failures without halting the test suite.',
+      type: 'boolean',
+      default: "false"
+    },
+    sequencial: {
+      description: 'Indicates whether the test should be run sequentially.',
+      type: 'boolean',
+      default: "false"
+    },
+    bench: {
+      description: 'Indicates whether the test is a benchmark test.',
+      type: 'boolean',
+      default: "false"
+    },
+    todo: {
+      description: 'Indicates whether the test is marked as a "to-do" item.',
+      type: 'boolean',
+      default: "false"
+    },
+    iterations: {
+      description: 'The number of iterations the test should run while benching.',
+      type: 'number | undefined',
+      default: "1000"
+    },
+    warmup: {
+      description: 'The number of warmup iterations before the actual test begins in benching.',
+      type: 'number | undefined',
+      default: "50"
+    },
+    confidence: {
+      description:
+        'The confidence level for statistical calculations (between 0 and 1). Used to calculate confidence intervals for the benchmark results.',
+      type: 'number | undefined',
+      default: "0.95"
+    },
+  }}
+/>
+
+
+## Timeout Settings
+
+### `timeout`
+  Description: The maximum time (in milliseconds) a test is allowed to run before timing out.  
+  Type: `number`  
+  Default: `300000`
+
+### `retry`
+  Description: The number of times the test should be retried upon failure.  
+  Type: `number`  
+  Default: `0`
+
+## Test Execution Conditions
+
+### `skip`
+  Description: Indicates whether the test should be skipped.  
+  Type: `boolean`  
+  Default: `false`
+
+### `if`
+  Description: A condition to determine whether the test should run. Can be a boolean, a function returning a boolean, or a promise resolving to a boolean.  
+  Type: `boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined)`  
+  Default: `true`
+  
+### `todo`
+  Description: Indicates whether the test is marked as a "to-do" item.  
+  Type: `boolean`  
+  Default: `false`
+
+## Execution Flow Options
+
+### `sequencial` 
+  Description: Indicates whether the test should be run sequentially.  
+  Type: `boolean`  
+  Default: `false`
+
+### `softfail`
+  Description: Indicates whether the test should allow soft failures without halting the test suite.  
+  Type: `boolean`  
+  Default: `false`
+
+## Benchmarking Options
+
+### `bench` 
+  Description: Indicates whether the test is a benchmark test.  
+  Type: `boolean`  
+  Default: `false`
+
+### `iterations`
+  Description: The number of iterations the test should run while benching.  
+  Type: `number | undefined`  
+  Default: `1000`
+
+### `warmup`
+  Description: The number of warmup iterations before the actual test begins in benching.  
+  Type: `number | undefined`  
+  Default: `50`
+
+### `confidence`
+  Description: The confidence level for statistical calculations (between 0 and 1). Used to calculate confidence intervals for the benchmark results.  
+  Type: `number | undefined`  
+  Default: `0.95`

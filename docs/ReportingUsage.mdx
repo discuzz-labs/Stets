@@ -1,0 +1,146 @@
+---
+title: Usage
+description: What to use reporters in veve ?
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Usage: Configuring a Reporter Plugin for Report Generation
+
+In this section, we'll explain how to configure a custom reporter plugin using the `ReporterPlugin` and `ReportOptions` interfaces for generating reports.
+
+You can use the following approach to configure a report generator in a Veve-like environment.
+
+## Configuration File
+
+**Reporter Plugin** can be set up through a configuration file where you specify the reporter type (either `"file"` or `"console"`), provide necessary options, and configure the report output behavior.
+
+### Reporter Configuration
+
+Below is an example of how you might set up a custom reporter in a configuration file that generates reports based on the `Reporter` interface provided:
+
+<Steps>
+  <Step>
+<Callout type="info">
+  We encourage you to have reporters in an anthor file!
+</Callout>
+
+```ts twoslash title="reporter.config.ts"
+import { Reporter, ReportOptions } from 'veve';
+
+export const fileReporter: Reporter = {
+    name: 'FileReporter',
+    type: 'file',
+    async report(options: ReportOptions): Promise<any> {
+      // Logic for generating a file-based report
+      if (!options.outputDir) {
+        throw new Error('Output directory is required for file-based reports');
+      }
+      console.log('Generating file report in', options.outputDir);
+      // Report generation logic here...
+      return Promise.resolve('Report generated successfully');
+    },
+};
+
+export const consoleReporter: Reporter = {
+    name: 'ConsoleReporter',
+    type: 'console',
+    async report(options: ReportOptions): Promise<any> {
+      // Logic for console-based reporting
+      console.log('Generating console report with the following data:');
+      console.log(options.reports);
+      return Promise.resolve('Console report generated successfully');
+    },
+};
+```
+</Step>
+
+<Step>
+  
+  ```ts twoslash title="veve.config.ts"
+  // @showEmit
+  // @showEmittedFile: veve.config.js
+  // @filename: reporter.config.ts
+  import { Reporter, ReportOptions } from 'veve';
+
+  export const fileReporter: Reporter = {
+      name: 'FileReporter',
+      type: 'file',
+      async report(options: ReportOptions): Promise<any> {
+        // Logic for generating a file-based report
+        if (!options.outputDir) {
+          throw new Error('Output directory is required for file-based reports');
+        }
+        console.log('Generating file report in', options.outputDir);
+        // Report generation logic here...
+        return Promise.resolve('Report generated successfully');
+      },
+  };
+
+  export const consoleReporter: Reporter = {
+      name: 'ConsoleReporter',
+      type: 'console',
+      async report(options: ReportOptions): Promise<any> {
+        // Logic for console-based reporting
+        console.log('Generating console report with the following data:');
+        console.log(options.reports);
+        return Promise.resolve('Console report generated successfully');
+      },
+  };
+
+  // @filename: veve.config.ts
+  import veve , { spec } from "veve";
+  import { consoleReporter , fileReporter } from "reporter.config"
+
+  export default veve({
+    reporters: [{
+      reporter: spec
+    },{
+      reporter: consoleReporter,
+      options: {}
+    }, {
+      reporter: fileReporter,
+      options: {}
+    }],
+    output: './veve'
+  });
+ ```
+ 
+</Step>
+
+<Step>
+
+ ```bash title="Terminal"
+ veve
+ ```
+ And voila 🎉
+ 
+</Step>
+
+</Steps>
+
+### Explanation
+
+1. **ReporterPlugin**: This is the core interface that defines the structure of the reporter. It includes:
+   - `reporter`: The actual reporter object, which contains the name, type (`'file'` or `'console'`), and the report generation logic.
+   - `options`: Configuration options for the reporter, such as `outputDir` for file-based reporting.
+
+2. **ReportOptions**: These options include the following fields:
+   - `reports`: A map of reports to be generated, with each entry containing data of type `PoolResult`.
+   - `outputDir`: The directory to save the file-based report.
+   - Custom options: Additional configuration can be passed depending on the reporter’s needs.
+
+3. **Report Generation**: The reporter’s `report()` method is called to generate the report. It accepts the `ReportOptions` object, and depending on the reporter type, the method either generates a file or logs to the console.
+
+### Example Report Output
+
+- **File-based Report**: The `FileReporter` will output the report to a directory specified in `options.outputDir`.
+- **Console-based Report**: The `ConsoleReporter` simply logs the report data to the console.
+
+### Integration
+
+You can integrate this reporter configuration into a larger build or test system. The `reporters` array can include multiple reporter plugins (like the ones shown above), allowing for flexible reporting based on your needs.
+
+### Important Notes
+
+- If you're using a file-based reporter, ensure that the `outputDir` is provided, as it is a required field.
+- You can customize the reporter options further, depending on the specifics of the reporter and how you want to handle the generated reports.

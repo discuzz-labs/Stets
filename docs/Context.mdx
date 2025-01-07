@@ -1,0 +1,38 @@
+---
+title: Context
+description: Add values to the global context in Veve
+---
+
+**Veve** enables you to load functions, classes, and any other serializable entities into the global context using the `node:vm` module. This allows you to make these values accessible across your tests. Here's an example:
+
+```ts twoslash title="veve.config.ts"
+import veve from "veve";
+
+function hello(): string {
+  return "Hello";
+}
+
+export default veve({
+  // Configuration goes here
+  context: {
+    hello  // Make the 'hello' function available in the global context
+  }
+});
+```
+
+In this example, the `hello` function is added to the global context and can be used in your test files.
+
+You can then use this function globally inside your test files:
+
+```ts twoslash title="test-file.ts"
+import { assert } from "veve";
+
+// Declare the 'hello' function so TypeScript recognizes it
+declare function hello(): string;
+
+it("greets correctly", () => {
+  assert(hello()).toBe("Hello");
+});
+```
+
+With this setup, you can easily add any serializable values (like functions or objects) to the global context in your **Veve** configuration, ensuring they're accessible throughout your tests.

@@ -1,0 +1,331 @@
+---
+title: Assertion
+description: Builtin assertion libatary of veve.
+---
+
+**Veve** also provide you with a very comprehensive set of assertion methods.
+
+## Usage Example 
+
+There are two ways of using the `assert` in veve. You can manually import it like this:
+
+```ts twoslash title="test.test.ts"
+import { assert } from "veve";
+
+const add = (a: number, b: number): number => a + b;
+
+it("should add two numbers", () => {
+    assert(add(1, 2)).toBe(3)
+});
+
+run();
+```
+
+## The `is` helper
+
+The `assert` function throws in contrary of `is` an `AssertionError` whihc completly stops the code process inside an it block. The `is` have the same API as `assert` but with the great different that it only returns a `boolean`. So this will not stop the code to proceed:
+
+```ts twoslash title="test.test.ts"
+import { is } from "veve";
+
+const add = (a: number, b: number): number => a + b;
+
+it("should add two numbers", () => {
+  if ( !is(add(1, 2)).toBe(4) ) console.log("Noop it insot 4!")
+  console.log("I have been executed")
+});
+
+run();
+```
+
+## API
+
+### `toBeDefined(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(5).toBeDefined(); // Passes
+assert(undefined).toBeDefined(); // Fails
+```
+
+### `toBeUndefined(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(undefined).toBeUndefined(); // Passes
+assert(42).toBeUndefined(); // Fails
+```
+
+### `toBeNull(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(null).toBeNull(); // Passes
+assert(42).toBeNull(); // Fails
+```
+
+### `toBeTruthy(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(1).toBeTruthy(); // Passes
+assert(false).toBeTruthy(); // Fails
+```
+
+### `toBeFalsy(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(false).toBeFalsy(); // Passes
+assert(1).toBeFalsy(); // Fails
+```
+
+### `toBeGreaterThan(expected: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(5).toBeGreaterThan(3); // Passes
+assert(1).toBeGreaterThan(5); // Fails
+```
+
+### `toBeGreaterThanOrEqual(expected: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(10).toBeGreaterThanOrEqual(10); // Passes
+assert(5).toBeGreaterThanOrEqual(10); // Fails
+```
+
+### `toBeLessThan(expected: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(5).toBeLessThan(10); // Passes
+assert(10).toBeLessThan(5); // Fails
+```
+
+### `toBeInstanceOf(expectedClass: (...args: any) => any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(new Date()).toBeInstanceOf(Date); // Passes
+assert({}).toBeInstanceOf(Date); // Fails
+```
+
+### `toBeLessThanOrEqual(expected: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(10).toBeLessThanOrEqual(10); // Passes
+assert(15).toBeLessThanOrEqual(10); // Fails
+```
+
+### `toBeNaN(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(NaN).toBeNaN(); // Passes
+assert(5).toBeNaN(); // Fails
+```
+
+### `toMatch(expected: RegExp | string): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert("hello").toMatch(/he/); // Passes
+assert("world").toMatch("wor"); // Passes
+```
+
+### `toBe(expected: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(5).toBe(5); // Passes
+assert(5).toBe(6); // Fails
+```
+
+### `toBeBetween(min: number | bigint, max: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(15).toBeBetween(10, 20); // Passes
+assert(15).toBeBetween(15, 20); // Fails
+```
+
+### `toBeBetweenOrEqual(min: number | bigint, max: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(15).toBeBetweenOrEqual(10, 15); // Passes
+assert(15).toBeBetweenOrEqual(16, 20); // Fails
+```
+
+### `toBeAboveMin(min: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(15).toBeAboveMin(10); // Passes
+assert(5).toBeAboveMin(10); // Fails
+```
+
+### `toBeBelowMax(max: number | bigint): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(15).toBeBelowMax(20); // Passes
+assert(25).toBeBelowMax(20); // Fails
+```
+
+### `toEqual(expected: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert({ a: 1, b: { c: 2 } }).toEqual({ a: 1, b: { c: 2 } }); // Passes
+assert([1, 2, 3]).toEqual([1, 2, 3]); // Passes
+assert(42).toEqual(42); // Passes
+```
+
+### `toContain(expected: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert([1, 2, 3]).toContain(2); // Passes
+assert("hello world").toContain("world"); // Passes
+assert([1, 2, 3]).toContain(5); // Fails
+```
+
+### `toThrow(expected: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(() => { throw new Error("Expected error") }).toThrow("Expected error"); // Passes
+```
+
+### `toBeCloseTo(expected: number, numDigits?: number): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert(3.14159).toBeCloseTo(Math.PI, 2); // Passes
+```
+
+### `toBeTracked(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => {});
+mockFn();
+assert(mockFn).toBeTracked(); // Passes
+```
+
+### `toHaveBeenCalled(): Assertion | boolean`
+```typescript
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => {});
+mockFn();
+assert(mockFn).toHaveBeenCalled(); // Passes
+```
+
+### `toHaveBeenCalledTimes(times: number): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => {});
+mockFn();
+mockFn();
+assert(mockFn).toHaveBeenCalledTimes(2); // Passes
+```
+
+### `toHaveBeenCalledWith(...args: any[]): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn((a: number, b: string) => {});
+mockFn(42, "hello");
+assert(mockFn).toHaveBeenCalledWith(42, "hello"); // Passes
+```
+
+### `toHaveBeenLastCalledWith(...args: any[]): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn((a: number) => {});
+mockFn(1);
+mockFn(2);
+assert(mockFn).toHaveBeenLastCalledWith(2); // Passes
+```
+
+### `toHaveBeenNthCalledWith(n: number, ...args: any[]): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn((a: number) => {});
+mockFn(1);
+mockFn(2);
+mockFn(3);
+assert(mockFn).toHaveBeenNthCalledWith(2, 2); // Passes
+```
+
+### `toHaveReturned(): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => 42);
+mockFn();
+assert(mockFn).toHaveReturned(); // Passes
+```
+
+### `toHaveReturnedTimes(times: number): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => 42);
+mockFn();
+mockFn();
+assert(mockFn).toHaveReturnedTimes(2); // Passes
+```
+
+### `toHaveReturnedWith(value: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => 42);
+mockFn();
+assert(mockFn).toHaveReturnedWith(42); // Passes
+```
+
+### `toHaveLastReturnedWith(value: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => 42);
+mockFn();
+mockFn();
+assert(mockFn).toHaveLastReturnedWith(42); // Passes
+```
+
+### `toHaveNthReturnedWith(n: number, value: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+const mockFn = Fn(() => 42);
+mockFn();
+mockFn();
+assert(mockFn).toHaveNthReturnedWith(2, 42); // Passes
+```
+
+### `toHaveLength(length: number): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert([1, 2, 3]).toHaveLength(3); // Passes
+assert("hello").toHaveLength(5); // Passes
+```
+
+### `toHaveProperty(keyPath: string, value?: any): Assertion | boolean`
+```typescript twoslash title="test.test.ts"
+import { assert } from "veve";
+
+assert({ a: { b: 42 } }).toHaveProperty('a.b', 42); // Passes
+assert({ x: 1 }).toHaveProperty('x'); // Passes
+```

@@ -1,0 +1,84 @@
+---
+title: Terminology
+description: Design choices in veve.
+---
+
+### 1. **Why doesn't the testing runner/framework support the `describe` keyword?**
+
+The decision to exclude the `describe` keyword from the framework was made to streamline the testing experience and reduce unnecessary verbosity in the test code. Instead of wrapping tests in nested blocks (like `describe`), the framework favors a more minimalistic and straightforward approach. This eliminates additional syntactic overhead and encourages writing tests with a focus on clarity and directness.
+
+By avoiding `describe`, tests are defined directly using `it`, making each test case easier to understand and maintain. The overall goal is to simplify the structure of test files, improve readability, and reduce cognitive load for developers.
+
+**Key Points:**
+- **Simplicity**: Directly using `it` removes unnecessary nesting, which makes the code simpler to read and maintain.
+- **Efficiency**: It reduces boilerplate code, which speeds up test writing.
+- **Focus**: Each test is treated as an isolated unit, emphasizing clarity and reducing the need for additional context.
+
+---
+
+### 2. **Why is there a `run()` method at the end of the test file?**
+
+The inclusion of a `run()` method at the end of the test file serves several purposes:
+
+- **Explicit Control**: The `run()` method gives the developer explicit control over when the tests are executed. This makes the testing process more intentional and predictable.
+- **Separation of Setup and Execution**: By requiring a `run()` call, the framework allows for greater flexibility in configuring test setup before execution. This can be useful for scenarios where tests need to be dynamically configured or run in specific environments.
+- **Clear Entry Point**: The `run()` method marks a clear entry point for running tests. Without it, the framework could run tests automatically on import, which might be undesirable in certain setups (e.g., batch runs, test filtering, or environment configuration). The `run()` method offers a clear and controlled invocation of the test runner.
+
+In essence, the `run()` method acts as a **gatekeeper** to trigger the execution of tests, offering a more structured, flexible, and controllable testing workflow.
+
+---
+
+### 3. **Why doesn’t the framework have a built-in mocking system?**
+
+The decision not to include a built-in mocking system aligns with the framework’s design philosophy of simplicity, minimalism, and flexibility. While mocking is useful in many cases, it introduces additional complexity and dependencies, which the framework aims to avoid. Instead, the framework assumes that developers will integrate with other dedicated mocking libraries as needed, such as **Sinon** or **Jest Mock**.
+
+The rationale behind this choice includes:
+- **Simplicity**: Focusing on core testing functionalities without introducing the complexity of a mocking system helps keep the framework lightweight and easy to use.
+- **Flexibility**: By not providing a built-in mocking system, the framework allows developers to choose their preferred mocking library based on their specific needs. This ensures greater flexibility and avoids forcing a one-size-fits-all solution.
+- **Integration with External Libraries**: There are many mature and well-supported mocking libraries in the JavaScript ecosystem. Rather than reinventing the wheel, the framework allows seamless integration with these external tools, giving developers more control over how they mock dependencies.
+
+For example, using a dedicated mocking library like Sinon:
+
+```ts
+import { mock } from 'sinon'
+
+it("should mock a function", () => {
+  const myFunction = mock().returns(42)
+  assert(myFunction()).toBe(42)
+})
+```
+
+This approach ensures that developers can choose the best tools for their testing needs while keeping the framework's core API focused and minimal.
+
+---
+
+### 4. **Why does the framework use esbuild and the VM context in Node.js?**
+
+#### **esbuild for Faster Builds and Optimizations**
+The framework uses **esbuild** for several reasons, primarily to enhance build speed and optimize the testing workflow:
+
+- **Performance**: esbuild is known for its exceptional speed, thanks to its Go-based implementation. It compiles TypeScript, JSX, and modern JavaScript syntax at lightning-fast speeds, significantly reducing the time it takes to prepare tests for execution.
+- **Efficiency**: By using esbuild, the framework can handle module bundling, code transformation, and TypeScript compilation all at once, optimizing the build process and minimizing delays during test execution.
+- **Minimal Configuration**: esbuild works well out-of-the-box with minimal setup, reducing the need for complex build configurations that would slow down development and testing cycles.
+
+The use of esbuild helps provide a streamlined and efficient environment for developers, ensuring faster test runs and reduced overhead.
+
+#### **VM Context in Node.js for Isolated Test Execution**
+The framework also leverages the **VM (Virtual Machine) context** in Node.js for running tests in a secure, isolated environment:
+
+- **Sandboxing**: The VM context allows test code to run in isolation from the rest of the application. This helps avoid unintended side effects between tests and ensures that each test has its own clean environment.
+- **Security**: By using the VM module, the framework can execute tests in a controlled context, reducing the risk of malicious code or unexpected behavior affecting the test results or the broader Node.js runtime.
+- **Controlled Execution**: Using the VM context allows for better control over how test code is evaluated and executed. It also enables advanced features like custom execution timeouts, test isolation, and dynamic test setup, all while maintaining a secure environment.
+
+By combining esbuild and the VM context, the framework ensures both fast builds and secure, isolated test execution, contributing to a more efficient and reliable testing experience.
+
+---
+
+### Summary of Design Choices:
+
+1. **No `describe` keyword**: The framework prioritizes simplicity, clarity, and minimalism, opting to avoid nested structures.
+2. **`run()` method**: The explicit `run()` function gives developers control over when tests are executed, ensuring better flexibility and intentional execution.
+3. **No built-in mocking system**: The framework allows integration with external mocking libraries, promoting flexibility and keeping the core framework lightweight and focused.
+4. **Use of esbuild and the VM context**: esbuild enables fast builds and optimizations, while the VM context ensures secure, isolated, and controlled execution of test cases.
+
+These decisions reflect the framework’s design philosophy: keeping things simple, fast, and flexible, while giving developers the freedom to integrate additional tools and features as needed.

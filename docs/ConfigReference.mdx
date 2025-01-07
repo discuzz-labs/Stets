@@ -1,0 +1,125 @@
+---
+title: Config Reference
+---
+
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+
+
+## Config Reference Table
+
+<TypeTable
+  type={{
+    pattern: {
+      description: 'A list of patterns to include for processing.',
+      type: 'string[]',
+      default: '[]'
+    },
+    exclude: {
+      description: 'A list of patterns to exclude from processing.',
+      type: 'string[]',
+      default: '[]'
+    },
+    envs: {
+      description: 'A list of environment names where this configuration will be applied.',
+      type: 'string[]',
+      default: '[]'
+    },
+    plugins: {
+      description: 'A list of eabuild plugins to be used in the configuration.',
+      type: 'Plugin[]',
+      default: '[]'
+    },
+    timeout: {
+      description: 'The timeout value in milliseconds for operations.',
+      type: 'number',
+      default: '300000'
+    },
+    context: {
+      description: 'A context object that can hold any key-value pair.',
+      type: 'Record<any, any>',
+      default: '{}'
+    },
+    tsconfig: {
+      description: 'The TypeScript configuration options.',
+      type: 'Tsconfig',
+      default: '{}'
+    },
+    watch: {
+      description: 'Whether to watch files for changes.',
+      type: 'boolean',
+      default: 'false'
+    },
+    require: {
+      description: 'List of modules to auto require inside the testing files.',
+      type: 'string[]',
+      default: '[]'
+    },
+    reporters: {
+      description: 'List of reporter plugins.',
+      type: 'ReporterPlugin[]',
+      default: '[]'
+    },
+    output: {
+      description: 'Defines the file path for reporters to save their outputs.',
+      type: 'string',
+      default: './output'
+    },
+  }}
+/>
+
+## Config Fields
+
+### `pattern`
+  Description: A list of patterns to include for processing.  
+  Type: `string[]`  
+  Default: `[]`
+
+### `exclude`
+  Description: A list of patterns to exclude from processing.  
+  Type: `string[]`  
+  Default: `[]`
+
+### `envs`
+  Description: A list of environment names where this configuration will be applied.  
+  Type: `string[]`  
+  Default: `[]`
+
+### `plugins`
+  Description: A list of eabuild plugins to be used in the configuration.  
+  Type: `Plugin[]`  
+  Default: `[]`
+
+### `timeout`
+  Description: The timeout value in milliseconds for operations.  
+  Type: `number`  
+  Default: `300000`
+
+### `context`
+  Description: A context object that can hold any key-value pair.  
+  Type: `Record<any, any>`  
+  Default: `{}`
+
+### `tsconfig`
+  Description: The TypeScript configuration options.  
+  Type: [`Tsconfig`](/docs/veve/TsconfigReference)
+  Default: `{}`
+
+### `watch`
+  Description: Whether to watch files for changes.  
+  Type: `boolean`  
+  Default: `false`
+
+### `require`
+  Description: List of modules to auto require inside the testing files.  
+  Type: `string[]`  
+  Default: `[]`
+
+### `reporters`
+  Description: List of reporter plugins.  
+  Type: `ReporterPlugin[]`  
+  Default: `[spec]`
+
+### `output`
+  Description: Defines the file path for reporters to save their outputs.  
+  Type: `string`  
+  Default: `./output`

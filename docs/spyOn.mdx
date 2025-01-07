@@ -1,0 +1,72 @@
+---
+title: spyOn
+description: How to spy on classes and objects?
+---
+
+**Veve** also support spying on classes and objects. It has the same API as [`Fn`](/docs/veve/Fn#API). 
+
+
+## Spying on objects
+
+```ts twoslash title="test.test.ts"
+import { assert, spyOn } from "veve";
+
+it("should add two numbers", () => {
+  const calc = {
+    add: (a: number, b: number) => a + b 
+  }
+
+  const trackedAdd = spyOn(calc, "add")
+
+  assert(trackedAdd).toBeTracked()
+  assert(trackedAdd).toHaveBeenCalled()
+});
+
+run();
+```
+
+## Spying on classes
+
+### Methods 
+
+```ts twoslash title="test.test.ts"
+import { assert, spyOn } from "veve";
+
+it("should add two numbers", () => {
+  class Calc{
+    add(a: number, b: number) {
+      return a + b
+    } 
+  }
+
+  const calc = new Calc();
+
+  const trackedAdd = spyOn(calc, "add")
+
+  assert(trackedAdd).toBeTracked()
+  assert(trackedAdd).toHaveBeenCalled()
+});
+
+run();
+```
+
+### Static methods
+
+```ts twoslash title="test.test.ts"
+import { assert, spyOn } from "veve";
+
+it("should add two numbers", () => {
+  class Hello{
+    static greet(name: string) {
+      return "Hello, " + name
+    } 
+  }
+
+  const trackedGreet = spyOn(Hello, "greet")
+
+  assert(trackedGreet).toBeTracked()
+  assert(trackedGreet).toHaveBeenCalled()
+});
+
+run();
+```

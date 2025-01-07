@@ -1,0 +1,223 @@
+---
+title: Fn 
+description: Tracking function calls.
+---
+
+**Veve** also provide you with a way so you can track your function calls and exceptions. Methods like `toHaveBeenCalled` and `toHaveReturnedWith` can only be used with a function with a `Fn` prototype.
+
+## Usage Example 
+
+There are two ways of using the `Fn` in veve. You can manually import it like this:
+
+```ts twoslash title="test.test.ts"
+import { assert, Fn } from "veve";
+
+it("should add two numbers", () => {
+  const add = Fn((a: number, b: number): number => a + b)
+
+  // You can call the function as you would
+  add(1, 2)
+  
+  assert(add).toBeTracked()
+  assert(add).toHaveBeenCalled()
+});
+
+run();
+```
+
+## API
+
+### `getAllArgs(): ReadonlyArray<any[]>`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of tracking arguments for all calls
+const add = Fn((a: number, b: number): number => a + b);
+
+add(1, 2);
+add(3, 4);
+
+console.log(add.getAllArgs()); 
+// Output: [[1, 2], [3, 4]]
+```
+
+### `getArgsForCall(index: number): any[] | undefined`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of getting arguments for a specific call
+const add = Fn((a: number, b: number): number => a + b);
+
+add(1, 2);
+add(3, 4);
+
+console.log(add.getArgsForCall(1)); 
+// Output: [3, 4]
+```
+
+### `getReturnValues(): ReadonlyArray<any>`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of tracking return values for all calls
+const add = Fn((a: number, b: number): number => a + b);
+
+add(1, 2);
+add(3, 4);
+
+console.log(add.getReturnValues()); 
+// Output: [3, 7]
+```
+
+### `getExceptions(): ReadonlyArray<FunctionException>`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of tracking exceptions thrown
+const throwError = Fn((): void => { throw new Error('Test error'); });
+
+try {
+  throwError();
+} catch (error) {}
+
+console.log(throwError.getExceptions()); 
+// Output: [Error: Test error]
+```
+
+### `wasCalled(): boolean`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of checking if the function was called
+const add = Fn((a: number, b: number): number => a + b);
+
+console.log(add.wasCalled()); 
+// Output: false
+
+add(1, 2);
+
+console.log(add.wasCalled()); 
+// Output: true
+```
+
+### `wasCalledWith(...args: any[]): boolean`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of checking if the function was called with specific arguments
+const add = Fn((a: number, b: number): number => a + b);
+
+add(1, 2);
+add(3, 4);
+
+console.log(add.wasCalledWith(1, 2)); 
+// Output: true
+
+console.log(add.wasCalledWith(5, 6)); 
+// Output: false
+```
+
+### `wasCalledTimes(n: number): boolean`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of checking if the function was called a specific number of times
+const add = Fn((a: number, b: number): number => a + b);
+
+add(1, 2);
+add(3, 4);
+
+console.log(add.wasCalledTimes(2)); 
+// Output: true
+
+console.log(add.wasCalledTimes(1)); 
+// Output: false
+```
+
+### `return(value: any): TrackFn`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of setting a custom return value
+const add = Fn((a: number, b: number): number => a + b)
+add.return(5);
+
+console.log(add(1, 2)); 
+// Output: 5
+```
+
+### `throw(error: Error): TrackFn`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of configuring the function to throw a custom error
+const throwError = Fn((): void => { throw new Error('Original error'); })
+
+throwError.throw(new Error('Custom error'));
+
+try {
+  throwError();
+} catch (error: any) {
+  console.log(error.message); 
+  // Output: Custom error
+}
+```
+
+### `use(fn: (...args: any[]) => any): TrackFn`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of replacing the tracked function with a custom implementation
+const add = Fn((a: number, b: number): number => a + b)
+  
+add.use((a: number, b: number): number => a * b);
+
+console.log(add(2, 3)); 
+// Output: 6
+```
+
+### `reset(): TrackFn`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of resetting the tracked function
+const add = Fn((a: number, b: number): number => a + b);
+
+add(1, 2);
+add(3, 4);
+
+add.reset();
+
+console.log(add.getAllArgs()); 
+// Output: []
+```
+
+### `clear(): TrackFn`
+
+```typescript twoslash title="test.test.ts"
+import { Fn } from "veve";
+
+// Example of clearing arguments but keeping configurations
+const add = Fn((a: number, b: number): number => a + b);
+
+add(1, 2);
+add(3, 4);
+
+add.clear();
+
+console.log(add.getAllArgs()); 
+// Output: []
+console.log(add.wasCalled()); 
+// Output: true (behavior retained)
+```

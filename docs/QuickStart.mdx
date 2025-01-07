@@ -1,0 +1,81 @@
+---
+title: Quick Start
+description: Getting started with veve.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+## Installation
+
+You can install Veve globally using npm:
+
+<Tabs items={['npm', 'pnpm','yarn']}>
+  <Tab value="npm">
+   ```bash
+   npm i -g veve
+   ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm install veve
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn install veve
+    ```
+  </Tab>
+</Tabs>
+
+Alternatively, use our interactive setup wizard:
+
+```bash title="Terminal"
+npx veve-setup
+```
+
+## Getting Started
+
+<Callout type="info">
+  Code examples are configured using twosslah. Feel free to click around on it!
+</Callout>
+
+<Steps>
+  <Step>
+
+### Writing Your First Test
+
+Create a new TypeScript file and write your test:
+
+```ts twoslash title="test.test.ts"
+import { assert } from "veve";
+
+const add = (a: number, b: number): number => a + b;
+
+it("should add two numbers", () => {
+    assert(add(1, 2)).toBe(3)
+});
+
+run();
+```
+</Step>
+
+<Step>
+
+### Running Tests
+
+Execute your tests using the `veve` command:
+
+```bash title="Terminal"
+veve
+```
+</Step>
+
+<Step>
+
+### Enjoy 🎉
+That's all you need to get started! No additional configuration or setup required.
+
+</Step>
+
+</Steps>

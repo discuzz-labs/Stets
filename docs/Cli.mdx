@@ -1,0 +1,124 @@
+---
+title: CLI
+description: The CLI interface of veve
+---
+
+The Veve CLI provides a variety of command-line options to customize and control
+your testing environment. Below is a comprehensive list of available options:
+
+## Usage Examples
+
+Run tests with basic configuration:
+```bash title="Terminal"
+veve --config=veve.config.js
+```
+
+Watch mode with specific test files:
+```bash title="Terminal"
+veve -w -f=auth.test.ts -f=api.test.ts
+```
+
+Run tests with custom timeout and environment variables:
+```bash title="Terminal"
+veve -t=5000 --envs=.env.test --envs=.env.local
+```
+
+Pattern matching with exclusions:
+```bash title="Terminal"
+veve -p="**/*.test.ts" -p="**/*.spec.js" -e="node_modules/**" -e="dist/**"
+```
+
+## Command Reference Table
+
+| Option | Short Flag | Type | Multiple Values | Requires Value | Description |
+|--------|------------|------|----------------|----------------|-------------|
+| `--help` | `-h` | - | No | No | Display this help message with detailed information about all available commands |
+| `--version` | `-v` | - | No | No | Display current version |
+| `--config` | `-c` | string | No | Yes | Specify the path to a file configuration containing test settings and options |
+| `--output` | `-o` | string | No | Yes | Defines the file path for reporters to save their outputs |
+| `--require` | `-r` | string | Yes | Yes | Module names to require globally inside the testing files |
+| `--watch` | `-w` | - | No | No | Watch testing files (recommended) |
+| `--timeout` | `-t` | number | No | Yes | Set the maximum execution time (in milliseconds) for each individual test file |
+| `--envs` | `-env` | path[] | Yes | Yes | Provide path to one or more .env files for loading environment variables during testing |
+| `--pattern` | `-p` | regex[] | Yes | Yes | Specify a glob pattern to match test files |
+| `--exclude` | `-e` | regex[] | Yes | Yes | Specify patterns or paths to exclude from test execution |
+| `--file` | `-f` | path[] | Yes | Yes | Explicitly list one or more test files to run |
+
+## Basic Options
+
+### Help
+- **Flag**: `--help`, `-h`
+- **Description**: Display this help message with detailed information about all available commands.
+- **Requires Value**: No
+
+### Version
+- **Flag**: `--version`, `-v`
+- **Description**: Display current version
+- **Requires Value**: No
+
+### Watch Mode
+- **Flag**: `--watch`, `-w`
+- **Description**: Watch testing files (recommended)
+- **Requires Value**: No
+
+## Configuration Options
+
+### Config File
+- **Flag**: `--config`, `-c`
+- **Description**: Specify the path to a file configuration containing test settings and options.
+- **Type**: `string`
+- **Requires Value**: Yes
+
+### Output Path
+- **Flag**: `--output`, `-o`
+- **Description**: Defines the file path for reporters to save their outputs.
+- **Type**: `string`
+- **Requires Value**: Yes
+
+### Global Modules
+- **Flag**: `--require`, `-r`
+- **Description**: Module names to require globally inside the testing files!
+- **Type**: `string`
+- **Multiple Values**: Yes
+- **Requires Value**: Yes
+
+## Test Execution Options
+
+### Timeout
+- **Flag**: `--timeout`, `-t`
+- **Description**: Set the maximum execution time (in milliseconds) for each individual test file.
+- **Type**: `number`
+- **Requires Value**: Yes
+
+### Environment Variables
+- **Flag**: `--envs`, `-env`
+- **Description**: Provide path to one or more .env files for loading environment variables during testing.
+- **Type**: `path[]`
+- **Multiple Values**: Yes
+- **Requires Value**: Yes
+
+## File Selection Options
+
+### Pattern Matching
+- **Flag**: `--pattern`, `-p`
+- **Description**: Specify a glob pattern to match test files
+- **Type**: `regex[]`
+- **Multiple Values**: Yes
+- **Requires Value**: Yes
+- **Example**: `-p="**/*.test.ts" -p="**/*.spec.js"`
+
+### Exclude Patterns
+- **Flag**: `--exclude`, `-e`
+- **Description**: Specify patterns or paths to exclude from test execution
+- **Type**: `regex[]`
+- **Multiple Values**: Yes
+- **Requires Value**: Yes
+- **Example**: `-e="node_modules/**"`
+
+### Specific Files
+- **Flag**: `--file`, `-f`
+- **Description**: Explicitly list one or more test files to run
+- **Type**: `path[]`
+- **Multiple Values**: Yes
+- **Requires Value**: Yes
+- **Example**: `-f=test.ts -f=test.js`

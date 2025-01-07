@@ -1,0 +1,261 @@
+---
+title: TestCase
+description: Which testing functions we provide.
+---
+
+The `TestCase` interface is designed to provide an organized, flexible way to define and run tests in your testing framework. It supports a wide variety of test configurations, from basic tests to more advanced features like retries, timeouts, and conditionally skipped tests.
+
+### `should(description: string): void`
+Updates the description of the test case.
+
+- **Parameters**: 
+  - `description`: A string containing the new description for the test case.
+
+- **Example**: 
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  should('Updated description');
+  ```
+
+### `bench(description: string, fn: TestFunction, options?: Partial<Options>): void`
+Defines a benchmark test that measures performance.
+
+- **Parameters**: 
+  - `description`: A string describing the benchmark.
+  - `fn`: The function to be benchmarked.
+  - `options`: (Optional) Additional test options, such as time limits or environment settings.
+
+- **Example**: 
+```ts twoslash title="test.test.ts"
+  import "veve"
+
+  bench('Measure performance', () => {});
+  ```
+
+### `each(table: any[], description: string, fn: (...args: any[]) => void | Promise<void>, options?: Partial<Options>): void`
+Defines a parameterized test that runs once for each entry in the provided table.
+
+- **Parameters**: 
+  - `table`: An array of test data. Each row is passed to the test function.
+  - `description`: A string template for the description. The test function will receive arguments from the table.
+  - `fn`: The test function to execute for each table entry.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import { assert } from "veve"
+
+  each([[1, 2], [3, 4]], 'adds %d and %d', (a, b) => {
+    assert(a + b).toBeGreaterThan(0)
+  });
+  ```
+
+### `it(description: string, fn: TestFunction, options?: Partial<Options>): void`
+Defines a standard test case.
+
+- **Parameters**: 
+  - `description`: A string describing the test case.
+  - `fn`: The test function to execute.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  it('should login successfully', () => {});
+  ```
+
+### `sequence(description: string, fn: TestFunction, options?: Partial<Options>): void`
+Defines a test that runs in sequence (i.e., waits for the previous test to complete before running the next one).
+
+- **Parameters**: 
+  - `description`: A string describing the test case.
+  - `fn`: The test function to execute.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  sequence('processes data sequentially - 1', () => {console.log("1")});
+
+  sequence('processes data sequentially - 2', () => {console.log("2")});
+  ```
+
+### `retry(retry: number, description: string, fn: TestFunction, options?: Partial<Options>): void`
+Defines a test that will retry a specified number of times if it fails.
+
+- **Parameters**: 
+  - `retry`: The number of retry attempts.
+  - `description`: A string describing the test case.
+  - `fn`: The test function to execute.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  retry(3, 'retryable test', () => {});
+  ```
+
+### `timeout(timeout: number, description: string, fn: TestFunction, options?: Partial<Options>): void`
+Defines a test that has a time limit (timeout). If the test takes longer than the specified time, it will fail.
+
+- **Parameters**: 
+  - `timeout`: The timeout duration in milliseconds.
+  - `description`: A string describing the test case.
+  - `fn`: The test function to execute.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  timeout(5000, 'should finish within 5 seconds', () => {});
+  ```
+
+### `todo(description: string, options?: Partial<Options>): void`
+Adds a "todo" test, which is a test that has not yet been implemented.
+
+- **Parameters**: 
+  - `description`: A string describing the test case.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  todo('Implement this later');
+  ```
+
+### `itIf(condition: boolean | undefined | null | (() => boolean | Promise<boolean> | null | undefined), description: string, fn: TestFunction, options?: Partial<Options>): void`
+Defines a test that will only run if a condition is met. The condition can either be a boolean value or a function that returns a boolean.
+
+- **Parameters**: 
+  - `condition`: A boolean or a function that returns a boolean. If true, the test will run.
+  - `description`: A string describing the test case.
+  - `fn`: The test function to execute.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  itIf(true, 'conditionally run this test', () => {});
+  ```
+
+### `fail(description: string, fn: TestFunction, options?: Partial<Options>): void`
+Marks a test to allow soft failures. The test will pass even if it fails.
+
+- **Parameters**: 
+  - `description`: A string describing the test case.
+  - `fn`: The test function to execute.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  fail('non-critical test', () => {});
+  ```
+
+### `only(description: string, fn: TestFunction, options?: Partial<Options>): void`
+Marks a test to run exclusively, even if there are other tests in the suite.
+
+- **Parameters**: 
+  - `description`: A string describing the test case.
+  - `fn`: The test function to execute.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  only('critical test', () => {});
+
+  it('will be skipped', () => {});
+  ```
+
+### `skip(description: string, fn: TestFunction, options?: Partial<Options>): void`
+Skips the execution of a test.
+
+- **Parameters**: 
+  - `description`: A string describing the test case.
+  - `fn`: The test function to skip.
+  - `options`: (Optional) Additional test options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  skip('skipped test', () => {});
+  ```
+
+### `beforeAll(fn: HookFunction, options?: Partial<Options>): void`
+Adds a `beforeAll` hook to the test case. This hook runs before any tests in the suite.
+
+- **Parameters**: 
+  - `fn`: The hook function to execute.
+  - `options`: (Optional) Additional options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  beforeAll(() => {});
+  ```
+
+### `beforeEach(fn: HookFunction, options?: Partial<Options>): void`
+Adds a `beforeEach` hook to the test case. This hook runs before each individual test.
+
+- **Parameters**: 
+  - `fn`: The hook function to execute.
+  - `options`: (Optional) Additional options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  beforeEach(() => {});
+  ```
+
+### `afterAll(fn: HookFunction, options?: Partial<Options>): void`
+Adds an `afterAll` hook to the test case. This hook runs after all tests in the suite.
+
+- **Parameters**: 
+  - `fn`: The hook function to execute.
+  - `options`: (Optional) Additional options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  afterAll(() => {});
+  ```
+
+### `afterEach(fn: HookFunction, options?: Partial<Options>): void`
+Adds an `afterEach` hook to the test case. This hook runs after each individual test.
+
+- **Parameters**: 
+  - `fn`: The hook function to execute.
+  - `options`: (Optional) Additional options.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  afterEach(() => {});
+  ```
+
+### `run(): Promise<TestReport>`
+Runs the test case and returns a test report, which provides information about the test results (e.g., success, failure, duration, etc.).
+
+- **Returns**: A promise that resolves to a `TestReport` object.
+
+- **Example**:
+  ```ts twoslash title="test.test.ts"
+  import "veve"
+
+  run(); // at the end of the file.
+  ```

@@ -1,0 +1,1175 @@
+---
+title: TestCase Interface
+---
+
+[veve](./Types) / TestCase
+
+# Class: TestCase
+
+Defined in: [framework/TestCase.ts:326](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L326)
+
+## Constructors
+
+### new TestCase()
+
+> **new TestCase**(`description`): [`TestCase`](TestCase.md)
+
+Defined in: [framework/TestCase.ts:523](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L523)
+
+#### Parameters
+
+##### description
+
+`string`
+
+#### Returns
+
+[`TestCase`](TestCase.md)
+
+## Properties
+
+### description
+
+> **description**: `string`
+
+Defined in: [framework/TestCase.ts:511](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L511)
+
+***
+
+### hooks
+
+> **hooks**: `object`
+
+Defined in: [framework/TestCase.ts:516](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L516)
+
+#### afterAll?
+
+> `optional` **afterAll**: `Hook`
+
+#### afterEach?
+
+> `optional` **afterEach**: `Hook`
+
+#### beforeAll?
+
+> `optional` **beforeAll**: `Hook`
+
+#### beforeEach?
+
+> `optional` **beforeEach**: `Hook`
+
+***
+
+### onlyTests
+
+> **onlyTests**: `Test`[]
+
+Defined in: [framework/TestCase.ts:515](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L515)
+
+***
+
+### sequenceOnlyTests
+
+> **sequenceOnlyTests**: `Test`[]
+
+Defined in: [framework/TestCase.ts:514](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L514)
+
+***
+
+### sequenceTests
+
+> **sequenceTests**: `Test`[]
+
+Defined in: [framework/TestCase.ts:513](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L513)
+
+***
+
+### tests
+
+> **tests**: `Test`[]
+
+Defined in: [framework/TestCase.ts:512](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L512)
+
+## Methods
+
+### afterAll()
+
+#### Call Signature
+
+> **afterAll**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:475](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L475)
+
+Adds an 'afterAll' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **afterAll**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:694](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L694)
+
+Adds an 'afterAll' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+***
+
+### afterEach()
+
+#### Call Signature
+
+> **afterEach**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:482](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L482)
+
+Adds an 'afterEach' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **afterEach**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:703](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L703)
+
+Adds an 'afterEach' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+***
+
+### beforeAll()
+
+#### Call Signature
+
+> **beforeAll**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:461](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L461)
+
+Adds a 'beforeAll' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **beforeAll**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:676](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L676)
+
+Adds a 'beforeAll' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+***
+
+### beforeEach()
+
+#### Call Signature
+
+> **beforeEach**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:468](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L468)
+
+Adds a 'beforeEach' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **beforeEach**(`fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:685](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L685)
+
+Adds a 'beforeEach' hook to the test case.
+
+##### Parameters
+
+###### fn
+
+`HookFunction`
+
+The hook function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional options.
+
+##### Returns
+
+`void`
+
+***
+
+### bench()
+
+#### Call Signature
+
+> **bench**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:339](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L339)
+
+Defines a benchmark test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The function to benchmark.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **bench**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:536](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L536)
+
+Defines a benchmark test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The function to benchmark.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### each()
+
+#### Call Signature
+
+> **each**(`table`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:352](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L352)
+
+Defines a parameterized test for each entry in the provided table.
+
+##### Parameters
+
+###### table
+
+`any`[]
+
+An array of test data.
+
+###### description
+
+`string`
+
+The description template.
+
+###### fn
+
+(...`args`) => `void` \| `Promise`\<`void`\>
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **each**(`table`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:547](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L547)
+
+Defines a parameterized test for each entry in the provided table.
+
+##### Parameters
+
+###### table
+
+`any`[]
+
+An array of test data.
+
+###### description
+
+`string`
+
+The description template.
+
+###### fn
+
+(...`args`) => `void` \| `Promise`\<`void`\>
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### fail()
+
+#### Call Signature
+
+> **fail**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:438](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L438)
+
+Marks a test to allow soft failures.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **fail**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:636](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L636)
+
+Marks a test to allow soft failures.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### it()
+
+#### Call Signature
+
+> **it**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:365](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L365)
+
+Defines a standard test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **it**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:561](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L561)
+
+Defines a standard test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### itIf()
+
+#### Call Signature
+
+> **itIf**(`condition`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:421](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L421)
+
+Conditionally runs a test if the condition is met.
+
+##### Parameters
+
+###### condition
+
+A boolean or function returning a boolean.
+
+`undefined` | `null` | `boolean` | () => `undefined` \| `null` \| `boolean` \| `Promise`\<`boolean`\>
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **itIf**(`condition`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:620](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L620)
+
+Conditionally runs a test if the condition is met.
+
+##### Parameters
+
+###### condition
+
+A boolean or function returning a boolean.
+
+`undefined` | `null` | `boolean` | () => `undefined` \| `null` \| `boolean` \| `Promise`\<`boolean`\>
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### only()
+
+#### Call Signature
+
+> **only**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:446](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L446)
+
+Marks a test to run exclusively.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **only**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:648](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L648)
+
+Marks a test to run exclusively.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### retry()
+
+#### Call Signature
+
+> **retry**(`retry`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:386](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L386)
+
+Defines a test with retry logic.
+
+##### Parameters
+
+###### retry
+
+`number`
+
+The number of retries.
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **retry**(`retry`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:587](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L587)
+
+Defines a test with retry logic.
+
+##### Parameters
+
+###### retry
+
+`number` = `0`
+
+The number of retries.
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### run()
+
+#### Call Signature
+
+> **run**(): `Promise`\<`TestReport`\>
+
+Defined in: [framework/TestCase.ts:488](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L488)
+
+Runs the test case and returns a test report.
+
+##### Returns
+
+`Promise`\<`TestReport`\>
+
+The test report after execution.
+
+#### Call Signature
+
+> **run**(): `Promise`\<`TestReport`\>
+
+Defined in: [framework/TestCase.ts:711](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L711)
+
+Runs the test case and returns a test report.
+
+##### Returns
+
+`Promise`\<`TestReport`\>
+
+The test report after execution.
+
+***
+
+### sequence()
+
+#### Call Signature
+
+> **sequence**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:373](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L373)
+
+Defines a test to run in sequence.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **sequence**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:575](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L575)
+
+Defines a test to run in sequence.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### should()
+
+#### Call Signature
+
+> **should**(`description`): `void`
+
+Defined in: [framework/TestCase.ts:331](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L331)
+
+Updates the description of the test case.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The new description for the test case.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **should**(`description`): `void`
+
+Defined in: [framework/TestCase.ts:532](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L532)
+
+Updates the description of the test case.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The new description for the test case.
+
+##### Returns
+
+`void`
+
+***
+
+### skip()
+
+#### Call Signature
+
+> **skip**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:454](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L454)
+
+Skips a test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **skip**(`description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:664](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L664)
+
+Skips a test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### timeout()
+
+#### Call Signature
+
+> **timeout**(`timeout`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:400](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L400)
+
+Defines a test with a timeout.
+
+##### Parameters
+
+###### timeout
+
+`number`
+
+The timeout in milliseconds.
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **timeout**(`timeout`, `description`, `fn`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:599](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L599)
+
+Defines a test with a timeout.
+
+##### Parameters
+
+###### timeout
+
+`number` = `0`
+
+The timeout in milliseconds.
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### fn
+
+`TestFunction`
+
+The test function.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+***
+
+### todo()
+
+#### Call Signature
+
+> **todo**(`description`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:412](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L412)
+
+Adds a todo test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
+
+#### Call Signature
+
+> **todo**(`description`, `options`?): `void`
+
+Defined in: [framework/TestCase.ts:611](https://github.com/tinytools-oss/veve/blob/be5b78158f59e7a302962ea6dd3ce70d92b54d39/src/framework/TestCase.ts#L611)
+
+Adds a todo test.
+
+##### Parameters
+
+###### description
+
+`string`
+
+The description of the test.
+
+###### options?
+
+`Partial`\<`Options`\>
+
+Additional test options.
+
+##### Returns
+
+`void`
