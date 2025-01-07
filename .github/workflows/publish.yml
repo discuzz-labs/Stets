@@ -2,11 +2,6 @@ name: Publish Package
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Package version (e.g., 1.0.0)'
-        required: true
-        type: string
 
 jobs:
   publish:
