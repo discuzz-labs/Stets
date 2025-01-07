@@ -216,7 +216,7 @@ it("should handle parallel and sequence execution", async function () {
 
   assert(report.stats.passed).toEqual(4);
   // Parallel tests should run simultaneously, sequence tests one after another
-  assert(duration).toBeGreaterThan(300); // At least 3 * 100ms (1 parallel batch + 2 sequence)
+  assert(duration).toBeGreaterThanOrEqual(300); // At least 3 * 100ms (1 parallel batch + 2 sequence)
   assert(duration).toBeLessThan(500); // But less than 5 * 100ms
 });
 
