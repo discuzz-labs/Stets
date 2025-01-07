@@ -4,10 +4,10 @@
   <img src="https://img.shields.io/npm/v/veve" alt="npm version">
   <img src="https://img.shields.io/npm/l/veve" alt="License">
   <img src="https://img.shields.io/npm/dm/veve" alt="Downloads">
-  <img src="https://img.shields.io/badge/code_style-eslint-brightgreen" alt="Code Style">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
   <img src="https://img.shields.io/github/contributors/tinytools-oss/veve" alt="Contributors">
   <img src="https://img.shields.io/node/v/veve" alt="Node.js Version">
+  <img src="https://github.com/solo-fox/veve/actions/workflows/test.yml/badge.svg" alt="veve status" />
   <br />
   <br />
   <p><strong>A zero-config, type-safe, TypeScript-native testing framework and runner!</strong></p>
