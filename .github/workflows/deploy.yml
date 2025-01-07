@@ -38,7 +38,7 @@ jobs:
         uses: denoland/deployctl@v1
         with:
           project: "veve"
-          entrypoint: "npm run start"
+          entrypoint: ".next/standalone/server.js"
           root: "./www"
           
           
